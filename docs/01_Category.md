@@ -1,6 +1,8 @@
 # 1. 圏: 合成の本質
 
-圏は**対象** (object) の集まりと**射** (arrows, morphism) の集まりからなります。射は、対象から対象へのなんらかの操作です。
+圏は**対象** (object) の集まりと**射** (arrow, morphism) の集まりからなります。射は、対象から対象へのなんらかの操作です。
+
+![圏のイメージ](./images/category.png)
 
 例えば、Scala を圏として考えてみると、対象は `Int`、 `String`、 `List[A]` などの型を表し，射は `f: Int -> String` のように関数を表します。
 
@@ -10,7 +12,7 @@
 
 ## 1.1 関数としての射
 
-> 圏は**対象** (object) の集まりと**射** (arrows, morphism) の集まりからなる。
+> 圏は対象の集まりと射の集まりからなる。
 
 の説明から想像がつくように、圏は抽象的な概念です。高校の授業で、集合を「ものの集まり」と習ったのを懐かしく感じます。
 
@@ -60,6 +62,8 @@ c2: C = C(4)
 ![composition of functions f and g](./images/latex/composition_of_function.png)
 
 と書きます。なお、合成された射は**合成射** (composite arrow) といいます。
+
+![composition image of function f and g](./images/composit_function.png)
 
 2つの関数 `f: A => B`、 `g: B => C` を合成するためには、 `f` の返り値の型と `g` の入力の型が一致する必要があります。この例の場合は `B` で一致しており、`f` の返り値を `g` の引数で渡すように合成することができます。一方で、 `g` の返り値を `f` の引数で渡すように合成することはできません。
 
