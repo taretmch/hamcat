@@ -1,21 +1,21 @@
 package category.data
 
 /** Kleisli category for writer monad */
-object WriterKleisli {
+object StringWriterKleisli {
 
   /** Object type */
-  type Writer[A] = (A, String)
+  type Writer[A] = (String, A)
 
   /** Morphism */
-  implicit class KleisliOps[A, B](m1: A => Writer[B]) {
+  implicit class StringWriterKleisliOps[A, B](m1: A => Writer[B]) {
     def >=>[C](m2: B => Writer[C]): A => Writer[C] =
-      x => {
-        val (y, s1) = m1(x)
-        val (z, s2) = m2(y)
-        (z, s1 + s2)
+      a => {
+        val (log1, b) = m1(a)
+        val (log2, c) = m2(b)
+        (log1 ++ log2, c)
       }
   }
 
   /** Identity */
-  def pure[A](x: A): Writer[A] = (x, "")
+  def pure[A](a: A): Writer[A] = ("", a)
 }
