@@ -15,6 +15,7 @@
     - [4.4.1 Cats のインストール](#441-cats-のインストール)
     - [4.4.2 Writer](#442-writer)
     - [4.4.3 Kleisli](#443-kleisli)
+  - [本章のまとめ](#本章のまとめ)
 
 <!-- vim-markdown-toc -->
 
@@ -67,6 +68,12 @@ type Writer[A] = (String, A)
 f: A => Writer[B]
 ```
 
+<div align="center">
+
+![Writer圏における射](./images/morphism_in_writer_category.png)
+
+</div>
+
 2つの関数 `negate: Boolean => (String, Boolean)` と `isEven: Int => (String, Boolean)` は、以下のように書き換えれば Writer 圏における射とみなせます。
 
 ```scala
@@ -74,9 +81,14 @@ def negate: Boolean => Writer[Boolean] = n => ("negate ", !n)
 def isEven: Int => Writer[Boolean] = n => ("isEven ", n % 2 == 0)
 ```
 
+<div align="center">
+
+![Writer圏における射の例](./images/morphism_example_in_writer_category.png)
+
+</div>
 ### 4.2.2 Writer 圏における射の合成
 
-Writer 圏における射の合成は、 `isOdd` 関数の定義を抽象化したものと考えることができます。関数 `f: A => Writer[B]`、関数 `g: B => Writer[C]` を合成して関数 `f >=> g: A => Writer[C]` を定義してみましょう。
+Writer 圏における射の合成は、 `isOdd` 関数の定義を抽象化したものと考えることができます。関数 `f: A => Writer[B]`、関数 `g: B => Writer[C]` を合成した関数 `f >=> g: A => Writer[C]` を定義してみましょう。
 
 ```scala
 implicit class WriterOps[A, B](f: A => Writer[B]) {
@@ -91,6 +103,17 @@ implicit class WriterOps[A, B](f: A => Writer[B]) {
 
 `>=>` 演算は fish 演算子と呼ばれるもので、引数で受け取った2つの関数を合成した関数を返します。
 
+```scala
+scala> val isOdd = isEven >=> negate
+scala> isOdd(3)
+val res14: Writer[Boolean] = ("isEven negate ",true)
+```
+
+<div align="center">
+
+![Writer圏における射の合成](./images/morphism_composition_example_in_writer_category.png)
+
+</div>
 これで、Writer 圏における関数合成は定義できました！
 
 ### 4.2.3 Writer 圏は圏の公理を満たすか
@@ -122,7 +145,7 @@ Writer 圏における恒等射の性質として、1つ目の要素であるロ
 def pure[A](a: A): Writer[A] = ("", a)
 ```
 
-`pure` と `isEven` を合成してみましょう。合成関数
+`pure: Int => Writer[Int]` と `isEven: Int => Writer[Boolean]` を合成してみましょう。合成関数
 
 ```scala
 pure[Int] >=> isEven
@@ -130,7 +153,21 @@ pure[Int] >=> isEven
 
 が行う処理について考えてみましょう。まず、引数 `n: Int` を `pure[Int]` に渡して `("", n)` を取得します。この返り値の2つ目の要素 `n` を `isEven` に渡し `("isEven ", n % 2 == 0)` を取得します。これら2つの返り値を連結して、合成関数としては `("isEven ", n % 2 == 0)` を出力します。この出力は `isEven(n)` と全く同じです。 `pure` 関数は恒等射としての性質を携えています。
 
-以上のことから、ここで定義した Writer 圏は圏であるといえます。
+```scala
+scala> val isEvenAfterPure = (n: Int) => (pure[Int] _ >=> isEven) (n)
+val isEvenAfterPure: Int => category.data.StringWriterKleisli.Writer[Boolean] = $Lambda$4839/717850270@395dccdf
+
+scala> isEvenAfterPure(3)
+val res13: category.data.StringWriterKleisli.Writer[Boolean] = ("isEven ",false)
+```
+
+以上のことから、ここで定義した Writer 圏は圏であるといえます。Writer 圏についてまとめると、次の図のようになります。
+
+<div align="center">
+
+![Writer圏についてのまとめ](./images/example_of_writer_category.png)
+
+</div>
 
 ### 4.2.4 Writer 圏のより一般的な定義
 
@@ -198,7 +235,7 @@ final case class WriterT[F[_], L, V](run: F[(L, V)])`
 
 ここで、`F` はタプル `(L, V)` をラップするような型を表します。例えば `List` や `Option` などがあります。 `Writer` の定義では `F` に `Id` を渡していました。 `Id[A]` は型パラメータ `A` に対して `A` そのものを表すので、`Write[L, V]r` はタプル `(L, V)` そのものであると言えます。この結論は、前節で見た `Writer[L, A]` の定義と同じですね。
 
-`Writer` のインスタンスを作ってみましょう。
+まず、`Writer` のインスタンスを作ってみましょう。
 
 ```scala
 scala> import cats._, cats.data._, cats.implicits._
@@ -214,7 +251,7 @@ val res1: cats.Id[(String, Int)] = ("w1 ",1)
 ```
 おお！`Writer[String, Int]` のインスタンスを作って、そのタプルを取り出すことができました。
 
-`negate: Boolean => Writer[String, Boolean]` と `isEven: Int => Writer[String, Boolean]` を定義してみましょうか。
+次に、`negate: Boolean => Writer[String, Boolean]` と `isEven: Int => Writer[String, Boolean]` を定義してみましょうか。
 
 ```scala
 scala> def negate(b: Boolean): Writer[String, Boolean] = Writer("negate ", !b)
@@ -246,4 +283,51 @@ val res6: cats.data.Writer[String,Boolean] = WriterT((isEven negate ,true))
 
 ### 4.4.3 Kleisli
 
-Kleisli についても見ておきましょう。Kleisli 圏の定義にはモナドの概念が必要なので定義していませんが、Writer 圏との共通点はあるはずです。Cats の `Kleisli` を通してその性質を見ていきましょう。
+Kleisli 圏についても見ておきましょう。Kleisli 圏の定義にはモナドの概念が必要なので定義していませんが、Writer 圏との共通点はあるはずです。Cats の [Kleisli](https://github.com/typelevel/cats/blob/v2.2.0/core/src/main/scala/cats/data/Kleisli.scala) を通してその性質を見ます。
+
+`Kleisli` のシグネチャは以下のようになっています。
+
+```scala
+final case class Kleisli[F[_], -A, B](run: A => F[B])
+```
+
+なんとなく `Writer` と似ているのではないでしょうか。簡単に表現するならば、 `Kleisli[F[_], -A, B]` は関数 `f: A => F[B]` のラッパーです。なぜラップするのかというと、これまで見てきた通り、`f: A => F[B]` のようにラップされた関数を合成するには合成の方法を独自で定義する必要があるからです。
+
+実際に、`Kleisli` を使っていくつか関数を実装してみましょう。`negate: Boolean => Writer[String, Boolean]`  と `isEven: Int ~> Writer[String, Int]` は、 関数 `f: A => Writer[String, B]` の形をしています。これらを `Kleisli` を使って定義すると、以下のようになります。
+
+```scala
+scala> val negate = Kleisli { (b: Boolean) => Writer("negate ", !b) }
+val negate: cats.data.Kleisli[[V]cats.data.WriterT[cats.Id,String,V],Boolean,Boolean] = Kleisli($Lambda$4552/511930924@2db3af55)
+
+scala> val isEven = Kleisli { (n: Int) => Writer("isEven ", n % 2 == 0) }
+val isEven: cats.data.Kleisli[[V]cats.data.WriterT[cats.Id,String,V],Int,Boolean] = Kleisli($Lambda$4557/1514049729@6542cb5f)
+```
+次に、これらの関数を合成して `isOdd` 関数を定義します。`Kleisli` の合成には [compose](https://github.com/typelevel/cats/blob/v2.2.0/core/src/main/scala/cats/data/Kleisli.scala#L77) メソッドや [andThen](https://github.com/typelevel/cats/blob/v2.2.0/core/src/main/scala/cats/data/Kleisli.scala#L60) メソッドを用います。
+
+```scala
+scala> val isOdd1 = negate.compose(isEven)
+val isOdd1: cats.data.Kleisli[[V]cats.data.WriterT[cats.Id,String,V],Int,Boolean] = Kleisli(cats.data.Kleisli$$$Lambda$4598/167638236@701815d6)
+
+scala> val isOdd2 = isEven.andThen(negate)
+val isOdd2: cats.data.Kleisli[[V]cats.data.WriterT[cats.Id,String,V],Int,Boolean] = Kleisli(cats.data.Kleisli$$$Lambda$4598/167638236@7a81bba1)
+```
+
+さて、`Kleisli` は関数 `f: A => F[B]` に合成の構造を持たせたラッパーなので、関数に引数を適用して出力を得るには `run` メソッドを呼び出す必要があります。
+
+```scala
+scala> isEven.run(1)
+val res0: cats.data.WriterT[cats.Id,String,Boolean] = WriterT((isEven ,false))
+
+scala> isOdd1.run(1)
+val res2: cats.data.WriterT[cats.Id,String,Boolean] = WriterT((isEven negate ,true))
+```
+
+Kleisli 圏は、Writer 圏が持つ射の合成をより抽象化して定義したものであることがわかりました。後の章で、Kleisli 圏はモナドによって定義されることを見ます。そのときにまた、本章で述べたことを思い出してもらえると幸いです。
+
+## 本章のまとめ
+
+- 関数 `f: A => F[B]` が圏の公理を満たすよう、射の合成を定義したものが Kleisli 圏である。
+- Writer 圏は Kleisli 圏の例である。
+- Writer 圏では、期待する出力 `B` の他にログ `L` を出力する関数 `f: A => Writer[L, A]` を射として考える。
+  - `L` は、その射において結合律を満たし、射に関する単位元を持つ必要がある。すなわち、`L` はモノイドの性質を満たす必要がある。
+- Writer 圏における射の合成は `>=>` 演算子として定義された。なお、Cats の `Writer` 型に関する射の合成は `flatMap` として定義されている。
