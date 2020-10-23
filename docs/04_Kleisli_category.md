@@ -278,6 +278,7 @@ def isOdd(n: Int): cats.data.Writer[String,Boolean]
 scala> isOdd(3)
 val res6: cats.data.Writer[String,Boolean] = WriterT((isEven negate ,true))
 ```
+
 おなじみ flatMap を使うことによって `Writer` は合成できました。[flatMap](https://github.com/typelevel/cats/blob/v2.2.0/core/src/main/scala/cats/data/WriterT.scala#L179) の定義も、前項で定義した `>=>` 演算子とほとんど変わらないように見えます。興味がある方はぜひ見てみてください。
 
 以上のように、Cats における `Writer` 型は本章で議論した Writer 圏を表現していることがわかります。機会があれば使ってみてください。
@@ -313,7 +314,7 @@ scala> val isOdd2 = isEven.andThen(negate)
 val isOdd2: cats.data.Kleisli[[V]cats.data.WriterT[cats.Id,String,V],Int,Boolean] = Kleisli(cats.data.Kleisli$$$Lambda$4598/167638236@7a81bba1)
 ```
 
-さて、`Kleisli` は関数 `f: A => F[B]` に合成の構造を持たせたラッパーなので、関数に引数を適用して出力を得るには `run` メソッドを呼び出す必要があります。
+さて、`Kleisli` は関数 `f: A => F[B]` に合成の構造を持たせたラッパーなので、関数に引数を適用して出力を得るには `run` を呼び出してラップしている関数を得る必要があります。
 
 ```scala
 scala> isEven.run(1)
