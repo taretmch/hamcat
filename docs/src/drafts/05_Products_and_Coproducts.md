@@ -9,7 +9,6 @@
   - [5.3 双対性](#53-双対性)
   - [5.4 積](#54-積)
   - [5.5 余積](#55-余積)
-  - [5.6 非対象](#56-非対象)
 
 <!-- vim-markdown-toc -->
 
@@ -228,5 +227,86 @@ projBoolean compose m == xBoolean
 
 ## 5.5 余積
 
-## 5.6 非対象
+最後に、積の双対概念である余積についてです。
 
+余積は、積の定義において射を反転させたものです。すなわち、
+
+圏の2つの対象 `A` と `B` に対して、対象 `C` と射 `injA: A => C`、`injB: B => C` の三つ組 `<C, injA, injB>` が `A` と `B` の**余積** (coproduct) であるとは、他の同様の三つ組、すなわちある対象 `X` と射 `xA: A => X`、`xB: B => X` の三つ組 `<X, xA, xB>` に対して `C` から `X` への一意の射 `x` が存在して
+
+```
+x compose injA == xA
+x compose injB == xB
+```
+
+が成り立つことを言います。このとき対象 `C` を `A+B` と書きます。また、`injA: A => C` および `injB: B => C` を入射 (injection) と呼びます。
+
+<div align="center">
+
+![余積](./images/05_coproduct.png)
+
+</div>
+
+積は Scala においてタプルやケースクラスとして表すことができますが、余積は Scala においてトレイトの具象化によって表すことができます。例えば、Either は余積を表す構造です。
+
+```scala mdoc
+sealed trait Either[+A, +B]
+case class Left[A](v: A) extends Either[A, Nothing]
+case class Right[B](v: B) extends Either[Nothing, B]
+```
+
+`Either[+A, +B]` の具象型として `Left[A]` と `Right[B]` があり、これら2つの型が Either を構成しています。
+
+では、具体例を考えることによって、余積の定義と Either の定義を照らし合わせてみましょう。
+
+対象 `A` を型 `String` とし、対象 `B` を型 `Int` とし、対象 `C` を `Either[String, Int]` とします。そして、`String` および `Int` から `Either[String, Int]` への射が以下のようなものであるとします。
+
+```scala mdoc
+def injStringToC: String => Either[String, Int] = s => Left(s)
+def injIntToC: Int => Either[String, Int] = i => Right(i)
+
+injStringToC("Some exceptions occur")
+injIntToC(44)
+```
+
+つまり、`C` において文字列は `Left` に包まれ、整数値は `Right` に包まれます。
+
+同様な構造を持つ対象 `X` として型 `Int` を考え、`X` への入射が以下のようになっているとします。これらの射は、文字列を整数値 `-1` に変換し、整数値をそのまま渡します。
+
+```scala mdoc
+def injStringToX: String => Int = _ => -1
+def injIntToX: Int => Int = i => i
+
+injStringToX("Some exceptions occur")
+injIntToX(44)
+```
+
+このとき、`Either[String, Int]` を `X` すなわち `Int` に変換する関数 `x` を以下のように定義してみます。この射 `x` は `Either` に包まれた文字列あるいは整数値を抽出し `X` への入射に渡しています。
+
+```scala mdoc
+def x: Either[String, Int] => Int = {
+  case Left(a)  => injStringToX(a)
+  case Right(b) => injIntToX(b)
+}
+```
+
+この関数は、`Left[A]` の値を `A` から `X` への入射に渡し、`Right[B]` の値を `B` から `X` への入射に渡しているだけのものです。つまり、余積では、複数の可能性 (`A` と `B`) が存在する型に対して射の合成を定義しています。この `x` に対して
+
+```
+x compose injStringToC == injStringToX
+x compose injIntToC == injIntToX
+```
+
+が成り立ちます。
+
+```scala mdoc
+(x compose injStringToC)("Some exceptions occur") == injStringToX("Some exceptions occur")
+(x compose injIntToC)(44)                         == injIntToX(44)
+```
+
+したがって、`Either[String, Int]` は余積の性質を満たしていると言えます。
+
+<div align="center">
+
+![余積としての Either](./images/05_coproduct_example.png)
+
+</div>
