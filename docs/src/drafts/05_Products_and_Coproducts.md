@@ -138,19 +138,18 @@ def unit[A]: A => Unit = _ => ()
 簡単に言えば、積は2つの対象のタプルを表します。Scala において、積はタプルやケースクラスとして組み込まれています。
 
 ```scala mdoc
-// product as tuple
 val pairTuple: (Int, Boolean) = (44, true)
 ```
 
 ```scala mdoc
-// product as case class
 case class Pair(a: Int, b: Boolean)
+
 val pairCaseClass = Pair(44, true)
 ```
 
 積は、圏論において以下のように定義されます。
 
-圏の2つの対象 `A` と `B` に対して、対象 `C` とその射 `projA: C => A`、`projB: C => B` の三つ組 `<C, projA, projB>` が `A` と `B` の**積** (product) であるとは、ある対象 `X` とその射 `xA': X => A`、`xB: X => B` の三つ組 `<X, xA, xB>` に対して `X` から `C` への一意の射 `m` が存在して
+圏の2つの対象 `A` と `B` に対して、対象 `C` とその射 `projA: C => A`、`projB: C => B` の三つ組 `<C, projA, projB>` が `A` と `B` の**積** (product) であるとは、ある対象 `X` とその射 `xA: X => A`、`xB: X => B` の三つ組 `<X, xA, xB>` に対して `X` から `C` への一意の射 `m` が存在して
 
 ```
 projA compose m == xA
@@ -182,24 +181,27 @@ projBoolean((44, true))
 ```scala mdoc
 def fst[A, B]: ((A, B)) => A = _._1
 def snd[A, B]: ((A, B)) => B = _._2
+
 fst((44, true))
 snd((44, true))
 ```
 
-そして、もう1つ `A` と `B` への射影 `xA`、`xB` が存在する対象 `X` を考えます。この `X` について、`X` から `C` への射 `m` を考えます。例えば、`C` が `(Int, Boolean)` で `X` が `(Boolean, Int)` であったとしましょう。`X` の射影は以下のようになっているとします。
+そして、もう1つ `A` と `B` への射影 `xA`、`xB` が存在する対象 `X` を考えます。この `X` について、`X` から `C` への射 `m` を考えます。例えば、`C` が `(Int, Boolean)` で `X` が `String` であったとしましょう。`X` の射影は以下のようになっているとします。
 
 ```scala mdoc
-def xInt: ((Boolean, Int)) => Int = _._2
-def xBoolean: ((Boolean, Int)) => Boolean = _._1
-xInt((true, 44))
-xBoolean((true, 44))
+def xInt: String => Int = _.length
+def xBoolean: String => Boolean = _.startsWith("a")
+
+xInt("abcdefg")
+xBoolean("abcdefg")
 ```
 
-この射影に対して、射 `m: X => C` すなわち `m: (Boolean, Int) => (Int, Boolean)` は
+この射影に対して、射 `m: X => C` すなわち `m: String => (Int, Boolean)` は
 
 ```scala mdoc
-def m: ((Boolean, Int)) => ((Int, Boolean)) = x => (xInt(x), xBoolean(x))
-m((true, 44))
+def m: String => ((Int, Boolean)) = x => (xInt(x), xBoolean(x))
+
+m("abcdefg")
 ```
 
 と定義できます。もちろん、射 `m` は適当に `(1, false)` などと返すよう定義することも可能なのですが、もう1つ制約があるために、`m` は一意に定義されることになります。`C` が `A` と `B` の積であるためには、`m` に対して以下が成り立つ必要があります。
@@ -212,8 +214,8 @@ projBoolean compose m == xBoolean
 先ほどの `m` の定義は、これを満たします。
 
 ```scala mdoc
-(projInt compose m)((true, 44)) == xInt((true, 44))
-(projBoolean compose m)((true, 44)) == xBoolean((true, 44))
+(projInt compose m)("abcdefg") == xInt("abcdefg")
+(projBoolean compose m)("abcdefg") == xBoolean("abcdefg")
 ```
 
 すなわち、`C` が `A` と `B` の積であるための条件は、`A` の成分と `B` の成分で分解して計算できることだとわかります。

@@ -79,19 +79,19 @@ def g: Unit => Boolean = _ => false
 
 同型については1章で少し話しましたが、一度思い出してみましょう。対象 `A` から対象 `B` への射 `f` に逆射 `g` が存在するとき、またそのときに限って `A` と `B` は同型であると言われます。つまり、同型な対象の間は相互に変換可能であることを意味します。
 
-始対象が同型を除いて一意であるとは、任意の2つの始対象が同型であることを意味します。具体的に、2つの始対象を i1 と i2 として考えてみましょう。i1 は始対象なので、定義より任意の対象への射をただ1つ持っていて、i1 から i2 への一意の射 `f` が存在します。一方で、i2 は始対象なので、定義より i2 から i1 への一意の射 `g` が存在します。この2つの射を合成して `g compose f` を考えます。`g compose f` は i1 から i1 への射です。しかし、i1 から i1 への射はただ1つであり、圏の公理よりそれは恒等射です。すなわち
+始対象が同型を除いて一意であるとは、任意の2つの始対象が同型であることを意味します。具体的に、2つの始対象を I1 と I2 として考えてみましょう。I1 は始対象なので、定義より任意の対象への射をただ1つ持っていて、I1 から i2 への一意の射 `f` が存在します。一方で、I2 は始対象なので、定義より I2 から I1 への一意の射 `g` が存在します。この2つの射を合成して `g compose f` を考えます。`g compose f` は I1 から I1 への射です。しかし、I1 から I1 への射はただ1つであり、圏の公理よりそれは恒等射です。すなわち
 
 ```
-g compose f = id[i1]
+g compose f = id[I1]
 ```
 
-が成り立ちます。同様に `f compose g` を考えると、これは i2 から i2 への射です。i2 から i2 への射もただ1つであって、圏の公理よりそれは恒等射になります。
+が成り立ちます。同様に `f compose g` を考えると、これは I2 から I2 への射です。I2 から I2 への射もただ1つであって、圏の公理よりそれは恒等射になります。
 
 ```
-f compose g = id[i2]
+f compose g = id[I2]
 ```
 
-したがって、2つの始対象 i1 と i2 は同型です。このような性質を同型を除いて一意であると言います。
+したがって、2つの始対象 I1 と I2 は同型です。このような性質を同型を除いて一意であると言います。
 
 ## 5.2 終対象
 
@@ -138,21 +138,20 @@ def unit[A]: A => Unit = _ => ()
 簡単に言えば、積は2つの対象のタプルを表します。Scala において、積はタプルやケースクラスとして組み込まれています。
 
 ```scala
-// product as tuple
 val pairTuple: (Int, Boolean) = (44, true)
 // pairTuple: (Int, Boolean) = (44, true)
 ```
 
 ```scala
-// product as case class
 case class Pair(a: Int, b: Boolean)
+
 val pairCaseClass = Pair(44, true)
 // pairCaseClass: Pair = Pair(a = 44, b = true)
 ```
 
 積は、圏論において以下のように定義されます。
 
-圏の2つの対象 `A` と `B` に対して、対象 `C` とその射 `projA: C => A`、`projB: C => B` の三つ組 `<C, projA, projB>` が `A` と `B` の**積** (product) であるとは、ある対象 `X` とその射 `xA': X => A`、`xB: X => B` の三つ組 `<X, xA, xB>` に対して `X` から `C` への一意の射 `m` が存在して
+圏の2つの対象 `A` と `B` に対して、対象 `C` とその射 `projA: C => A`、`projB: C => B` の三つ組 `<C, projA, projB>` が `A` と `B` の**積** (product) であるとは、ある対象 `X` とその射 `xA: X => A`、`xB: X => B` の三つ組 `<X, xA, xB>` に対して `X` から `C` への一意の射 `m` が存在して
 
 ```
 projA compose m == xA
@@ -186,29 +185,32 @@ projBoolean((44, true))
 ```scala
 def fst[A, B]: ((A, B)) => A = _._1
 def snd[A, B]: ((A, B)) => B = _._2
+
 fst((44, true))
 // res2: Int = 44
 snd((44, true))
 // res3: Boolean = true
 ```
 
-そして、もう1つ `A` と `B` への射影 `xA`、`xB` が存在する対象 `X` を考えます。この `X` について、`X` から `C` への射 `m` を考えます。例えば、`C` が `(Int, Boolean)` で `X` が `(Boolean, Int)` であったとしましょう。`X` の射影は以下のようになっているとします。
+そして、もう1つ `A` と `B` への射影 `xA`、`xB` が存在する対象 `X` を考えます。この `X` について、`X` から `C` への射 `m` を考えます。例えば、`C` が `(Int, Boolean)` で `X` が `String` であったとしましょう。`X` の射影は以下のようになっているとします。
 
 ```scala
-def xInt: ((Boolean, Int)) => Int = _._2
-def xBoolean: ((Boolean, Int)) => Boolean = _._1
-xInt((true, 44))
-// res4: Int = 44
-xBoolean((true, 44))
+def xInt: String => Int = _.length
+def xBoolean: String => Boolean = _.startsWith("a")
+
+xInt("abcdefg")
+// res4: Int = 7
+xBoolean("abcdefg")
 // res5: Boolean = true
 ```
 
-この射影に対して、射 `m: X => C` すなわち `m: (Boolean, Int) => (Int, Boolean)` は
+この射影に対して、射 `m: X => C` すなわち `m: String => (Int, Boolean)` は
 
 ```scala
-def m: ((Boolean, Int)) => ((Int, Boolean)) = x => (xInt(x), xBoolean(x))
-m((true, 44))
-// res6: (Int, Boolean) = (44, true)
+def m: String => ((Int, Boolean)) = x => (xInt(x), xBoolean(x))
+
+m("abcdefg")
+// res6: (Int, Boolean) = (7, true)
 ```
 
 と定義できます。もちろん、射 `m` は適当に `(1, false)` などと返すよう定義することも可能なのですが、もう1つ制約があるために、`m` は一意に定義されることになります。`C` が `A` と `B` の積であるためには、`m` に対して以下が成り立つ必要があります。
@@ -221,9 +223,9 @@ projBoolean compose m == xBoolean
 先ほどの `m` の定義は、これを満たします。
 
 ```scala
-(projInt compose m)((true, 44)) == xInt((true, 44))
+(projInt compose m)("abcdefg") == xInt("abcdefg")
 // res7: Boolean = true
-(projBoolean compose m)((true, 44)) == xBoolean((true, 44))
+(projBoolean compose m)("abcdefg") == xBoolean("abcdefg")
 // res8: Boolean = true
 ```
 
