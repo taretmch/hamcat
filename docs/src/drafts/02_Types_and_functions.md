@@ -3,24 +3,24 @@
 
 <!-- vim-markdown-toc GFM -->
 
-- [2. 型と関数](#2-型と関数)
-  - [2.1 なぜ型が必要なのか](#21-なぜ型が必要なのか)
-  - [2.2 型を集合として解釈する](#22-型を集合として解釈する)
-    - [Tips1: ラッセルのパラドックス](#tips1-ラッセルのパラドックス)
+- [2. 型と関数](#2-型関数)
+  - [2.1 なぜ型が必要なのか](#21-型必要)
+  - [2.2 型を集合として解釈する](#22-型集合解釈)
+    - [Tips1: ラッセルのパラドックス](#tips1-)
     - [Tips2: 停止問題](#tips2-停止問題)
-  - [2.3 数学的モデルがなぜ必要なのか](#23-数学的モデルがなぜ必要なのか)
+  - [2.3 数学的モデルがなぜ必要なのか](#23-数学的必要)
   - [2.4 純粋関数](#24-純粋関数)
-  - [2.5 型の例](#25-型の例)
-    - [2.5.1 空集合と Nothing 型](#251-空集合と-nothing-型)
-    - [2.5.2 シングルトン集合と Unit 型](#252-シングルトン集合と-unit-型)
-    - [2.5.3 2要素集合と Boolean 型](#253-2要素集合と-boolean-型)
-- [まとめ](#まとめ)
+  - [2.5 型の例](#25-型例)
+    - [2.5.1 空集合と Nothing 型](#251-空集合-nothing-型)
+    - [2.5.2 シングルトン集合と Unit 型](#252-集合-unit-型)
+    - [2.5.3 2要素集合と Boolean 型](#253-2要素集合-boolean-型)
+- [まとめ](#)
 
 <!-- vim-markdown-toc -->
 
 # 2. 型と関数
 
-型と関数からなる圏は、プログラミングにおいて重要な役割を果たします。ここでは、型とは何か、なぜ型が必要なのかについて話しましょう。
+本章では、Scala を構成する型と関数の圏である Scala 圏について紹介します。まず、なぜ型が必要なのかについて述べ、型と関数を圏として考えていきます。
 
 ![型と関数からなる圏](./images/category_hask.png)
 
@@ -44,13 +44,13 @@ val x: Int
 
 と書きますが、これは  `x` は整数集合の要素であると解釈できます。
 
-しかし、型を集合として解釈するには微妙な点が少々あります。一般に、集合全体の集合を定義することはできません (Tips1 参照)。そのため、循環定義を含む多相関数 (polymorphic function) を集合で表すことは難しくなります。
+しかし、型を集合として解釈するには微妙な点が少々あります。一般に、集合全体の集合を定義することはできません (Tips 1 参照)。そのため、循環定義を含む多相関数 (polymorphic function) を集合で表すことは難しくなります。
 
 そこで、代わりに集合の圏 `Set` を用いて型を表現します。 `Set`  は、集合を対象とし、関数を射とする圏です。 `Set` を用いて型を表現すると、関数型プログラミングにおける関数は（数学的な）集合間の関数とみなせます。
 
 とすると、またまた問題が生じます。集合間の関数は入力に対して値を出力するだけで、なんらかの処理を実行するわけではありません。一方で、プログラミングの関数は入力に対して出力値を計算するので、その内部で処理を実行します。出力を有限ステップで計算できるのであれば良いのですが、再帰を含む関数では実行が終了しない場合があります。したがって、関数の実行が終了しない場合の出力の型が未定義となってしまいます。
 
-ある関数の実行が終了するかどうかは判定することができない (Tips2 参照) ので、実行が終了しない場合の型をボトム型 (bottom type) ⊥ として定義します。scala では `???` で代替して表現できます。ボトム型の値は終了しない計算です。すなわち、以下のように定義されている関数
+ある関数の実行が終了するかどうかは判定することができない (Tips 2 参照) ので、実行が終了しない場合の型をボトム型 (bottom type) `⊥` として定義します。scala では `???` で代替して表現できます。ボトム型の値は終了しない計算です。すなわちち、以下のように定義されている関数
 
 ```scala
 val f: Boolean => Boolean
@@ -58,8 +58,10 @@ val f: Boolean => Boolean
 
 は `true`、 `false` を返すか、実行が終わらない場合は ⊥ を返します。
 
-```scala
+```scala mdoc
 val f: Boolean => Boolean = x => ???
+val fTrue: Boolean => Boolean = x => true
+val fFalse: Boolean => Boolean = x => false
 ```
 
 ボトム型を返す関数は**部分関数** (partial function) と呼ばれます。scala だと [PartialFunction](https://github.com/scala/scala/blob/2.13.x/src/library/scala/PartialFunction.scala) として定義されています。
@@ -149,7 +151,7 @@ val fact = (n: Int) => (1 to n).product
 
 例えば、与えられた整数に +1 した値を返す関数
 
-```scala
+```scala mdoc
 val inc = (n: Int) => n + 1
 ```
 
@@ -167,19 +169,8 @@ Haskell の関数は全てが純粋関数です。そのため、Haskell は純�
 
 まずは空集合についてです。空集合は要素を1つも持たない集合のことですが、これは何の型に対応するのでしょうか？要素、つまり値を1つも持たない型は、Haskell においては `Void` 型、Scala においては `Nothing` 型にあたります。これらの型は値を持たないので、`Void` 型や `Nothing` 型を引数とする関数を呼び出すことはできません。
 
-```scala
-scala> def hoge: Nothing => Int = _ => 1
-hoge: Nothing => Int
-
-scala> hoge
-res0: Nothing => Int = $Lambda$4571/1361734433@46391494
-
-//- 定義できても呼び出せない
-scala> hoge()
-<console>:13: error: not enough arguments for method apply: (v1: Nothing)Int in trait Function1.
-Unspecified value parameter v1.
-       hoge()
-           ^
+```scala mdoc
+def g: Nothing => Int = _ => 1
 ```
 
 ![空集合とNothing型](./images/nothing_and_empty_set.png)
@@ -192,25 +183,22 @@ Unspecified value parameter v1.
 
 
 次のような関数 `f44` は、任意の入力に対して必ず `Int` 型の  `44` を返します。
-```scala
-scala> val f44: Unit => Int = _ => 44
-f44: Unit => Int = $Lambda$4600/58014670@35989557
+```scala mdoc
+val f44: Unit => Int = _ => 44
 
-scala> f44()
-res4: Int = 44
+f44(())
 ```
 
 ![関数f44](./images/f44.png)
 
 `Unit` 型を返り値の型に指定すると、その関数は `Unit` 値を返します。純粋関数である場合は出力値を得られないので、引数をただ廃棄する関数になります。例えば、以下の関数はいかなる `Int` 型の値を受け取っても `Unit` を返します。
 
-```scala
-scala> val fInt: Int => Unit = x => ()
-fInt: Int => Unit = $Lambda$4616/205202786@5756e162
+```scala mdoc
+val fInt: Int => Unit = x => ()
 
-scala> fInt(1)
+fInt(1)
 
-scala> fInt(100)
+fInt(100)
 
 ```
 ![関数fInt](./images/fint.png)
@@ -222,15 +210,10 @@ scala> fInt(100)
 最後は、2要素集合についてです。2要素集合は、値を2つだけ持った集合です。2要素集合は、Haskell では `Bool` 型に、Scala では `Boolean` 型にあたります。
 
 ```scala
-scala> sealed trait Boolean
-defined trait Boolean
+sealed trait Boolean
 
-scala> case object True extends Boolean
-defined object True
-
-scala> case object False extends Boolean
-defined object False
-
+case object True extends Boolean
+case object False extends Boolean
 ```
 
 # まとめ
