@@ -95,7 +95,7 @@ implicit val IntMonoid: Monoid[Int] = new Monoid[Int] {
   def combine(a: Int, b: Int): Int = a + b
   def empty: Int = 0
 }
-// IntMonoid: Monoid[Int] = repl.MdocSession$App$$anon$1@3d305a03
+// IntMonoid: Monoid[Int] = repl.MdocSession$App$$anon$1@71f1a80b
 ```
 
 ```scala
