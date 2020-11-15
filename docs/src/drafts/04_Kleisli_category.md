@@ -56,7 +56,7 @@ def isOdd: Int => (String, Boolean) = n => {
 
 Writer 圏では、次のようなデータ型 `Writer` を導入します。
 
-```scala
+```scala mdoc
 type Writer[A] = (String, A)
 ```
 
@@ -76,7 +76,7 @@ f: A => Writer[B]
 
 2つの関数 `negate: Boolean => (String, Boolean)` と `isEven: Int => (String, Boolean)` は、以下のように書き換えれば Writer 圏における射とみなせます。
 
-```scala
+```scala mdoc
 def negate: Boolean => Writer[Boolean] = n => ("negate ", !n)
 def isEven: Int => Writer[Boolean] = n => ("isEven ", n % 2 == 0)
 ```
@@ -91,7 +91,7 @@ def isEven: Int => Writer[Boolean] = n => ("isEven ", n % 2 == 0)
 
 Writer 圏における射の合成は、 `isOdd` 関数の定義を抽象化したものと考えることができます。関数 `f: A => Writer[B]`、関数 `g: B => Writer[C]` を合成した関数 `f >=> g: A => Writer[C]` を定義してみましょう。
 
-```scala
+```scala mdoc
 implicit class WriterOps[A, B](f: A => Writer[B]) {
   def >=>[C](g: B => Writer[C]): A => Writer[C] =
     a => {
@@ -104,10 +104,10 @@ implicit class WriterOps[A, B](f: A => Writer[B]) {
 
 `>=>` 演算は fish 演算子と呼ばれるもので、引数で受け取った2つの関数を合成した関数を返します。
 
-```scala
-scala> val isOdd = isEven >=> negate
-scala> isOdd(3)
-val res14: Writer[Boolean] = ("isEven negate ",true)
+```scala mdoc
+val isOdd = isEven >=> negate
+
+isOdd(3)
 ```
 
 <div align="center">
@@ -115,7 +115,29 @@ val res14: Writer[Boolean] = ("isEven negate ",true)
 ![Writer圏における射の合成](./images/morphism_composition_example_in_writer_category.png)
 
 </div>
+
 これで、Writer 圏における関数合成は定義できました！
+
+しかし、`>=>` はただ関数の合成を定義したものです。実際に Writer 型のインスタンスがあったときには `>=>` を使うことができず、不便です。つまり、関数 `f: A => Writer[B]` を型 `Writer[A]` に対して実行する方法は、別途定義する必要があります。
+
+そのような方法を、Scala プログラマにはおなじみの `flatMap` として定義することができます。
+
+```scala mdoc
+implicit class WriterOps2[A](v: Writer[A]) {
+  def flatMap[B](f: A => Writer[B]): Writer[B] = {
+    val (log1, a) = v
+    val (log2, b) = f(a)
+    (log1 + log2, b)
+  }
+}
+```
+
+この `flatMap` メソッドを使うことによって、`isEven` メソッドを適用したあとに `negate` メソッドを適用する、のような書き方ができるようになります。これは `isOdd` メソッドと同じ結果を返します。
+
+```scala mdoc
+isEven(3).flatMap(negate(_))
+isOdd(3)
+```
 
 ### 4.2.3 Writer 圏は圏の公理を満たすか
 
@@ -142,43 +164,38 @@ h compose g compose f == (h compose g) compose f == h compose (g compose f)
 
 Writer 圏における恒等射の性質として、1つ目の要素であるログ文字列をそのまま返し、2つ目の要素である計算結果もそのまま返す必要があります。すなわち、1つ目の要素に空文字列を渡し、2つ目の要素には引数と同じ値を渡せば良いです。したがって、恒等射 `pure` は以下のように定義できます。
 
-```scala
+```scala mdoc
 def pure[A](a: A): Writer[A] = ("", a)
 ```
 
-`pure: Int => Writer[Int]` と `isEven: Int => Writer[Boolean]` を合成すると `isEven: Int => Writer[Boolean]` になるか、確認します。合成関数
+`Writer` 型の値 `("apply ", 3)` に `pure[Int]: Int => Writer[Int]` を適用すると元の値が返ってくるかどうか、確認します。
 
-```scala
-pure[Int] >=> isEven
+`Writer` 型の値に `pure` をそのまま適用することはできないので、`flatMap` メソッドを用います。
+
+```scala mdoc
+("apply ", 3).flatMap(pure(_))
 ```
 
-が行う処理について考えてみましょう。まず、引数 `n: Int` を `pure[Int]` に渡して `("", n)` を取得します。この返り値の2つ目の要素 `n` を `isEven` に渡し `("isEven ", n % 2 == 0)` を取得します。これら2つの返り値を連結して、合成関数としては `("isEven ", n % 2 == 0)` を出力します。この出力は `isEven(n)` と全く同じです。 `pure` 関数は恒等射としての性質を携えています。
-
-```scala
-scala> val isEvenAfterPure = (n: Int) => (pure[Int] _ >=> isEven) (n)
-val isEvenAfterPure: Int => category.data.StringWriterKleisli.Writer[Boolean] = $Lambda$4839/717850270@395dccdf
-
-scala> isEvenAfterPure(3)
-val res13: category.data.StringWriterKleisli.Writer[Boolean] = ("isEven ",false)
-```
+元の値が返ってくることを確認できました。`pure` は任意の型 `A` に対して存在するので、`pure` は恒等射です。したがって、Writer 圏は単位律を満たします。
 
 以上のことから、ここで定義した Writer 圏は圏であるといえます。Writer 圏についてまとめると、次の図のようになります。
 
 <div align="center">
 
-![Writer圏についてのまとめ](./images/example_of_writer_category.png)
+![Writer圏についてのまとめ](./images/04_example_of_writer_category.png)
 
 </div>
 
 ### 4.2.4 Writer 圏のより一般的な定義
 
-これはおまけですが、ここで定義した Writer 圏はもう少し抽象的にすることができます。Writer 圏が結合律と単位律を満たすためには、文字列の連結が結合律を満たし、文字列の連結に関する単位元 `""` が定義されている必要がありました。つまり、ログを表現する型がモノイド的な性質を満たしていれば、Writer 圏は圏として定義できるはずです。
+ここで定義した Writer 圏はもう少し抽象的にすることができます。Writer 圏が結合律と単位律を満たすためには、文字列の連結が結合律を満たし、文字列の連結に関する単位元 `""` が定義されている必要がありました。つまり、ログを表現する型がモノイド的な性質を満たしていれば、Writer 圏は圏として定義できるはずです。
 
 したがって、型 `Writer` は、以下のように定義していたものを
 
 ```scala
 type Writer[A] = (String, A)
 ```
+
 以下のようにパラメータ化して定義できます。
 
 ```scala
@@ -186,6 +203,31 @@ type Writer[L, A] = (L, A)
 ```
 
 ただし、型 `L` はモノイドであることが条件です。
+
+これまでの議論を元に、[Writer](https://github.com/taretmch/scala-category-training/blob/master/src/main/scala/data/Writer.scala) というデータ型を以下のように定義できます。`Writer` のデータそのものはタプル `(L, A)` です。`Writer` 圏において関数を適用するための `flatMap` メソッド、関数合成のための `>=>` メソッド、恒等射の `pure` メソッドが定義されています。
+
+```scala
+case class Writer[L, A](run: (L, A)) {
+
+  def flatMap[B](m2: A => Writer[L, B])(implicit logSemigroup: Semigroup[L]): Writer[L, B] = {
+    val (log1, a) = run
+    val (log2, b) = m2(a).run
+    Writer((log1 |+| log2, b))
+  }
+}
+
+object Writer {
+
+  /** Identity */
+  def pure[L, A](a: A)(implicit logMonoid: Monoid[L]): Writer[L, A] = Writer((logMonoid.empty, a))
+
+  /** Morphism */
+  implicit class WriterOps[L, A, B](m1: A => Writer[L, B])(implicit logGroup: Semigroup[L]) {
+    def >=>[C](m2: B => Writer[L, C]): A => Writer[L, C] =
+      a => m1(a).flatMap(m2(_))
+  }
+}
+```
 
 ## 4.3 Kleisli 圏
 
@@ -239,44 +281,44 @@ final case class WriterT[F[_], L, V](run: F[(L, V)])`
 まず、`Writer` のインスタンスを作ってみましょう。
 
 ```scala
-scala> import cats._, cats.data._, cats.implicits._
-import cats._
-import cats.data._
-import cats.implicits._
+import cats._, cats.data._, cats.implicits._
+// import cats._
+// import cats.data._
+// import cats.implicits._
 
-scala> val w1 = Writer("w1 ", 1)
-val w1: cats.data.WriterT[cats.Id,String,Int] = WriterT((w1 ,1))
+val w1 = Writer("w1 ", 1)
+// val w1: cats.data.WriterT[cats.Id,String,Int] = WriterT((w1 ,1))
 
-scala> w1.run
-val res1: cats.Id[(String, Int)] = ("w1 ",1)
+w1.run
+// val res1: cats.Id[(String, Int)] = ("w1 ",1)
 ```
 おお！`Writer[String, Int]` のインスタンスを作って、そのタプルを取り出すことができました。
 
 次に、`negate: Boolean => Writer[String, Boolean]` と `isEven: Int => Writer[String, Boolean]` を定義してみましょうか。
 
 ```scala
-scala> def negate(b: Boolean): Writer[String, Boolean] = Writer("negate ", !b)
-def negate(b: Boolean): cats.data.Writer[String,Boolean]
+def negate(b: Boolean): Writer[String, Boolean] = Writer("negate ", !b)
+// def negate(b: Boolean): cats.data.Writer[String,Boolean]
 
-scala> def isEven(n: Int): Writer[String, Boolean] = Writer("isEven ", n % 2 == 0)
-def isEven(n: Int): cats.data.Writer[String,Boolean]
+def isEven(n: Int): Writer[String, Boolean] = Writer("isEven ", n % 2 == 0)
+// def isEven(n: Int): cats.data.Writer[String,Boolean]
 
-scala> isEven(3)
-val res2: cats.data.Writer[String,Boolean] = WriterT((isEven ,false))
+isEven(3)
+// val res2: cats.data.Writer[String,Boolean] = WriterT((isEven ,false))
 
-scala> negate(false)
-val res3: cats.data.Writer[String,Boolean] = WriterT((negate ,true))
+negate(false)
+// val res3: cats.data.Writer[String,Boolean] = WriterT((negate ,true))
 ```
 `Writer` を使って、2つの関数 `negate` と `isEven` を定義することができましたね！
 
 では、この2つの関数を合成して、 `isOdd` 関数を定義します。
 
 ```scala
-scala> def isOdd(n: Int): Writer[String, Boolean] = isEven(n).flatMap(negate)
-def isOdd(n: Int): cats.data.Writer[String,Boolean]
+def isOdd(n: Int): Writer[String, Boolean] = isEven(n).flatMap(negate)
+// def isOdd(n: Int): cats.data.Writer[String,Boolean]
 
-scala> isOdd(3)
-val res6: cats.data.Writer[String,Boolean] = WriterT((isEven negate ,true))
+isOdd(3)
+// val res6: cats.data.Writer[String,Boolean] = WriterT((isEven negate ,true))
 ```
 
 おなじみ flatMap を使うことによって `Writer` は合成できました。[flatMap](https://github.com/typelevel/cats/blob/v2.2.0/core/src/main/scala/cats/data/WriterT.scala#L179) の定義も、前項で定義した `>=>` 演算子とほとんど変わらないように見えます。興味がある方はぜひ見てみてください。
@@ -298,33 +340,33 @@ final case class Kleisli[F[_], -A, B](run: A => F[B])
 実際に、`Kleisli` を使っていくつか関数を実装してみましょう。`negate: Boolean => Writer[String, Boolean]`  と `isEven: Int ~> Writer[String, Int]` は、 関数 `f: A => Writer[String, B]` の形をしています。これらを `Kleisli` を使って定義すると、以下のようになります。
 
 ```scala
-scala> val negate = Kleisli { (b: Boolean) => Writer("negate ", !b) }
-val negate: cats.data.Kleisli[[V]cats.data.WriterT[cats.Id,String,V],Boolean,Boolean] = Kleisli($Lambda$4552/511930924@2db3af55)
+val negate = Kleisli { (b: Boolean) => Writer("negate ", !b) }
+// val negate: cats.data.Kleisli[[V]cats.data.WriterT[cats.Id,String,V],Boolean,Boolean] = Kleisli($Lambda$4552/511930924@2db3af55)
 
-scala> val isEven = Kleisli { (n: Int) => Writer("isEven ", n % 2 == 0) }
-val isEven: cats.data.Kleisli[[V]cats.data.WriterT[cats.Id,String,V],Int,Boolean] = Kleisli($Lambda$4557/1514049729@6542cb5f)
+val isEven = Kleisli { (n: Int) => Writer("isEven ", n % 2 == 0) }
+// val isEven: cats.data.Kleisli[[V]cats.data.WriterT[cats.Id,String,V],Int,Boolean] = Kleisli($Lambda$4557/1514049729@6542cb5f)
 ```
 次に、これらの関数を合成して `isOdd` 関数を定義します。`Kleisli` の合成には [compose](https://github.com/typelevel/cats/blob/v2.2.0/core/src/main/scala/cats/data/Kleisli.scala#L77) メソッドや [andThen](https://github.com/typelevel/cats/blob/v2.2.0/core/src/main/scala/cats/data/Kleisli.scala#L60) メソッドを用います。
 
 ```scala
-scala> val isOdd1 = negate.compose(isEven)
-val isOdd1: cats.data.Kleisli[[V]cats.data.WriterT[cats.Id,String,V],Int,Boolean] = Kleisli(cats.data.Kleisli$$$Lambda$4598/167638236@701815d6)
+val isOdd1 = negate.compose(isEven)
+// val isOdd1: cats.data.Kleisli[[V]cats.data.WriterT[cats.Id,String,V],Int,Boolean] = Kleisli(cats.data.Kleisli$$$Lambda$4598/167638236@701815d6)
 
-scala> val isOdd2 = isEven.andThen(negate)
-val isOdd2: cats.data.Kleisli[[V]cats.data.WriterT[cats.Id,String,V],Int,Boolean] = Kleisli(cats.data.Kleisli$$$Lambda$4598/167638236@7a81bba1)
+val isOdd2 = isEven.andThen(negate)
+// val isOdd2: cats.data.Kleisli[[V]cats.data.WriterT[cats.Id,String,V],Int,Boolean] = Kleisli(cats.data.Kleisli$$$Lambda$4598/167638236@7a81bba1)
 ```
 
 さて、`Kleisli` は関数 `f: A => F[B]` に合成の構造を持たせたラッパーなので、関数に引数を適用して出力を得るには `run` を呼び出してラップしている関数を得る必要があります。
 
 ```scala
-scala> isEven.run(1)
-val res0: cats.data.WriterT[cats.Id,String,Boolean] = WriterT((isEven ,false))
+isEven.run(1)
+// val res0: cats.data.WriterT[cats.Id,String,Boolean] = WriterT((isEven ,false))
 
-scala> isOdd1.run(1)
-val res2: cats.data.WriterT[cats.Id,String,Boolean] = WriterT((isEven negate ,true))
+isOdd1.run(1)
+// val res2: cats.data.WriterT[cats.Id,String,Boolean] = WriterT((isEven negate ,true))
 
-scala> isOdd2.run(1)
-val res3: cats.data.WriterT[cats.Id,String,Boolean] = WriterT((isEven negate ,true))
+isOdd2.run(1)
+// val res3: cats.data.WriterT[cats.Id,String,Boolean] = WriterT((isEven negate ,true))
 ```
 
 Kleisli 圏は、Writer 圏が持つ射の合成をより抽象化して定義したものであることがわかりました。後の章で、モナドを使って Kleisli 圏を定義します。そのときにまた、本章で述べたことを思い出してもらえると幸いです。
