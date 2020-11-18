@@ -1,8 +1,8 @@
 package category.universal
 
 /** trait of product */
-abstract case class Product2[+A, +B](v: (A, B)) {
+abstract case class Product2[+A, +B](_1: A, _2: B) {
 
-  def projectionA: A = v._1
-  def projectionB: B = v._2
+  def projectionA: A = _1
+  def projectionB: B = _2
 }
