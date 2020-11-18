@@ -1,5 +1,17 @@
 package category
 
+import category.data.instance._
+import category.syntax._
+
 object Implicits
-  extends category.data.instance.Implicits
-  with    category.syntax.Implicits
+  extends InstanceImplicits
+  with    SyntaxImplicits
+
+trait InstanceImplicits
+  extends MonoidInstances
+  with    SemigroupInstances
+  with    FunctorInstances
+
+trait SyntaxImplicits
+  extends SemigroupSyntax
+  with    FunctorSyntax
