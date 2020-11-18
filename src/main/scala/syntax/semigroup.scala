@@ -10,8 +10,7 @@ trait SemigroupSyntax {
      *
      * Usage:
      * ```
-     * scala> import category.syntax.Implicits._
-     * scala> import category.data.instance.Implicits._
+     * scala> import category.Implicits._
      *
      * scala> 1 |+| 3
      * val res0: Int = 4

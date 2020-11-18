@@ -1,5 +1,6 @@
 package category.data.instance
 
-object Implicits
+trait Implicits
   extends MonoidInstances
   with    SemigroupInstances
+  with    FunctorInstances

@@ -1,4 +1,5 @@
 package category.syntax
 
-object Implicits
+trait Implicits
   extends SemigroupSyntax
+  with    FunctorSyntax
