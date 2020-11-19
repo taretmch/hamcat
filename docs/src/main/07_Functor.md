@@ -26,11 +26,13 @@ Option 関手は、型 `A` の値を `Option` で包んで型 `Option[A]` に変
 
 Option 関手の例で言うと、Option 関手はScala 圏から Scala 圏への関手で、対象 `A` を対象 `Option[A]` に対応させています。
 
-```scala mdoc
+```scala
 def objOptFunc[A]: A =>  Option[A] = Option(_)
 
 objOptFunc(3)
+// res0: Option[Int] = Some(value = 3)
 objOptFunc("Hoge")
+// res1: Option[String] = Some(value = "Hoge")
 ```
 
 ### 7.1.2 射関数
@@ -39,10 +41,11 @@ objOptFunc("Hoge")
 
 Option 関手の例で言うと、射 `f: A => B` を `F(f): Option[A] => Option[B]` に対応させる必要があります。この対応は、標準ライブラリにある `Option#map` メソッドによって実現されます：
 
-```scala mdoc
+```scala
 def isEven: Int => Boolean = n => n % 2 == 0
 
 Option(3).map(isEven)
+// res2: Option[Boolean] = Some(value = false)
 ```
 
 この射関数が満たすべき性質として、以下の2つがあります：
@@ -52,26 +55,30 @@ Option(3).map(isEven)
 
 1つ目については、関手が射の合成を保存することを意味します。
 
-```scala mdoc
+```scala
 def negate: Boolean => Boolean = b => !b
 
 // F(f . g)
 Option((negate compose isEven) (3))
+// res3: Option[Boolean] = Some(value = true)
 
 // F(f) . F(g)
 Option(3).map(isEven).map(negate)
+// res4: Option[Boolean] = Some(value = true)
 ```
 
 2つ目については、関手が恒等射を保存することを意味します。
 
-```scala mdoc
+```scala
 def identity[A]: A => A = a => a
 
 // F(idA)
 Option(identity(3))
+// res5: Option[Int] = Some(value = 3)
 
 // idFA
 identity(Option(3))
+// res6: Option[Int] = Some(value = 3)
 ```
 
 このような2つの性質を関手性 (functor laws) と呼びます。
@@ -126,10 +133,11 @@ implicit val OptionFunctor: Functor[Option] = new Functor[Option] {
 `fmap` は `Option#map` 関数と同じです。
 
 
-```scala mdoc
+```scala
 import category.Implicits._
 
 OptionFunctor.fmap(Option(3))(isEven)
+// res7: Option[Boolean] = Some(value = false)
 ```
 
 ### 7.2.3 List 関手
