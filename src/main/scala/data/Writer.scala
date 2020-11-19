@@ -1,6 +1,6 @@
 package category.data
 
-import category.syntax.Implicits._
+import category.Implicits._
 
 /** Writer monad */
 case class Writer[L, A](run: (L, A)) {

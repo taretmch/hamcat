@@ -1,19 +1,26 @@
 package category.data.instance
 
-import category.data.Monoid
+import category.data.{ Monoid, Semigroup }
 
 /** Instances of monoid */
 trait MonoidInstances {
 
-  /** Int with sum monoid */
-  implicit val IntMonoid: Monoid[Int] = new Monoid[Int] {
-    def combine(a: Int, b: Int): Int = a + b
+  /** Int monoid */
+  implicit def IntMonoid(implicit sg: Semigroup[Int]): Monoid[Int] = new Monoid[Int] {
+    def combine(a: Int, b: Int): Int = sg.combine(a, b)
     def empty: Int = 0
   }
 
-  /** String with concat monoid */
-  implicit val StringMonoid: Monoid[String] = new Monoid[String] {
-    def combine(a: String, b: String): String = a + b
+  /** String monoid */
+  implicit def StringMonoid(implicit sg: Semigroup[String]): Monoid[String] = new Monoid[String] {
+    def combine(a: String, b: String): String = sg.combine(a, b)
     def empty: String = ""
   }
+
+  /** Option monoid */
+  implicit def OptionMonoid[A](implicit sgA: Semigroup[A], sgOpt: Semigroup[Option[A]]): Monoid[Option[A]] =
+    new Monoid[Option[A]] {
+      def combine(a: Option[A], b: Option[A]): Option[A] = sgOpt.combine(a, b)
+      def empty: Option[A] = None
+    }
 }

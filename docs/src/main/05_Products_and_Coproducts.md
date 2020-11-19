@@ -599,4 +599,3 @@ isomorCoproductRightInv(Right("Good"))
 [1] Scalaクラスメモ, http://www.ne.jp/asahi/hishidama/home/tech/scala/class.html , 2020年11月13日閲覧.
 
 [2] 雪田修一, 圏論入門 Haskell で計算する具体例から, 日本評論社, 2020.
-
