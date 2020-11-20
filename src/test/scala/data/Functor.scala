@@ -28,12 +28,12 @@ class FunctorSpec extends AnyFlatSpec with Matchers {
     def identity[A](a: A) = a
     assert(
       Option(1).fmap(identity)
-      == Option(1)
+      == identity(Option(1))
     )
 
     val none: Option[Int] = None
 
-    assert(none.fmap(identity) == none)
+    assert(none.fmap(identity) == identity(none))
   }
 
   "List functor" should "関手性を満たす" in {
@@ -54,9 +54,9 @@ class FunctorSpec extends AnyFlatSpec with Matchers {
 
   it should "恒等射を恒等射へ写す" in {
     def identity[A](a: A) = a
-    assert(List(1).fmap(identity) == List(1))
+    assert(List(1).fmap(identity) == identity(List(1)))
 
     val nil: List[Int] = Nil
-    assert(nil.fmap(identity) == nil)
+    assert(nil.fmap(identity) == identity(nil))
   }
 }
