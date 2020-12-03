@@ -319,3 +319,14 @@ fmapC(increment)(intOptionList)
 ```
 
 関手の合成もまた、関手になることがわかりますね。
+
+# 本章のまとめ
+
+- 関手は、ある圏を、構造を維持しながら別のある圏に変換する対応のこと。
+  - 関手の例として、Option、List、Reader などがある。
+  - 関手は、対象 A を対象 F[A] に対応させる。
+  - 関手は、射 `f: A => B` を射 `fmap(f): F[A] => F[B]` に対応させる。
+- 関手が満たす以下の性質のことを、関手性と呼ぶ。
+  - 射 f, g の合成 g . f について `fmap(g compose f) == fmap(g) compose fmap(f)` が成り立つこと。
+  - 恒等射 `identity[A]` について `fmap(identity[A]) == identity[F[A]]` が成り立つこと。
+- Reader 関手は、ある型 `A` に対して、`A` を返す任意の関数 `Function1[?, A]` を対応させる関手である。
