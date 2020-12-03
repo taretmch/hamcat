@@ -4,7 +4,6 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 import category.Implicits._
-import category.universal.example.{ List, Nil, Cons }
 
 class FunctorSpec extends AnyFlatSpec with Matchers {
   val increment:   Int => Int     = n => n + 1
@@ -15,7 +14,7 @@ class FunctorSpec extends AnyFlatSpec with Matchers {
   val nil:  List[Int]   = Nil
 
   "Option functor" should "射の合成を保存する" in {
-    // F(f . g) == F(g) . F(f)
+    // F(g . f) == F(g) . F(f)
     // Case: Some(1)
     assert(Option(1).fmap(isEven compose increment) == Option(1).fmap(increment).fmap(isEven))
 
