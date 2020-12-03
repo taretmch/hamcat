@@ -20,15 +20,13 @@ class WriterSpec extends AnyFlatSpec with Matchers {
 
   "Writer" should "結合律を満たす" in {
     assert(
-      ((increment _ >=> isEven) >=> negate)(3) ==
-      (increment _ >=> (isEven _ >=> negate))(3)
+      ((increment _ >=> isEven) >=> negate)(3)
+      == (increment _ >=> (isEven _ >=> negate))(3)
     )
   }
 
   "Writer" should "単位律を満たす" in {
-    assert(
-      (Writer.pure[String, Int] _ >=> isEven)(3) ==
-      (isEven _ >=> Writer.pure[String, Boolean])(3)
-    )
+    assert((Writer.pure[String, Int] _ >=> isEven)                      (3) == isEven(3))
+    assert((isEven _                   >=> Writer.pure[String, Boolean])(3) == isEven(3))
   }
 }

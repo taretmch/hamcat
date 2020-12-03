@@ -5,6 +5,8 @@ ThisBuild / version          := "0.1.0-SNAPSHOT"
 ThisBuild / organization     := "com.github.taretmch"
 ThisBuild / organizationName := "taretmch"
 
+addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.1" cross CrossVersion.full)
+
 lazy val root = (project in file("."))
   .settings(
     name := "scala-category-training",
@@ -22,3 +24,4 @@ lazy val docs = (project in file("docs"))
   )
   .dependsOn(root)
   .enablePlugins(MdocPlugin)
+
