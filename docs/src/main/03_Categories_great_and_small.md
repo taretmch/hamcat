@@ -95,10 +95,11 @@ implicit val IntMonoid: Monoid[Int] = new Monoid[Int] {
   def combine(a: Int, b: Int): Int = a + b
   def empty: Int = 0
 }
-// IntMonoid: Monoid[Int] = repl.MdocSession$App$$anon$1@2f9f4f16
 ```
 
 ```scala
+import category.Implicits._
+
 IntMonoid.combine(1, 3)
 // res0: Int = 4
 IntMonoid.empty

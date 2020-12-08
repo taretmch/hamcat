@@ -8,7 +8,7 @@
 
 ## 7.1 関手とは
 
-関手 (functor) は、ある圏 C を別のある圏 D に変換する対応 F のことです。
+**関手** (functor) は、ある圏 C を別のある圏 D に変換する対応 F のことです。
 
 関手の例としては Option 関手、List 関手、Writer 関手、モノイド準同型などがあります。モノイド準同型は、モノイド間の関手です。
 
@@ -39,9 +39,9 @@ objOptFunc("Hoge")
 
 ### 7.1.2 射関数
 
-関手において、ある圏の射を別のある圏の射に変換するような対応を射関数といいます。一般に、圏 C から D への関手 F は、圏 C の射 f: A -> B を D の射 F(f): F(A) -> F(B) に対応させます。
+関手において、ある圏の射を別のある圏の射に変換するような対応を射関数といいます。一般に、圏 C から D への関手 F の射関数 `fmap` は、圏 C の射 f: A -> B を D の射 `fmap(f): F[A] -> F[B]` に対応させます。
 
-Option 関手の例で言うと、射 `f: A => B` を `F(f): Option[A] => Option[B]` に対応させる必要があります。この対応は、標準ライブラリにある `Option#map` メソッドによって実現されます：
+Option 関手の例で言うと、射 `f: A => B` を `fmap(f): Option[A] => Option[B]` に対応させる必要があります。この対応は、標準ライブラリにある `Option#map` メソッドによって実現されます：
 
 ```scala mdoc
 def isEven: Int => Boolean = n => n % 2 == 0
@@ -51,14 +51,14 @@ Option(3).map(isEven)
 
 <div align="center">
 
-![Option 関手](./images/07_functor.png)
+![Option 関手](./images/07_option_functor.png)
 
 </div>
 
 この射関数が満たすべき性質として、以下の2つがあります：
 
-1. C の射 f, g の合成 g . f について F(g . f) = F(g) . F(f) が成り立つこと。
-2. C の任意の対象 A の恒等射 idA について F(idA) = idFA が成り立つこと。ただし、idFA は圏 D の対象 F(A) についての恒等射です。
+1. C の射 f, g の合成 `g compose f` について `fmap(g compose f) == fmap(g) compose fmap(f)` が成り立つこと。
+2. C の任意の対象 A の恒等射 `identity[A]` について `fmap(identity[A]) == identity[F[A]]` が成り立つこと。
 
 1つ目の性質は、関手が射の合成を保存することを意味します。
 
@@ -67,10 +67,10 @@ Option(3).map(isEven)
 // g: negate
 def negate: Boolean => Boolean = b => !b
 
-// F(g . f)
-Option((negate compose isEven) (3))
+// fmap(g compose f)
+Option(3).map(negate compose isEven)
 
-// F(g) . F(f)
+// fmap(g) compose fmap(f)
 Option(3).map(isEven).map(negate)
 ```
 
@@ -85,10 +85,10 @@ Option(3).map(isEven).map(negate)
 ```scala mdoc
 def identity[A]: A => A = a => a
 
-// F(idA)
-Option(identity(3))
+// fmap(identity[A])
+Option(3).map(identity)
 
-// idFA
+// identity[F[A]]
 identity(Option(3))
 ```
 
@@ -100,17 +100,17 @@ identity(Option(3))
 
 ---
 
-圏 C から圏 D への**関手** (functor) F とは、以下を満たす対応のことです。
+圏 C から圏 D への**関手** (functor) `F` とは、以下を満たす対応のことです。
 
-- C の射 f: A -> B を D の射 F(f): F(A) -> F(B) に対応させること。
-- C の射 f, g の合成 f . g について F(f . g) = F(f) . F(g) が成り立つこと。
-- C の任意の対象 A の恒等射 idA について F(idA) = idFA が成り立つこと。ただし、idFA は D の対象 F(A) についての恒等射です。
+- C の射 f: A -> B を D の射 `fmap(f): F[A] -> F[B]` に対応させること。
+- C の射 f, g の合成 `g compose f` について `fmap(g compose f) == fmap(g) compose fmap(f)` が成り立つこと。
+- C の任意の対象 A の恒等射 `identity[A]` について `fmap(identity[A]) == identity[F[A]]` が成り立つこと。
 
 ---
 
 先ほどみたように、2 番目と 3 番目は関手性を表します。
 
-なお、圏 C と D は同じであってもよく、特に圏 C から圏 C への関手は自己関手 (endofunctor) と呼ばれます。Scala 圏における関手は全て、自己関手です。
+なお、圏 C と D は同じであってもよく、特に圏 C から圏 C への関手は**自己関手** (endofunctor) と呼ばれます。Scala 圏における関手は全て、自己関手です。
 
 ## 7.2 プログラミングにおける関手
 
@@ -118,7 +118,7 @@ identity(Option(3))
 
 ### 7.2.1 Functor 型クラス
 
-関手は Scala において、以下のような型クラス [Functor](https://github.com/taretmch/scala-category-training/blob/master/src/main/scala/data/Functor.scala) として実装できます。
+関手は Scala において、以下のような型クラス [Functor](https://github.com/taretmch/scala-category-training/blob/master/src/main/scala/data/Functor.scala) として実装できます。`Functor` 型クラスは、対象関数として型構築子 `F[_]` をもち、射関数として `fmap` メソッドを持ちます。
 
 ```scala
 trait Functor[F[_]] {
@@ -126,15 +126,13 @@ trait Functor[F[_]] {
 }
 ```
 
-`F[_]` は型構築子で、なんらかの型を与えることによって具象型になります。`Functor` トレイトは型構築子 `F[_]` を型パラメータとして持っており、射関数 `fmap: F[A] => (A => B) => F[B]` を持ちます。
-
-`fmap` メソッドは関数を引き上げる (lift)、とも言われます。関数 `A => B` は `fmap` によって `F[_]` 上の関数 `F[A] => F[B]` に引き上げられます。
+`fmap` メソッドは関数を**引き上げる** (lift)、とも言われます。関数 `A => B` は `fmap` によって `F[_]` 上の関数 `F[A] => F[B]` に引き上げられます。
 
 ### 7.2.2 Option 関手
 
-`Functor` のインスタンスは、implicit value や継承によって生成することができます。ここでは、`Option` についての `Functor` のインスタンスを定義してみましょう。
+`Functor` のインスタンスは、implicit value によって実装することができます。ここでは、`Option` についての `Functor` のインスタンスを定義してみましょう。
 
-Option 関手のインスタンスは、以下のように実装できます。
+Option 関手のインスタンスは、以下のように実装できます。`Functor` に必要なパラメータは型構築子としての `Option` です。また、抽象メソッドである射関数 `fmap` を実装する必要があります。
 
 ```scala
 implicit val OptionFunctor: Functor[Option] = new Functor[Option] {
@@ -147,7 +145,7 @@ implicit val OptionFunctor: Functor[Option] = new Functor[Option] {
 
 Option 関手の `fmap` メソッドは `Option#map` メソッドと同じです。実装を見てわかる通り、`fmap` メソッドが関手性を満たすかどうか、つまり圏の構造を維持する対応かどうかは実装によります。定義だけでは `fmap` メソッドが必ず関手性を満たすとは言えませんが、関手性を満たすように `fmap` メソッドを実装しなければいけません。
 
-実際にこのインスタンスを使ってみましょう。`category.Implicits._` をインポートすれば、インスタンスが使えるようになります。`fmap` に `Option(3)` と `isEven` を与えると、`Option(3)` の中の値に `isEven` を適用した結果が出力されます。
+実際にこのインスタンスを使ってみましょう。本リポジトリでは、型クラスのインスタンスは `category.Implicits` パッケージ内においてあります。コンソールにおいて `category.Implicits._` をインポートすれば、インスタンスが使えるようになります。`fmap` に `Option(3)` と `isEven` (偶数かどうかを判定する関数) を与えると、`Option(3)` の中の値に `isEven` を適用した結果 (すなわち `Some(false)`) が出力されます。
 
 ```scala mdoc
 import category.Implicits._
@@ -167,12 +165,14 @@ implicit class FunctorOps[F[_], A](v: F[A])(implicit functor: Functor[F]) {
 Option(3).fmap(isEven)
 ```
 
+これは Enrich my library パターンと言われるものです。
+
 では、この Option 関手の `fmap` メソッドが関手性を満たすかどうかについて調べてみましょう。
 
 関手性とは、以下が成り立つことでした。
 
-- C の射 f, g の合成 f . g について F(f . g) = F(f) . F(g) が成り立つこと。
-- C の任意の対象 A の恒等射 idA について F(idA) = idFA が成り立つこと。ただし、idFA は D の対象 F(A) についての恒等射です。
+- C の射 f, g の合成 `g compose f` について `fmap(g compose f) == fmap(g) compose fmap(f)` が成り立つこと。
+- C の任意の対象 A の恒等射 `identity[A]` について `fmap(identity[A]) == identity[F[A]]` が成り立つこと。
 
 1つ目について、以下のテストコードで検証します。
 
@@ -180,10 +180,10 @@ Option(3).fmap(isEven)
 val increment:   Int => Int     = n => n + 1
 val isEven:      Int => Boolean = n => n % 2 == 0
 def identity[A]: A   => A       = a => a
+val none:        Option[Int]    = None
 
-val none: Option[Int] = None
 "Option functor" should "射の合成を保存する" in {
-  // F(g . f) == F(g) . F(f)
+  // fmap(g compose f) == fmap(g) compose fmap(f)
   // Case: Some(1)
   assert(Option(1).fmap(isEven compose increment) == Option(1).fmap(increment).fmap(isEven))
 
@@ -196,7 +196,7 @@ val none: Option[Int] = None
 
 ```scala
 it should "恒等射を恒等射へ写す" in {
-  // F(idA) == idFA
+  // fmap(identity[A]) == idenity[F[A]]
   // Case: Some(1)
   assert(Option(1).fmap(identity) == identity(Option(1)))
 
@@ -221,9 +221,9 @@ sbt:scala-category-training> testOnly category.data.FunctorSpec
 
 次の例として、型 `A` を、`A` を返すような任意の関数 `? => A` に変換するような関手を考えます。この関手は Reader 関手と呼ばれます。
 
-Reader 関手で重要なことは、関数も関手であるということです。関数が関手であれば、型 `R` を受け取って `A` を返すような関数 `R => A` があったときに、`A` を `B` に変換する関数 `f: A => B` を与えれば `R` から `B` の関数を取得することができます。
+Reader 関手で重要なことは、関数も関手であるということです。関数が関手であれば、型 `R` を受け取って `A` を返すような関数 `R => A` があったとき、`A` を `B` に変換する関数 `f: A => B` を与えれば `R` から `B` の関数を取得することができます。
 
-Reader 関手のインスタンスは、以下のように実装できます。
+Reader 関手のインスタンスは、以下のように実装できます。対象関数として型構築子 `Function1[R, ?]` を渡し、射関数 `fmap` を実装します。ここで、`Function1` は1変数関数を表す Scala 標準ライブラリの型です。`Function1[R, ?]` は `R => ?` を表します。
 
 ```scala
 /** Reader functor */
@@ -233,50 +233,34 @@ implicit def Function1Functor[R]: Functor[Function1[R, ?]] = new Functor[Functio
 }
 ```
 
-これを使うと、例えば以下のようなことができるようになります。
+(なお、`Function1[R, ?]` という記法は通常だとコンパイルエラーになります。本リポジトリではエラーを回避するため、typelevel 社の [kind-projector](https://github.com/typelevel/kind-projector) というコンパイラプラグインをインストールしています)
+
+`fmap` メソッドは、ただ2つの関数を合成しているだけです。関数 `R => A` があったとき、引数として関数 `A => B` を受け取ると関数 `R => B` が返されます。
+
+これを使うと、例えば以下のようなことができます。
 
 ```scala mdoc
 // 偶数かどうか判定する関数を奇数かどうか判定する関数に変換する
 isEven.fmap(negate(_)) (3)
 ```
 
-これは単に関数どうしを `compose` しているだけです。 `compose` が関手の射関数であるのですね。
+`compose` が関手の射関数であるのですね。
 
 ## 7.3 関手の合成
 
 圏を対象として関手を射とするような圏を考えるとき、射の合成、すなわち関手の合成を定義する必要があります。
 
-圏 C, D, E に対して、2つの関手 F: C -> D、 G: D -> E の合成はどうなるでしょうか。
+Scala 圏における関手は全て自己関手なので、自己関手どうしを合成することができるのかどうかについて考えてみましょう。
 
-C の対象 A は、関手 F によって D の対象 F(A) に写り、F(A) は関手 G によって E の対象 G(F(A)) に写ります。
+例えば、2つの関手 Option と List を合成してみるとどうなるでしょうか。
 
-C の射 f: A -> B は、関手 F によって D の射 F(f): F(A) -> F(B) に写り、F(f) は関手 G によって E の射 G(F(f)): G(F(A)) -> G(F(B)) に写ります。
-
-F と G は関手なので、それぞれ圏の構造を保存します。したがって、これらを合成させて作る C から E への関手もまた、関手になります。
-
-具体例を見てみましょう。Scala 圏において、関手は全て自己関手となります。F の例として Option を、G の例として Reader を考えてみるとどうなるでしょうか。
-
-型 `Int` を Option 関手によって `Option[Int]` とし、List 関手によって `List[Option[Int]]` として関数を以下のように定義した場合を考えます。
+対象関数は、型 `Int` を Option 関手によって `Option[Int]` に変換し、List 関手によって `List[Option[Int]]` に変換するものとします。
 
 ```scala mdoc
 val intOptionList: List[Option[Int]] = List(Some(1), Some(3), None, Some(4))
 ```
 
-ここで、2つの関手によって包まれた型 `Int` に対して以下のインクリメント関数
-
-```scala mdoc
-val increment: Int => Int = _ + 1
-```
-
-を適用したいものとします。このとき、`fmap` メソッドを二回呼び出し、関数 `increment` を `List[Option[Int]]` 上の関数として引き上げることができます。
-
-```scala mdoc
-intOptionList.fmap(_.fmap(increment))
-```
-
-外側の fmap は List 関手の射関数で、内側の fmap は Option 関手の射関数です。
-
-実は、List 関手の fmap と Option 関手の fmap を合成させることによって、`List[Option[_]]` 型に対する fmap を定義することができます。
+次に、射関数は、List 関手の `fmap` メソッドと Option 関手の `fmap` メソッドの合成 `fmapC` と定義します。
 
 ```scala mdoc
 def fmapL[A, B]: (A => B) => List[A] => List[B] = ListFunctor.fmap
@@ -285,11 +269,39 @@ def fmapO[A, B]: (A => B) => Option[A] => Option[B] = OptionFunctor.fmap
 def fmapC[A, B]: (A => B) => List[Option[A]] => List[Option[B]] = fmapL.compose(fmapO[A, B])
 ```
 
+この `fmapC` メソッドを用いると、2つの関手によって包まれた型 `Int` 上の関数
+
+```scala mdoc
+val increment: Int => Int = _ + 1
+```
+
+を `List[Option[Int]]` 上の関数として引き上げることができます。
+
 ```scala mdoc
 fmapC(increment)(intOptionList)
 ```
 
-関手の合成もまた、関手になることがわかりますね。
+これは、`fmap` メソッドを2回呼び出すことに等しいです。
+
+```scala mdoc
+intOptionList.fmap(_.fmap(increment))
+```
+
+外側の `fmap` は List 関手の射関数で、内側の `fmap` は Option 関手の射関数です。
+
+関手の合成によって定義された射関数 `fmapC` は射の合成を保存しますし、恒等射を保存します。
+
+```scala mdoc
+// fmap(g compose f) == fmap(g) compose fmap(f)
+fmapC(isEven compose increment)(intOptionList) == (fmapC(isEven) compose fmapC(increment))(intOptionList)
+
+// fmap(identity[A]) == identity[F[A]]
+fmapC(identity[Int])(intOptionList) == identity[List[Option[Int]]](intOptionList)
+```
+
+したがって、関手の合成もまた、関手であることがわかります。
+
+自己関手の場合のみを取り上げましたが、自己関手でない一般の関手に関してもこれは成り立ちます。興味があれば証明してみてください。
 
 # 本章のまとめ
 

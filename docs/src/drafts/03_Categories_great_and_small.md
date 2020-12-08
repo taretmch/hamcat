@@ -77,7 +77,7 @@
 
 結合律と単位元を備えた型クラス `Monoid` は、以下のように定義できます。
 
-```scala mdoc
+```scala
 trait Monoid[A] {
   def combine(v1: A, v2: A): A
   def empty: A
@@ -90,7 +90,7 @@ trait Monoid[A] {
 
 `Int` の加算に関するモノイドのインスタンス `IntMonoid` は、以下のように定義できます。
 
-```scala mdoc
+```scala
 implicit val IntMonoid: Monoid[Int] = new Monoid[Int] {
   def combine(a: Int, b: Int): Int = a + b
   def empty: Int = 0
@@ -98,6 +98,8 @@ implicit val IntMonoid: Monoid[Int] = new Monoid[Int] {
 ```
 
 ```scala mdoc
+import category.Implicits._
+
 IntMonoid.combine(1, 3)
 IntMonoid.empty
 IntMonoid.combine(2, IntMonoid.empty)
