@@ -24,7 +24,7 @@ trait FunctorInstances {
   /** Writer functor */
   implicit def WriterFunctor[L](implicit mn: Monoid[L]): Functor[Writer[L, ?]] = new Functor[Writer[L, ?]] {
     def fmap[A, B](f: A => B)(fa: Writer[L, A]): Writer[L, B] =
-      fa.flatMap((Writer.pure[L, B] _) compose f)
+      (identity[Writer[L, A]] >=> (a => Writer.pure[L, B](f(a))))(fa)
   }
 
   /** Reader functor */
