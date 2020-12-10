@@ -1,23 +1,19 @@
 <!-- omit in toc -->
 # 目次
 
-<!-- vim-markdown-toc GFM -->
-
-- [4. Kleisli 圏](#4-kleisli-圏)
-  - [4.1 ロギング関数の合成](#41-関数合成)
+`- [4. Kleisli 圏](#4-kleisli-圏)
+  - [4.1 ロギング関数の合成](#41-ロギング関数の合成)
   - [4.2 Writer 圏](#42-writer-圏)
-    - [4.2.1 Writer 圏の対象と射](#421-writer-圏対象射)
-    - [4.2.2 Writer 圏における射の合成](#422-writer-圏射合成)
-    - [4.2.3 Writer 圏は圏の公理を満たすか](#423-writer-圏圏公理満)
-    - [4.2.4 Writer 圏のより一般的な定義](#424-writer-圏一般的定義)
+    - [4.2.1 Writer 圏の対象と射](#421-writer-圏の対象と射)
+    - [4.2.2 Writer 圏における射の合成](#422-writer-圏における射の合成)
+    - [4.2.3 Writer 圏は圏の公理を満たすか](#423-writer-圏は圏の公理を満たすか)
+    - [4.2.4 Writer 圏のより一般的な定義](#424-writer-圏のより一般的な定義)
   - [4.3 Kleisli 圏](#43-kleisli-圏)
-  - [4.4 Cats における Writer と Kleisli](#44-cats--writer--kleisli)
-    - [4.4.1 Cats のインストール](#441-cats-)
+  - [4.4 Cats における Writer と Kleisli](#44-cats-における-writer-と-kleisli)
+    - [4.4.1 Cats のインストール](#441-cats-のインストール)
     - [4.4.2 Writer](#442-writer)
     - [4.4.3 Kleisli](#443-kleisli)
-  - [本章のまとめ](#本章)
-
-<!-- vim-markdown-toc -->
+  - [本章のまとめ](#本章のまとめ)
 
 # 4. Kleisli 圏
 
