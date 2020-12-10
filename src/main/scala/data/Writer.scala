@@ -15,6 +15,8 @@ case class Writer[L, A](run: (L, A)) {
 /** Companion Object */
 object Writer {
 
+  def apply[L, A](l: L, a: A): Writer[L, A] = Writer((l, a))
+
   /** Identity */
   def pure[L, A](a: A)(implicit logMonoid: Monoid[L]): Writer[L, A] = Writer((logMonoid.empty, a))
 

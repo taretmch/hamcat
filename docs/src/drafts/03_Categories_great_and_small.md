@@ -1,3 +1,14 @@
+<!-- omit in toc -->
+# 目次
+
+- [3. いろいろな圏](#3-いろいろな圏)
+  - [3.1 空圏](#31-空圏)
+  - [3.2 単純なグラフ](#32-単純なグラフ)
+  - [3.3 順序集合](#33-順序集合)
+  - [3.4 集合としてのモノイド](#34-集合としてのモノイド)
+  - [3.5 圏としてのモノイド](#35-圏としてのモノイド)
+- [まとめ](#まとめ)
+
 # 3. いろいろな圏
 
 ここまで、圏とは何かについて述べ、Scala の型と関数を圏として捉えることができることを述べました。
@@ -77,7 +88,7 @@
 
 結合律と単位元を備えた型クラス `Monoid` は、以下のように定義できます。
 
-```scala mdoc
+```scala
 trait Monoid[A] {
   def combine(v1: A, v2: A): A
   def empty: A
@@ -90,7 +101,7 @@ trait Monoid[A] {
 
 `Int` の加算に関するモノイドのインスタンス `IntMonoid` は、以下のように定義できます。
 
-```scala mdoc
+```scala
 implicit val IntMonoid: Monoid[Int] = new Monoid[Int] {
   def combine(a: Int, b: Int): Int = a + b
   def empty: Int = 0
@@ -98,6 +109,8 @@ implicit val IntMonoid: Monoid[Int] = new Monoid[Int] {
 ```
 
 ```scala mdoc
+import category.Implicits._
+
 IntMonoid.combine(1, 3)
 IntMonoid.empty
 IntMonoid.combine(2, IntMonoid.empty)
