@@ -31,7 +31,7 @@ Writer 関手を見たあとは、Reader 関手について説明します。Rea
 
 最後に、Profunctor の具体例であって、圏論において重要な概念である Hom 関手について説明します。
 
-少し難しいかもしれませんが、なるべくコードに噛み砕いて学んでいければと思います！
+少し難しいかもしれませんが、なるべくコードに落として学んでいければと思います！
 
 ## 8.1 双関手
 
@@ -140,13 +140,13 @@ val biObj: BiObj[Int, Long] = (3, 4L)
 // biObj: (Int, Long) = (3, 4L)
 ```
 
-直積圏における射 `biMorp1` と `biMorp2` は、Scala 圏の2つの射、すなわち関数 `A => C` 関数 `B => D` のタプルです。`biMorp1` は第1引数として `Int` 型のインクリメント関数を持ち、第2引数として `Long` 型の数を2倍する関数を持ちます。`biMorp2` は第1引数として `Int` 型の数が偶数かどうか判定する関数を持ち、第2引数として `Long` 型の数が偶数かどうか判定する関数を持ちます。
+直積圏における射 `biMorp1` と `biMorp2` は、Scala 圏の2つの射、すなわち関数 `A => C` 関数 `B => D` のタプルです。`biMorp1` は第1引数として `Int` 型のインクリメント関数を持ち、第2引数として `Long` 型の数を2倍する関数を持ちます。`biMorp2` は第1引数として `Int` 型の数が偶数かどうか判定する関数を持ち、第2引数として `Long` 型の数が奇数かどうか判定する関数を持ちます。
 
 ```scala
 /** Morphism declaration */
 val biMorp1 = biMorp(increment)(doubleL)
 // biMorp1: (Int => Int, Long => Long) = (<function1>, <function1>)
-val biMorp2 = biMorp(isEven)(isEvenL)
+val biMorp2 = biMorp(isEven)(isOddL)
 // biMorp2: (Int => Boolean, Long => Boolean) = (<function1>, <function1>)
 ```
 
@@ -156,17 +156,17 @@ val biMorp2 = biMorp(isEven)(isEvenL)
 def increment: Int => Int = _ + 1
 def doubleL: Long => Long = _ * 2
 def isEven: Int => Boolean = _ % 2 == 0
-def isEvenL: Long => Boolean = _ % 2 == 1
+def isOddL: Long => Boolean = _ % 2 == 1
 ```
 
-この直積圏における射の合成 `biComp` は、先ほど定義した `andThen` メソッドを使って構築できます。この関数 `biComp` は、第1引数として `Int` 型の数が奇数かどうか判定する（インクリメントして偶数かどうか判定するので）関数を持ち、第2引数として常に `true` を返す（数を2倍したあと偶数かどうかを判定するので）関数を持ちます。
+この直積圏における射の合成 `biComp` は、先ほど定義した `andThen` メソッドを使って構築できます。この関数 `biComp` は、第1引数として `Int` 型の数が奇数かどうか判定する（インクリメントして偶数かどうか判定するので）関数を持ち、第2引数として常に `false` を返す（数を2倍したあと奇数かどうかを判定するので）関数を持ちます。
 
 ```scala
 /** Compose morphism */
 val biComp: (Int => Boolean, Long => Boolean) = biMorp1 andThen biMorp2
 // biComp: (Int => Boolean, Long => Boolean) = (
-//   scala.Function1$$Lambda$6839/701532719@530e394e,
-//   scala.Function1$$Lambda$6839/701532719@2e38c3db
+//   scala.Function1$$Lambda$8217/1206610677@508abefc,
+//   scala.Function1$$Lambda$8217/1206610677@7fa14f45
 // )
 ```
 
@@ -292,8 +292,8 @@ implicit def Function1Functor[R]: Functor[Function1[R, ?]] = new Functor[Functio
 ```scala
 /** Reader bifunctor ? */
 implicit val Function1MaybeBifunctor = new Bifunctor[Function1] {
-  def second[A, B, C, D](g: B => D)(fab: A => B): (A => D) =
-    g compose fab
+  override def second[A, B, C, D](g: B => D): (A => B) => (A => D) =
+    fab => g compose fab
 }
 ```
 
@@ -303,35 +303,35 @@ implicit val Function1MaybeBifunctor = new Bifunctor[Function1] {
 def first[A, B, C](f: A => C)(fa: A => B) => (C => B) = ???
 ```
 
-シグネチャを見ると分かる通り、関数 `A => B` と `A => C` の組み合わせでは `C => B` を構成することができません。
+シグネチャを見ると分かる通り、関数 `A => C` と `A => B` の組み合わせでは `C => B` を構成することができません。
 
 `first` メソッドを定義できない、すなわち射関数 `bimap` を定義できないことから、`Function1` は双関手でないと言えます。
 
 ### 8.3.2 Function1 に対して first メソッドを定義する
 
-前項で見た通り、関数 `A => B` と `A => C` からは `C => B` を構成することはできませんでした。
+前項で見た通り、関数 `A => C` と `A => B` からは `C => B` を構成することはできませんでした。
 
 ```scala
-def first[A, B, C](f: A => C)(fa: A => B) => (C => B) = ???
+override def first[A, B, C](f: A => C): (A => B) => (C => B) = ???
 ```
 
-しかしながら、関数 `f: A => C` の矢印を反転させて `oppositeF: C => A` を受け取れば、`first` メソッドを定義できます。
+しかしながら、関数 `f: A => C` の矢印を反転させて `oppF: C => A` を受け取れば、`first` メソッドを定義できます。
 
 ```scala
-def first[A, B, C](f: C => A)(fa: A => B) => (C => B) = fa compose f
+override def first[A, B, C](oppF: C => A): (A => B) => (C => B) = fa => fa compose oppF
 ```
 
 少し言い換えると、直積圏における第1要素の射の矢印を入れ替えれば、第1要素の射を `Function1` に関する射に引き上げることができました。
 
-さて、ある圏において、対象はそのままで射の矢印を入れ替えたものを、その圏の双対圏と呼ぶことができましたね。これはすなわち、`Function1` が Scala の双対圏と Scala 圏の直積圏から Scala 圏への関手となっていると言うことができます。`first` メソッドは、Scala の双対圏からの射関手であると言えます。
+さて、ある圏において、対象はそのままで射の矢印を入れ替えたものを、その圏の双対圏と呼ぶことができましたね。これはすなわち、**Function1 が Scala の双対圏と Scala 圏の直積圏から Scala 圏への関手となっている**と言うことができます。`first` メソッドは、Scala の双対圏からの射関手であると言えます。
 
 ### 8.3.3 共変関手と反変関手
 
-一般に、ある圏 `C` の双対圏 `oppC` からある圏 `D` への関手のことを**共変関手** (contravariant functor) と言います。
+一般に、ある圏 `C` の双対圏 `oppC` からある圏 `D` への関手のことを**共変関手** (contravariant functor) と呼びます。
 
 一方で、これまで話してきた標準の関手は**反変関手** (covariant functor) と呼ばれます。
 
-反変関手と同様に、共変関手の型クラス `Contravariant` は以下のように定義されます。対象関数は反変関手と同じです。射関数 `contramap` は、射 `B => A` を `F` に関する射 `F[A] => F[B]` に引き上げます。
+反変関手と同様に、共変関手の型クラス `Contravariant` は以下のように定義されます。対象関数 `F[_]` は反変関手と同じです。射関数 `contramap` は、射 `B => A` を `F` に関する射 `F[A] => F[B]` に引き上げます。
 
 ```scala
 // Contravariant functor
@@ -340,7 +340,7 @@ trait Contravariant[F[_]] {
 }
 ```
 
-`Function1` の第1引数に対して `Contravariant` のインスタンスを以下のように実装できます。先ほどの見た `first` メソッドと同じ実装になっているはずです。
+`Function1` の第1引数に対して `Contravariant` のインスタンスを以下のように実装できます。型の変数は違うものの、先ほどの見た `first` メソッドと同じ実装になっているはずです。
 
 ```scala
 /** Reader contravariant functor */
@@ -348,6 +348,10 @@ implicit def Function1Contravariant[R]: Contravariant[Function1[?, R]] = new Con
   def contramap[A, B](f: B => A)(fa: A => R): (B => R) =
     fa compose f
 }
+```
+
+```scala
+override def first[A, B, C](oppF: C => A): (A => B) => (C => B) = fa => fa compose oppF
 ```
 
 ## 8.4 Profunctor
