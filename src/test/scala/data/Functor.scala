@@ -11,35 +11,32 @@ class FunctorSpec extends AnyFlatSpec with Matchers {
   def identity[A]: A   => A       = a => a
 
   val none: Option[Int] = None
-  val nil:  List[Int]   = Nil
 
   "Option functor" should "射の合成を保存する" in {
-    // F(g . f) == F(g) . F(f)
+    // fmap(g compose f) == fmap(g) compose fmap(f)
     // Case: Some(1)
+    assert(
+      OptionFunctor.fmap(isEven compose increment)(Option(1))
+        ==
+      (OptionFunctor.fmap(isEven) compose OptionFunctor.fmap(increment))(Option(1))
+    )
     assert(Option(1).fmap(isEven compose increment) == Option(1).fmap(increment).fmap(isEven))
 
     // Case: None
+    assert(
+      OptionFunctor.fmap(isEven compose increment)(none)
+        ==
+      (OptionFunctor.fmap(isEven) compose OptionFunctor.fmap(increment))(none)
+    )
     assert(none.fmap(isEven compose increment) == none.fmap(increment).fmap(isEven))
   }
 
   it should "恒等射を恒等射へ写す" in {
-    // F(idA) == idFA
+    // fmap(identity[A]) == identity[F[A]]
     // Case: Some(1)
-    assert(Option(1).fmap(identity) == identity(Option(1)))
+    assert(OptionFunctor.fmap(identity[Int])(Option(1)) == identity[Option[Int]](Option(1)))
 
     // Case: None
-    assert(none.fmap(identity) == identity(none))
-  }
-
-  "List functor" should "射の合成を保存する" in {
-    assert(List(1).fmap(isEven compose increment) == List(1).fmap(increment).fmap(isEven))
-
-    assert(nil.fmap(isEven compose increment) == nil.fmap(increment).fmap(isEven))
-  }
-
-  it should "恒等射を恒等射へ写す" in {
-    assert(List(1).fmap(identity) == identity(List(1)))
-
-    assert(nil.fmap(identity) == identity(nil))
+    assert(OptionFunctor.fmap(identity[Int])(none) == identity[Option[Int]](none))
   }
 }

@@ -1,6 +1,6 @@
 package category.data.instance
 
-import category.data.{ Functor, Monoid, Writer, Id, Const }
+import category.data.{ Functor, Monoid, Id, Const }
 
 /** Instances of functor */
 trait FunctorInstances {
@@ -9,37 +9,28 @@ trait FunctorInstances {
 
   /** Option functor */
   implicit val OptionFunctor: Functor[Option] = new Functor[Option] {
-    def fmap[A, B](f: A => B)(fa: Option[A]): Option[B] = fa match {
-      case None    => None
-      case Some(a) => Some(f(a))
-    }
+    def fmap[A, B](f: A => B): Option[A] => Option[B] = _.map(f)
   }
 
   /** List functor */
   implicit val ListFunctor: Functor[List] = new Functor[List] {
-    def fmap[A, B](f: A => B)(fa: List[A]): List[B] =
-      fa.map(f)
-  }
-
-  /** Writer functor */
-  implicit def WriterFunctor[L](implicit mn: Monoid[L]): Functor[Writer[L, ?]] = new Functor[Writer[L, ?]] {
-    def fmap[A, B](f: A => B)(fa: Writer[L, A]): Writer[L, B] =
-      (identity[Writer[L, A]] >=> (a => Writer.pure[L, B](f(a))))(fa)
+    def fmap[A, B](f: A => B): List[A] => List[B] = _.map(f)
   }
 
   /** Reader functor */
   implicit def Function1Functor[R]: Functor[Function1[R, ?]] = new Functor[Function1[R, ?]] {
-    def fmap[A, B](f: A => B)(fa: R => A): (R => B) =
+    def fmap[A, B](f: A => B): (R => A) => (R => B) = fa =>
       f compose fa
   }
 
   /** Identity functor */
   implicit val IdentityFunctor: Functor[Id] = new Functor[Id] {
-    def fmap[A, B](f: A => B)(fa: Id[A]): Id[B] = f(fa)
+    def fmap[A, B](f: A => B): Id[A] => Id[B] = f(_)
   }
 
   /** Const functor */
   implicit def constFunctor[C]: Functor[Const[C, ?]] = new Functor[Const[C, ?]] {
-    def fmap[A, B](f: A => B)(fa: Const[C, A]): Const[C, B] = Const(fa.v)
+    def fmap[A, B](f: A => B): Const[C, A] => Const[C, B] = fa =>
+      Const(fa.v)
   }
 }
