@@ -29,7 +29,7 @@ trait FunctorInstances {
   }
 
   /** Const functor */
-  implicit def constFunctor[C]: Functor[Const[C, ?]] = new Functor[Const[C, ?]] {
+  implicit def ConstFunctor[C]: Functor[Const[C, ?]] = new Functor[Const[C, ?]] {
     def fmap[A, B](f: A => B): Const[C, A] => Const[C, B] = fa =>
       Const(fa.v)
   }
