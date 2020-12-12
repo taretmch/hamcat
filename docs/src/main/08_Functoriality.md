@@ -56,6 +56,8 @@ trait Bifunctor[F[_, _]] {
 
 `Bifunctor` 型クラスは、対象関数として型構築子 `F[_, _]` をもち、射関数として `bimap` メソッドをもちます。`first` および `second` は、双関手の型パラメータの1つ目と2つ目の値に対してそれぞれ変換を施すものです。
 
+`bimap` メソッドを定義すれば `first` メソッドと `second` メソッドを実装できますし、`first` メソッドと `second` メソッドを実装すれば `bimap` メソッドを実装することができます。
+
 <div align="center">
 
 ![双関手](./images/08_bifunctor.png)
@@ -66,25 +68,25 @@ trait Bifunctor[F[_, _]] {
 
 双関手の一般的な定義を与えるために、**直積圏** (product category) という概念を導入します。
 
-2つの圏 `C` と `D` に対して、直積圏 `C x D` を考えることができます。
+2つの圏 `C1` と `C2` に対して、直積圏 `C1 x C2` を考えることができます。
 
-直積圏 `C x D` は、対象を `C` の対象 `c` と `D` の対象 `d` のペア `(c, d)` とします。
+直積圏 `C1 x C2` は、対象を `C1` の対象 `A` と `C2` の対象 `B` のペア `(A, B)` とします。
 
 ```scala
 /** Object type of product category */
 type BiObj[A, B] = (A, B)
 ```
 
-そして、射を `C` の射 `f: c1 -> c2` と `D` の射 `g: d1 -> d2` のペア `(f, g)` とします。
+そして、射を `C1` の射 `f: A -> C` と `C2` の射 `g: B -> D` のペア `(f, g)` とします。
 
 ```scala
 /** Morphism in product category */
 def biMorp[A, B, C, D](f: A => C)(g: B => D): (A => C, B => D) = (f, g)
 ```
 
-どちらも、`C` と `D` の対象と射のペアをとっているだけですね。
+どちらも、`C1` と `C2` の対象と射のペアをとっているだけですね。
 
-射の合成についてもペアをとるだけです。`C` における射の合成 `f' compose f` と `D` における射の合成 `g' compose g` に対して、`(f' compose f, g' compose g)` は直積圏 `C x D` における射の合成になります。
+射の合成についてもペアをとるだけです。`C1` における射の合成 `h compose f` と `C2` における射の合成 `k compose g` に対して、`(h compose f, k compose g)` は直積圏 `C1 x C2` における射の合成になります。
 
 射の合成 `andThen` メソッドを以下のように定義すると、Scala の直積圏における2つの射 `(A => C, B => D)` と `(C => E, D => H)` を合成して `(A => E, B => H)` を構成できます。なお、2つの関数のタプルを適用するために、`apply` メソッドも定義しておきます。
 
@@ -116,7 +118,7 @@ implicit class BiMorpOps[A, B, C, D](lhs: (A => C, B => D)) {
 }
 ```
 
-恒等射も同様に、`C` の恒等射 `identityC` と `D` の恒等射 `identityD` に対して `(identityC, identityD)` が直積圏の恒等射になります。
+恒等射も同様に、`C1` の恒等射 `identityC1` と `C2` の恒等射 `identityC2` に対して `(identityC1, identityC2)` が直積圏の恒等射になります。
 
 ```scala
 import category.Implicits._
@@ -165,8 +167,8 @@ def isOddL: Long => Boolean = _ % 2 == 1
 /** Compose morphism */
 val biComp: (Int => Boolean, Long => Boolean) = biMorp1 andThen biMorp2
 // biComp: (Int => Boolean, Long => Boolean) = (
-//   scala.Function1$$Lambda$8217/1206610677@508abefc,
-//   scala.Function1$$Lambda$8217/1206610677@7fa14f45
+//   scala.Function1$$Lambda$5279/441468567@59fee1c4,
+//   scala.Function1$$Lambda$5279/441468567@16710fee
 // )
 ```
 
@@ -191,7 +193,18 @@ val result: (Boolean, Boolean) = biComp(biObj)
 
 Scala 圏において関手は自己関手となるので、Scala 圏における双関手 (すなわち Bifunctor) は Scala 圏と Scala 圏の直積から Scala 圏への関手になります。
 
-すなわち、`Bifunctor` は、対象関数 `F[_, _]` として Scala の直積圏の対象 `A` と `B` を `F[A, B]` に対応させ、射関数 `bimap` として Scala の直積圏の射 `A => C` と `B => D` をに関する射 `F[A, B] => F[C, D]` に対応させます。
+すなわち、`Bifunctor` は、対象関数 `F[_, _]` として Scala の直積圏の対象 `A` と `B` を `F[A, B]` に対応させ、射関数 `bimap` として Scala の直積圏の射 `A => C` と `B => D` を `F` に関する射 `F[A, B] => F[C, D]` に対応させます。
+
+なお、`bimap` の引数が `(A => C, B => D)` ではなく `A => C` と `B => D` であるのは、使いやすさの観点からです。これらは、互いに同型であるので、どちらの形でも問題はありません。
+
+```scala
+def isomorpTupleToFunc1[A, B, C, D]: ((A => C, B => D)) => (A => C) => (B => D) = {
+  case (f, g) => f => g
+}
+
+def isomorpFuncToTuple[A, B, C, D]: (A => C) => (B => D) => ((A => C, B => D)) =
+  f => g => (f, g)
+```
 
 では、双関手のいくつかの例をみていきましょう。
 
@@ -286,6 +299,20 @@ implicit def Function1Functor[R]: Functor[Function1[R, ?]] = new Functor[Functio
 ここでは、`Function1` を双関手のインスタンスとして実装できるかどうかについて考えていきましょう。
 
 ### 8.3.1 Function1 は双関手か？
+
+`Bifunctor` のインスタンスでは、`bimap` を実装する必要があります。ただ、`bimap` は `first` および `second` を実装することによって、これらを組み合わせて実装することができます。
+
+```scala
+trait Bifunctor[F[_, _]] {
+
+  /** Morphism mappings for Bifunctor */
+  def bimap[A, B, C, D](f: A => C)(g: B => D): F[A, B] => F[C, D] =
+    second(g) compose first(f)
+
+  def first[A, B, C](f: A => C): F[A, B] => F[C, B]
+  def second[A, B, D](g: B => D): F[A, B] => F[A, D]
+}
+```
 
 まず、`Bifunctor` の `second` メソッドは、前章でみた Reader 関手の射関数です。
 
