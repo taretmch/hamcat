@@ -9,7 +9,7 @@ object ProductCategory {
   def doubleL: Long => Long = _ * 2
 
   def isEven: Int => Boolean = _ % 2 == 0
-  def isEvenL: Long => Boolean = _ % 2 == 1
+  def isOddL: Long => Boolean = _ % 2 == 1
 
   /** Scala の直積圏の例 */
   object Expl1 {
@@ -18,7 +18,7 @@ object ProductCategory {
 
     /** Morphism declaration */
     val func1 = ProductFunction(increment, doubleL)
-    val func2 = ProductFunction(isEven, isEvenL)
+    val func2 = ProductFunction(isEven, isOddL)
 
     /** Apply morphism to object */
     val func1Apply: (Int, Long)        = func1(obj)

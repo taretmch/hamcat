@@ -427,11 +427,11 @@ x compose injB == xB
 
 積は Scala においてタプルやケースクラスとして表すことができますが、余積は Scala において Either によって表すことができます。
 
-型 `A` と `B` の余積 `Either[A, B]` について、射 `projA` と `projB` は以下のように定義されます。
+型 `A` と `B` の余積 `Either[A, B]` について、射 `injA` と `injB` は以下のように定義されます。
 
 ```scala
-def projA[A, B](a: A): Either[A, B] = Left(a)
-def projB[A, B](b: B): Either[A, B] = Right(b)
+def injA[A, B](a: A): Either[A, B] = Left(a)
+def injB[A, B](b: B): Either[A, B] = Right(b)
 ```
 
 すなわち、余積の入射は `Left.apply` メソッドと `Right.apply` メソッドです。そして、ある型 `X` に対して、`Either[A, B]` から `X` への一意の関数 `coproductFactorizer` が存在します。
