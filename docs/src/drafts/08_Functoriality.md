@@ -162,7 +162,7 @@ def isOddL: Long => Boolean = _ % 2 == 1
 
 ```scala mdoc
 /** Compose morphism */
-val biComp: (Int => Boolean, Long => Boolean) = biMorp1 andThen biMorp2
+def biComp: (Int => Boolean, Long => Boolean) = biMorp1 andThen biMorp2
 ```
 
 この関数に `(3, 4L)` を適用すると以下の結果が返ります。
