@@ -21,4 +21,3 @@ trait SyntaxImplicits
   with    BifunctorSyntax
   with    ContravariantSyntax
   with    ProfunctorSyntax
-  with    ProductCategorySyntax
