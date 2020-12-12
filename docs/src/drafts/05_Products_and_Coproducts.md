@@ -11,12 +11,10 @@
   - [5.4 積](#54-積)
     - [5.4.1 積の定義](#541-積の定義)
     - [5.4.2 積の例](#542-積の例)
-    - [5.4.3 スパン圏](#543-スパン圏)
     - [5.4.4 モノイダル圏としての Scala 圏](#544-モノイダル圏としての-scala-圏)
   - [5.5 余積](#55-余積)
     - [5.5.1 余積の定義](#551-余積の定義)
     - [5.5.2 余積の例](#552-余積の例)
-    - [5.5.3 余スパン圏](#553-余スパン圏)
     - [5.5.4 モノイダル圏としての Scala 圏](#554-モノイダル圏としての-scala-圏)
 - [本章のまとめ](#本章のまとめ)
 - [参考文献](#参考文献)
@@ -39,7 +37,7 @@
 
 ### 5.1.1 始対象の定義
 
-まず、自然数の集合に対して、順序 `<=` を以下のように定義してみます。ただし、`(a, b)` とは「a が b 以下である」を意味し、対象 a から対象 b への射が存在することを表すこととします。
+まず、自然数を対象として、射の集まりを以下のように定義してみます。ただし、`(a, b)` とは「a が b 以下である」を意味し、対象 a から対象 b への射が存在することを表すこととします。
 
 ```
 <= := {
@@ -68,9 +66,9 @@
 
 ### 5.1.2 始対象の例
 
-自然数の集合において、0 から任意の自然数への射 `<=` はただ1つ存在します。0 から 0 への射は恒等射 `(0, 0)` ですし、0 以外の任意の自然数 `n` についても `(0, n)` が一意に存在します。
+自然数の集合において、0 から任意の自然数 n への射 `(0, n)` はただ1つ存在します。0 から 0 への射は恒等射 `(0, 0)` ですし、0 以外の任意の自然数 `n` についても `(0, n)` が一意に存在します。
 
-集合の圏 `Set` における始対象は、空集合です。任意の集合 `A` と空集合 `φ` に対して、 `φ` から `A` への射がただ1つ存在します。一般に、集合 `A` から `B` への関数は、`A` の任意の要素 `a` に対して、その出力 `b` (`B` の要素) が一意に定まるような関係の集合として定義されます。例えば、集合 `A = { 1, 3 }` から集合 `B = { 2, 4, 6}` への関数の例として「入力の値に +1 したものを出力する」ような関数 `f: A => B` を考えます。この関数は、Scala では
+集合の圏 `Set` における始対象は、空集合です。任意の集合 `A` と空集合 `φ` に対して、 `φ` から `A` への射がただ1つ存在します。一般に、集合 `A` から `B` への関数は、`A` の任意の要素 `a` に対して、その出力 `b` (`B` の要素) が一意に定まるような関係の集合として定義されます。例えば、集合 `A = { 1, 3 }` から集合 `B = { 2, 4, 6 }` への関数の例として「入力の値に +1 したものを出力する」ような関数 `f: A => B` を考えます。この関数は、Scala では
 
 ```scala
 f: A => B = a => a + 1
@@ -153,16 +151,16 @@ def unit[A]: A => Unit = _ => ()
 
 終対象も始対象同様、同型を除いて一意です。
 
-2つの終対象を T1 と T2 とします。T1 は終対象なので、定義より任意の対象からの射がただ1つ存在して、T2 から T1 への一意の射 `f` が一意に存在します。一方で、T2 は終対象なので、定義より T1 から T2 への一意の射 `g` が存在します。この2つの射を合成して `f compose g` を考えます。`f compose g` は T1 から T1 への射です。しかし、T1 から T1 への射はただ1つであり、圏の公理よりそれは恒等射です。すなわち
+2つの終対象を T1 と T2 とします。T1 は終対象なので、定義より任意の対象からの射がただ1つ存在して、T2 から T1 への一意の射 `f` が一意に存在します。一方で、T2 は終対象なので、定義より T1 から T2 への一意の射 `g` が存在します。この2つの射を合成して `g compose f` を考えます。`g compose f` は T2 から T2 への射です。しかし、T2 から T2 への射はただ1つであり、圏の公理よりそれは恒等射です。すなわち
 
-```
-f compose g = id[T2]
+```scala
+g compose f == identity[T2]
 ```
 
-が成り立ちます。同様に `g compose f` を考えると、これは T2 から T2 への射です。T2 から T2 への射もただ1つであって、圏の公理よりそれは恒等射になります。
+が成り立ちます。同様に `f compose g` を考えると、これは T1 から T1 への射です。T1 から T1 への射もただ1つであって、圏の公理よりそれは恒等射になります。
 
-```
-g compose f = id[T1]
+```scala
+f compose g == identity[T1]
 ```
 
 したがって、2つの終対象 T1 と T2 は同型です。
@@ -188,13 +186,13 @@ g compose f = id[T1]
 簡単に言えば、積は2つの対象のタプルを表します。Scala において、積はタプルやケースクラスとして組み込まれています。
 
 ```scala mdoc
-val pairTuple: (Int, Boolean) = (44, true)
+val intBoolTuple: (Int, Boolean) = (44, true)
 ```
 
 ```scala mdoc
 case class Pair(a: Int, b: Boolean)
 
-val pairCaseClass = Pair(44, true)
+val intBoolPair = Pair(44, true)
 ```
 
 Scala には [Product](https://github.com/scala/scala/blob/v2.13.3/src/library/scala/Product.scala) というトレイトがあり、これが積を表します。タプルやケースクラスはすべて `Product` を継承しています。
@@ -219,7 +217,7 @@ projA compose m == xA
 projB compose m == xB
 ```
 
-が成り立つことを言います。このとき対象 `C` を `A×B` と書きます。
+が成り立つことを言います。このとき対象 `C` を `A x B` と書きます。
 
 <div align="center">
 
@@ -231,63 +229,56 @@ projB compose m == xB
 
 なお、積は存在するなら、同型を除いて一意です。
 
-### 5.4.2 積の例
-
-全くわからないと思うので、もう少し説明させてください。
-
-対象 `C` が `A` と `B` の積であるための前提条件として、`C` の `A` への射 `projA: C => A` と `B` への射 `projB: C => B` が存在することを仮定しています。このような射 `projA` と `projB` を射影 (projection) と呼びます。タプル `(Int, Boolean)` の射影は以下のように定義できます。
-
-```scala mdoc
-def projInt: ((Int, Boolean)) => Int = _._1
-def projBoolean: ((Int, Boolean)) => Boolean = _._2
-
-projInt((44, true))
-projBoolean((44, true))
-```
-
-この射影関数は、多相関数 `fst` と `snd` として一般化できます。
+型 `A` と `B` の積 `(A, B)` について、射影 `fst` と `snd` は以下のように定義されます。
 
 ```scala mdoc
 def fst[A, B]: ((A, B)) => A = _._1
+
 def snd[A, B]: ((A, B)) => B = _._2
-
-fst((44, true))
-snd((44, true))
 ```
 
-そして、もう1つ `A` と `B` への射影 `xA`、`xB` が存在する対象 `X` を考えます。この `X` について、`X` から `C` への射 `m` を考えます。例えば、`C` が `(Int, Boolean)` で `X` が `String` であったとしましょう。`X` の射影は以下のようになっているとします。
+すなわち、積の射影は `Tuple2#_1` メソッドと `Tuple2#_2` メソッドです。
+
+そして、ある型 `X` に対して、`X` から `(A, B)` への一意の関数 `productFactorizer` が存在します。
 
 ```scala mdoc
-def xInt: String => Int = _.length
-def xBoolean: String => Boolean = _.startsWith("a")
-
-xInt("abcdefg")
-xBoolean("abcdefg")
+def productFactorizer[X, A, B](xA: X => A)(xB: X => B): X => ((A, B)) = x => (xA(x), xB(x))
 ```
 
-この射影に対して、射 `m: X => C` すなわち `m: String => (Int, Boolean)` は
+### 5.4.2 積の例
+
+積の例として、`A` を `String`、`B` を `Int` とし、`X` を `List[Int]` とします。
+
+そして、`List[Int]` の `String` への射影と、`Int` への射影をそれぞれ以下のように定義します：
 
 ```scala mdoc
-def m: String => ((Int, Boolean)) = x => (xInt(x), xBoolean(x))
+val listToString: List[Int] => String = _.toString
 
-m("abcdefg")
+val listToInt: List[Int] => Int = _.length
 ```
 
-と定義できます。もちろん、射 `m` は適当に `(1, false)` などと返すよう定義することも可能なのですが、もう1つ制約があるために、`m` は一意に定義されることになります。`C` が `A` と `B` の積であるためには、`m` に対して以下が成り立つ必要があります。
-
-```
-projInt compose m == xInt
-projBoolean compose m == xBoolean
-```
-
-先ほどの `m` の定義は、これを満たします。
+このとき、`List[Int]` から積 `(A, B)` への一意の関数 `listToTuple` を構成できます：
 
 ```scala mdoc
-(projInt compose m)("abcdefg") == xInt("abcdefg")
-(projBoolean compose m)("abcdefg") == xBoolean("abcdefg")
+val listToTuple: List[Int] => ((String, Int)) = productFactorizer(listToString)(listToInt)
 ```
 
-すなわち、`C` が `A` と `B` の積であるための条件は、`A` の成分と `B` の成分で分解して計算できることだとわかります。
+この関数に対して `List(1, 2, 3, 4, 5)` を与えると、`String` への射影 `listToString` と `Int` への射影 `listToInt` をそれぞれ適用したタプルが得られます。
+
+```scala mdoc
+listToTuple(List(1, 2, 3, 4, 5))
+```
+
+したがって、積 `(A, B)` には、`A` の成分と `B` の成分とで分解して計算できる性質があることがわかります。この性質がまさに、積の定義となっています。
+
+実際、以下の図式は可換になります。
+
+```scala mdoc
+val list = List(1, 2, 3, 4, 5)
+
+(fst compose listToTuple)(list) == listToString(list)
+(snd compose listToTuple)(list) == listToInt(list)
+```
 
 <div align="center">
 
@@ -324,40 +315,6 @@ def factorize[X, A, B](xA: X => A)(xB: X => B)(x: X): (A, B) = (xA(x), xB(x))
 factorize{ s: String => s.length }{ s: String => s.startsWith("a") }("abcdefg")
 ```
 
-### 5.4.3 スパン圏
-
-積は、同じ形式を持つ圏における終対象であると考えることもできます。積における「同じ形式」とは、2つの対象 `A` と `B` に対して対象 `X` が `A` と `B` への射影 `xA`、`xB` を持つこと、すなわち三つ組 `<X, xA, xB>` で表されることを言います。
-
-そのような三つ組はスパン (span) と呼ばれます。スパンを対象とするスパン圏について考えてみましょう。
-
-スパン圏の対象 `<X, xA, xB>` と `<Y, yA, yB>` に対して、その間の射 `f: X -> Y` を考えます。このスパン圏において対象 `A` と `B` は固定されるので、図式は以下のようになります。
-
-<div align="center">
-
-![スパン圏](./images/05_span_category.png)
-
-</div>
-
-ただし、射 `f` は、図式において2つの三角形を可換にしなければいけません。すなわち
-
-```
-yA compose f == xA
-yB compose f == xB
-```
-
-が成り立つ必要があります。
-
-そして、積は任意の対象 `X` に対して一意の `f` が存在して、上の図式を満たす `Y` であると定義しました。これは、スパン圏における終対象に他なりません。
-
-スパン圏の例としては、射影が定義されていて、図式が可換であればなんでも良いと考えられます。
-
-例えば `Int` と `Boolean` のスパン圏における対象として `<String, length, isEmpty>`、`<Int, increment, isOdd>`、`<(Int, Boolean), fst, snd>` などを考えることができます。1つ目は `String` に `Int` および `Boolean` への射影を持たせたもの、2つ目は `Int` に `Int` および `Boolean` への射影を持たせたもの、3つ目は `Int` と `Boolean` の積 `(Int, Boolean)` であってこの圏の終対象になるもの、です。
-
-<div align="center">
-
-![スパン圏の例](./images/05_span_category_example.png)
-
-</div>
 
 ### 5.4.4 モノイダル圏としての Scala 圏
 
@@ -365,7 +322,7 @@ yB compose f == xB
 
 Scala 圏における積は二項演算として、数の乗算に対応します。二項演算としての性質を少し見ていきましょう。
 
-まず、結合律について。3つの対象 `A` `B` `C` の積は、タプルをネストさせることによって定義できます。
+まず、結合律について。3つの型 `A` `B` `C` の積は、タプルをネストさせることによって定義できます。
 
 ```
 ((A, B), C)
@@ -381,16 +338,16 @@ Scala 圏における積は二項演算として、数の乗算に対応しま�
 これら2つのタプルは、同型です。同型射 (つまり、逆射を持つ射) は、以下のように定義できます。
 
 ```scala mdoc
-def isomorTuple[A, B, C]: (((A, B), C)) => ((A, (B, C))) = {
+def isomorTuple1[A, B, C]: (((A, B), C)) => ((A, (B, C))) = {
   case ((a, b), c) => (a, (b, c))
 }
 
-def isomorTupleInv[A, B, C]: ((A, (B, C))) => (((A, B), C)) = {
+def isomorTuple2[A, B, C]: ((A, (B, C))) => (((A, B), C)) = {
   case (a, (b, c)) => ((a, b), c)
 }
 
-isomorTuple(((44, "hoge"), true))
-isomorTupleInv((44, ("hoge", true)))
+isomorTuple1(((44, "hoge"), true))
+isomorTuple2((44, ("hoge", true)))
 ```
 
 なお、これらと同型である3-タプル `(A, B, C)` も積です。
@@ -400,7 +357,7 @@ def isomorTuple3[A, B, C]: (((A, B), C)) => ((A, B, C)) = {
   case ((a, b), c) => (a, b, c)
 }
 
-def isomorTuple3Inv[A, B, C]: ((A, B, C)) => (((A, B), C)) = {
+def isomorTuple4[A, B, C]: ((A, B, C)) => (((A, B), C)) = {
   case (a, b, c) => ((a, b), c)
 }
 ```
@@ -409,23 +366,25 @@ def isomorTuple3Inv[A, B, C]: ((A, B, C)) => (((A, B), C)) = {
 
 では次に、単位律について考えてみます。
 
-二項演算としての積における単位律とは、ある対象 `X` に対して対象 `A` と `X` の積 `AxX` および `XxA` が、`A` と同型になることを言います。つまり、`X` は単位元です。
+二項演算としての積における単位律とは、単位元の型 `U` に対して型 `A` と `U` の積 `UxA` および `AxU` が、`A` と同型になることを言います。
 
-積における単位元は、`Unit` 型です。
+型の積における単位元は、`Unit` 型です。以下のような同型射が存在するので、タプル `(Unit, A)` と `(A, Unit)` はどちらも `A` と同型です。
 
 ```scala mdoc
-def isomorProduct[A]: A => ((A, Unit)) = a => (a, ())
-def isomorProductInv[A]: ((A, Unit)) => A = {
+def isomorProduct1[A]: A => ((Unit, A)) = a => ((), a)
+def isomorProduct2[A]: ((A, Unit)) => A = {
   case (a, ()) => a
 }
 
-isomorProduct(44)
-isomorProductInv((44, ()))
+def isomorProduct3[A]: A => ((A, Unit)) = a => (a, ())
+def isomorProduct4[A]: ((A, Unit)) => A = {
+  case (a, ()) => a
+}
 ```
 
 以上のことから、積はモノイドの性質を満たしていることがわかります。
 
-したがって、Scala 圏はモノイダル圏であると言われます。
+このようなことから、Scala 圏はモノイダル圏であると言われます。※モノイダル圏の厳密な定義はここでは与えません。
 
 ## 5.5 余積
 
@@ -456,83 +415,51 @@ x compose injB == xB
 
 積は Scala においてタプルやケースクラスとして表すことができますが、余積は Scala において Either によって表すことができます。
 
+型 `A` と `B` の余積 `Either[A, B]` について、射 `projA` と `projB` は以下のように定義されます。
+
 ```scala mdoc
-sealed trait Either[+A, +B]
-case class Left[A](v: A) extends Either[A, Nothing]
-case class Right[B](v: B) extends Either[Nothing, B]
+def projA[A, B](a: A): Either[A, B] = Left(a)
+def projB[A, B](b: B): Either[A, B] = Right(b)
 ```
 
-`Either[+A, +B]` の具象型として `Left[A]` と `Right[B]` があり、これら2つの型が Either を構成しています。
-
-### 5.5.2 余積の例
-
-では、具体例を考えることによって、余積の定義と Either の定義を照らし合わせてみましょう。
-
-対象 `A` を型 `String` とし、対象 `B` を型 `Int` とし、対象 `C` を `Either[String, Int]` とします。そして、`String` および `Int` から `Either[String, Int]` への射が以下のようなものであるとします。
+すなわち、余積の入射は `Left.apply` メソッドと `Right.apply` メソッドです。そして、ある型 `X` に対して、`Either[A, B]` から `X` への一意の関数 `coproductFactorizer` が存在します。
 
 ```scala mdoc
-def injStringToC: String => Either[String, Int] = s => Left(s)
-def injIntToC: Int => Either[String, Int] = i => Right(i)
-
-injStringToC("Some exceptions occur")
-injIntToC(44)
-```
-
-つまり、`C` において文字列は `Left` に包まれ、整数値は `Right` に包まれます。
-
-同様な構造を持つ対象 `X` として型 `Int` を考え、`X` への入射が以下のようになっているとします。これらの射は、文字列を整数値 `-1` に変換し、整数値をそのまま渡します。
-
-```scala mdoc
-def injStringToX: String => Int = _ => -1
-def injIntToX: Int => Int = i => i
-
-injStringToX("Some exceptions occur")
-injIntToX(44)
-```
-
-このとき、`Either[String, Int]` を `X` すなわち `Int` に変換する関数 `x` を以下のように定義してみます。この射 `x` は `Either` に包まれた文字列あるいは整数値を抽出し `X` への入射に渡しています。
-
-```scala mdoc
-def x: Either[String, Int] => Int = {
-  case Left(a)  => injStringToX(a)
-  case Right(b) => injIntToX(b)
+def coproductFactorizer[X, A, B](xA: A => X)(xB: B => X): Either[A, B] => X = {
+  case Left(a) => xA(a)
+  case Right(b) => xB(b)
 }
 ```
 
-この関数は、`Left[A]` の値を `A` から `X` への入射に渡し、`Right[B]` の値を `B` から `X` への入射に渡しているだけのものです。つまり、余積では、複数の可能性 (`A` と `B`) が存在する型に対して射の合成を定義しています。この `x` に対して
+### 5.5.2 余積の例
 
-```
-x compose injStringToC == injStringToX
-x compose injIntToC == injIntToX
-```
+余積の例として、対象 `A` を型 `String` とし、対象 `B` を型 `Int` とし、対象 `X` を型 `Boolean` とします。
 
-が成り立ちます。
+そして、`String` から `Boolean` への入射と、`Int` からの入射をそれぞれ以下のように定義します：
 
 ```scala mdoc
-(x compose injStringToC)("Some exceptions occur") == injStringToX("Some exceptions occur")
-(x compose injIntToC)(44)                         == injIntToX(44)
+val strToBool: String => Boolean = _.contains("a")
+val isEven: Int => Boolean = _ % 2 == 0
 ```
 
-したがって、`Either[String, Int]` は余積の性質を満たしていると言えます。
+このとき、余積 `Either[String, Int]` から型 `Boolean` への一意の関数 `eitherToBool` を構成できます。この関数は、`String` については文字列 `"a"` を含むかどうか判定し、`Int` が偶数かどうかを判定する関数です。
+
+```scala mdoc
+val eitherToBool: Either[String, Int] => Boolean = coproductFactorizer(strToBool)(isEven)
+```
+
+この関数に対して `String` および `Int` を与えると、それぞれに対して関数が適用されます：
+
+```scala mdoc
+eitherToBool(Left("abcdefg"))
+eitherToBool(Right(3))
+```
+
+Either について、以下の図式は可換になります。
 
 <div align="center">
 
 ![余積としての Either](./images/05_coproduct_example.png)
-
-</div>
-
-### 5.5.3 余スパン圏
-
-余積は積の双対概念です。
-
-射の向きが反転しているので、余積においてはスパン圏ではなく余スパン圏を考えます。
-
-積がスパン圏における終対象であったのと同様に、余積は余スパン圏における始対象になります。
-
-
-<div align="center">
-
-![余スパン圏](./images/05_opposite_span_category.png)
 
 </div>
 
