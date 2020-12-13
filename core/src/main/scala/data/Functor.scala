@@ -1,4 +1,4 @@
-package category.data
+package hamcat.data
 
 // Functor
 trait Functor[F[_]] {

@@ -1,6 +1,6 @@
-package category.data.instance
+package hamcat.data.instance
 
-import category.data.Contravariant
+import hamcat.data.Contravariant
 
 trait ContravariantInstances {
 

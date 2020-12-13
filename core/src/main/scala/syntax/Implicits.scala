@@ -1,4 +1,4 @@
-package category.syntax
+package hamcat.syntax
 
 trait SyntaxImplicits
   extends SemigroupSyntax

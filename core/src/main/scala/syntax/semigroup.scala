@@ -1,6 +1,6 @@
-package category.syntax
+package hamcat.syntax
 
-import category.data.Semigroup
+import hamcat.data.Semigroup
 
 /** Syntax for semigroup */
 trait SemigroupSyntax {
@@ -10,7 +10,7 @@ trait SemigroupSyntax {
      *
      * Usage:
      * ```
-     * scala> import category.Implicits._
+     * scala> import hamcat.Implicits._
      *
      * scala> 1 |+| 3
      * val res0: Int = 4

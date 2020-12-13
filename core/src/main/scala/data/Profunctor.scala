@@ -1,4 +1,4 @@
-package category.data
+package hamcat.data
 
 // Profunctor
 trait Profunctor[F[_, _]] {

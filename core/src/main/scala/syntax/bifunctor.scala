@@ -1,6 +1,6 @@
-package category.syntax
+package hamcat.syntax
 
-import category.data.Bifunctor
+import hamcat.data.Bifunctor
 
 /** Syntax for bifunctor */
 trait BifunctorSyntax {

@@ -1,4 +1,4 @@
-package category.data.instance
+package hamcat.data.instance
 
 trait InstanceImplicits
   extends MonoidInstances

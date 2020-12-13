@@ -1,6 +1,6 @@
-package category.data.instance
+package hamcat.data.instance
 
-import category.data.Profunctor
+import hamcat.data.Profunctor
 
 /** Instances of profunctor */
 trait ProfunctorInstances {

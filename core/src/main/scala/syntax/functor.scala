@@ -1,6 +1,6 @@
-package category.syntax
+package hamcat.syntax
 
-import category.data.Functor
+import hamcat.data.Functor
 
 /** Syntax for functor */
 trait FunctorSyntax {

@@ -109,7 +109,7 @@ implicit val IntMonoid: Monoid[Int] = new Monoid[Int] {
 ```
 
 ```scala mdoc
-import category.Implicits._
+import hamcat.Implicits._
 
 IntMonoid.combine(1, 3)
 IntMonoid.empty

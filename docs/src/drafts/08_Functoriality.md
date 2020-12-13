@@ -132,7 +132,7 @@ def isOddL: Long => Boolean = _ % 2 == 1
 ```
 
 ```scala mdoc
-import category.arrow.ProductFunction
+import hamcat.arrow.ProductFunction
 
 /** Morphism declaration */
 val func1 = ProductFunction(increment, doubleL)

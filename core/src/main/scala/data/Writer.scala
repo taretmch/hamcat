@@ -1,6 +1,6 @@
-package category.data
+package hamcat.data
 
-import category.Implicits._
+import hamcat.Implicits._
 
 /** Writer monad */
 case class Writer[L, A](run: (L, A)) {

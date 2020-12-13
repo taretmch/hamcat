@@ -1,6 +1,6 @@
-package category.syntax
+package hamcat.syntax
 
-import category.data.Profunctor
+import hamcat.data.Profunctor
 
 /** Syntax for profunctor */
 trait ProfunctorSyntax {

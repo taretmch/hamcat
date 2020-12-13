@@ -1,6 +1,6 @@
-package category.data.instance
+package hamcat.data.instance
 
-import category.data.Semigroup
+import hamcat.data.Semigroup
 
 /** Instances of semigroup */
 trait SemigroupInstances {

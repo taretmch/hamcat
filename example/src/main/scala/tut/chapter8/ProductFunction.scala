@@ -1,6 +1,6 @@
-package category.example
+package hamcat.example
 
-import category.arrow.ProductFunction
+import hamcat.arrow.ProductFunction
 
 /** Examples of product category */
 object ProductCategory {

@@ -1,6 +1,6 @@
-package category.data.instance
+package hamcat.data.instance
 
-import category.data.{ Monoid, Semigroup }
+import hamcat.data.{ Monoid, Semigroup }
 
 /** Instances of monoid */
 trait MonoidInstances {

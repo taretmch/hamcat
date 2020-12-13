@@ -1,4 +1,4 @@
-package category.data
+package hamcat.data
 
 // Bifunctor
 trait Bifunctor[F[_, _]] {

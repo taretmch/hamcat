@@ -1,9 +1,9 @@
-package category.data
+package hamcat.data
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-import category.Implicits._
+import hamcat.Implicits._
 
 class ContravariantFunction1Spec extends AnyFlatSpec with Matchers {
   val increment: Int => Int     = n => n + 1

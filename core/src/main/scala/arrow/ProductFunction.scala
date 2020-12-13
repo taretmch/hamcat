@@ -1,6 +1,6 @@
-package category.arrow
+package hamcat.arrow
 
-import category.data.identity
+import hamcat.data.identity
 
 /** ProductFunction: Wrapper class of morphism in product category
  *

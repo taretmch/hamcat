@@ -1,6 +1,6 @@
-package category.syntax
+package hamcat.syntax
 
-import category.data.Contravariant
+import hamcat.data.Contravariant
 
 /** Syntax for contravariant functor */
 trait ContravariantSyntax {

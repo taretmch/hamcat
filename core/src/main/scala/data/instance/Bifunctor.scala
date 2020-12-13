@@ -1,6 +1,6 @@
-package category.data.instance
+package hamcat.data.instance
 
-import category.data.Bifunctor
+import hamcat.data.Bifunctor
 
 /** Instances of bifunctor */
 trait BifunctorInstances {

@@ -78,7 +78,7 @@ Option(3).map(isEven)
 1つ目の性質は、関手が射の合成を保存することを意味します。
 
 ```scala mdoc
-import category.Implicits._
+import hamcat.Implicits._
 
 // f: isEven
 // g: negate
@@ -106,7 +106,7 @@ OptionFunctor.fmap(negate compose isEven)(Option(3)) == (OptionFunctor.fmap(nega
 2つ目の性質は、関手が恒等射を保存することを意味します。
 
 ```scala mdoc
-import category.data.identity
+import hamcat.data.identity
 ```
 
 ```scala
@@ -173,10 +173,10 @@ implicit val OptionFunctor: Functor[Option] = new Functor[Option] {
 
 Option 関手の `fmap` メソッドは `Option#map` メソッドと同じです。実装を見てわかる通り、`fmap` メソッドが関手性を満たすかどうか、つまり圏の構造を維持する対応かどうかは実装によります。定義だけでは `fmap` メソッドが必ず関手性を満たすとは言えませんが、関手性を満たすように `fmap` メソッドを実装しなければいけません。
 
-実際にこのインスタンスを使ってみましょう。本リポジトリでは、型クラスのインスタンスは `category.Implicits` パッケージ内においてあります。コンソールにおいて `category.Implicits._` をインポートすれば、インスタンスが使えるようになります。`fmap` に `Option(3)` と `isEven` (偶数かどうかを判定する関数) を与えると、`Option(3)` の中の値に `isEven` を適用した結果 (すなわち `Some(false)`) が出力されます。
+実際にこのインスタンスを使ってみましょう。本リポジトリでは、型クラスのインスタンスは `hamcat.Implicits` パッケージ内においてあります。コンソールにおいて `hamcat.Implicits._` をインポートすれば、インスタンスが使えるようになります。`fmap` に `Option(3)` と `isEven` (偶数かどうかを判定する関数) を与えると、`Option(3)` の中の値に `isEven` を適用した結果 (すなわち `Some(false)`) が出力されます。
 
 ```scala mdoc
-import category.Implicits._
+import hamcat.Implicits._
 
 OptionFunctor.fmap(isEven)(Option(3))
 ```
@@ -246,7 +246,7 @@ it should "恒等射を恒等射へ写す" in {
 テストを実行してみると、成功しました！ここで実装した `fmap` は関手性を満たしてそうです。
 
 ```sh
-sbt:scala-category-training> testOnly category.data.FunctorOptionSpec
+sbt:hamcat> core/testOnly hamcat.data.FunctorOptionSpec
 [info] FunctorOptionSpec:
 [info] Option functor
 [info] - should 射の合成を保存する

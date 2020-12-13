@@ -1,4 +1,4 @@
-package category.data
+package hamcat.data
 
 // Semigroup
 trait Semigroup[M] {

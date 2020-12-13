@@ -1,4 +1,4 @@
-package category.data
+package hamcat.data
 
 // Monoid
 trait Monoid[M] extends Semigroup[M] {

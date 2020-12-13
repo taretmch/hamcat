@@ -1,11 +1,11 @@
-package category.data
+package hamcat.data
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-import category.Implicits._
-import category.data.Writer
-import category.data.Writer._
+import hamcat.Implicits._
+import hamcat.data.Writer
+import hamcat.data.Writer._
 
 class WriterSpec extends AnyFlatSpec with Matchers {
 

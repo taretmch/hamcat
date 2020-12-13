@@ -1,5 +1,5 @@
-package category
+package hamcat
 
 object Implicits
-  extends category.data.instance.InstanceImplicits
-  with    category.syntax.SyntaxImplicits
+  extends hamcat.data.instance.InstanceImplicits
+  with    hamcat.syntax.SyntaxImplicits

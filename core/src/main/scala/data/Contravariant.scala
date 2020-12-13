@@ -1,4 +1,4 @@
-package category.data
+package hamcat.data
 
 // Contravariant functor
 trait Contravariant[F[_]] {

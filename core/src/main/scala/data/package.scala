@@ -1,4 +1,4 @@
-package category
+package hamcat
 
 package object data {
 
