@@ -200,7 +200,7 @@ type Writer[L, A] = (L, A)
 
 ただし、型 `L` はモノイドであることが条件です。
 
-これまでの議論を元に、[Writer](https://github.com/taretmch/scala-category-training/blob/master/src/main/scala/data/Writer.scala) というデータ型を以下のように定義できます。`Writer` のデータそのものはタプル `(L, A)` です。`Writer` 圏において関数を適用するための `flatMap` メソッド、関数合成のための `>=>` メソッド、恒等射の `pure` メソッドが定義されています。
+これまでの議論を元に、[Writer](https://github.com/taretmch/hamcat/blob/master/src/main/scala/data/Writer.scala) というデータ型を以下のように定義できます。`Writer` のデータそのものはタプル `(L, A)` です。`Writer` 圏において関数を適用するための `flatMap` メソッド、関数合成のための `>=>` メソッド、恒等射の `pure` メソッドが定義されています。
 
 ```scala
 case class Writer[L, A](run: (L, A)) {
