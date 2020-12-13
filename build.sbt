@@ -5,23 +5,28 @@ ThisBuild / version          := "0.1.0-SNAPSHOT"
 ThisBuild / organization     := "com.github.taretmch"
 ThisBuild / organizationName := "taretmch"
 
-addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.1" cross CrossVersion.full)
-
-lazy val root = (project in file("."))
+lazy val core = project
   .settings(
-    name := "scala-category-training",
+    name := "hamcats",
     libraryDependencies ++= Seq(
       scalaTest % Test,
       "org.typelevel" %% "cats-kernel" % "2.2.0",
       "org.typelevel" %% "cats-core"   % "2.2.0"
-    )
+    ),
+    addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.1" cross CrossVersion.full)
   )
 
-lazy val docs = (project in file("docs"))
+lazy val docs = project
   .settings(
     mdocIn  := file("docs/src/drafts"),
-    mdocOut := file("docs/src/main")
+    mdocOut := file("docs/src/main"),
+    addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.1" cross CrossVersion.full)
   )
-  .dependsOn(root)
+  .dependsOn(core)
   .enablePlugins(MdocPlugin)
 
+lazy val example = project
+  .settings(
+    name := "hamcats-sample"
+  )
+  .dependsOn(core)

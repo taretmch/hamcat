@@ -10,17 +10,32 @@
 
 本プロジェクトは以下のディレクトリ構成を持ちます。
 
-- docs/src/
-  - main/ : 圏論に関するドキュメント
-  - drafts/ : ドキュメントの下書き
-- src/main/scala/
+- core/src/main/scala/ : 圏論の概念のコード群
+  - arrow/ : 射のラッパークラスを定義したパッケージ
   - data/ : データ構造を定義したパッケージ
     - instance/ : データ構造のインスタンスを定義したパッケージ
   - syntax/ : データ構造の文法を定義したパッケージ
-  - universal/ : 普遍性の構造を定義したパッケージ
+- docs/src/ : ドキュメント群
+  - main/ : 圏論に関するドキュメント
+  - drafts/ : ドキュメントの下書き
+- example/src/main/scala/ : サンプルコード群
 
 # 使い方
 
-まだ作成中のプロジェクトであり、maven 上での公開等はしておりません。
+本プロジェクトをクローンして、ローカル環境にてお使いください。
 
-コードを動かしたい場合、本プロジェクトをクローンして、ローカル環境にてお使いください。
+```sh
+% git clone git@github.com:taretmch/scala-category-training.git
+
+% sbt
+sbt:scala-category-training> core/console
+[info] Starting scala interpreter...
+Welcome to Scala 2.13.3 (Java HotSpot(TM) 64-Bit Server VM, Java 10.0.1).
+Type in expressions for evaluation. Or try :help.
+
+scala> import category.Implicits._
+import category.Implicits._
+
+scala> Option("abcdefg") |+| Option("hijklmn")
+val res0: Option[String] = Some(abcdefghijklmn)
+```
