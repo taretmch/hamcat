@@ -78,15 +78,23 @@ Option(3).map(isEven)
 1つ目の性質は、関手が射の合成を保存することを意味します。
 
 ```scala mdoc
+import category.Implicits._
+
 // f: isEven
 // g: negate
 def negate: Boolean => Boolean = b => !b
+```
 
+```scala
 // fmap(g compose f)
-Option(3).map(negate compose isEven)
+OptionFunctor.fmap(negate compose isEven)
 
 // fmap(g) compose fmap(f)
-Option(3).map(isEven).map(negate)
+OptionFunctor.fmap(negate) compose OptionFunctor.fmap(isEven)
+```
+
+```scala mdoc
+OptionFunctor.fmap(negate compose isEven)(Option(3)) == (OptionFunctor.fmap(negate) compose OptionFunctor.fmap(isEven))(Option(3))
 ```
 
 <div align="center">
@@ -98,13 +106,19 @@ Option(3).map(isEven).map(negate)
 2つ目の性質は、関手が恒等射を保存することを意味します。
 
 ```scala mdoc
-def identity[A]: A => A = a => a
+import category.data.identity
+```
 
+```scala
 // fmap(identity[A])
-Option(3).map(identity)
+OptionFunctor.fmap(identity[Int])
 
 // identity[F[A]]
-identity(Option(3))
+identity[Option[Int]]
+```
+
+```scala mdoc
+OptionFunctor.fmap(identity[Int])(Option(3)) == identity[Option[Int]](Option(3))
 ```
 
 以上の性質は圏の構造を保存する対応を表す性質です。このような2つの性質を**関手性** (functor laws) と呼びます。
@@ -136,8 +150,9 @@ identity(Option(3))
 関手は Scala において、以下のような型クラス [Functor](https://github.com/taretmch/scala-category-training/blob/master/src/main/scala/data/Functor.scala) として実装できます。`Functor` 型クラスは、対象関数として型構築子 `F[_]` をもち、射関数として `fmap` メソッドを持ちます。
 
 ```scala
+// Functor
 trait Functor[F[_]] {
-  def fmap[A, B](fa: F[A])(f: A => B): F[B]
+  def fmap[A, B](f: A => B): F[A] => F[B]
 }
 ```
 
@@ -150,11 +165,9 @@ trait Functor[F[_]] {
 Option 関手のインスタンスは、以下のように実装できます。`Functor` に必要なパラメータは型構築子としての `Option` です。また、抽象メソッドである射関数 `fmap` を実装する必要があります。
 
 ```scala
+/** Option functor */
 implicit val OptionFunctor: Functor[Option] = new Functor[Option] {
-  def fmap[A, B](f: A => B)(fa: Option[A]): Option[B] = fa match {
-    case None    => None
-    case Some(a) => Some(f(a))
-  }
+  def fmap[A, B](f: A => B): Option[A] => Option[B] = _.map(f)
 }
 ```
 
@@ -200,9 +213,19 @@ val none:        Option[Int]    = None
 "Option functor" should "射の合成を保存する" in {
   // fmap(g compose f) == fmap(g) compose fmap(f)
   // Case: Some(1)
+  assert(
+    OptionFunctor.fmap(isEven compose increment)(Option(1))
+      ==
+    (OptionFunctor.fmap(isEven) compose OptionFunctor.fmap(increment))(Option(1))
+  )
   assert(Option(1).fmap(isEven compose increment) == Option(1).fmap(increment).fmap(isEven))
 
   // Case: None
+  assert(
+    OptionFunctor.fmap(isEven compose increment)(none)
+      ==
+    (OptionFunctor.fmap(isEven) compose OptionFunctor.fmap(increment))(none)
+  )
   assert(none.fmap(isEven compose increment) == none.fmap(increment).fmap(isEven))
 }
 ```
@@ -211,25 +234,29 @@ val none:        Option[Int]    = None
 
 ```scala
 it should "恒等射を恒等射へ写す" in {
-  // fmap(identity[A]) == idenity[F[A]]
+  // fmap(identity[A]) == identity[F[A]]
   // Case: Some(1)
-  assert(Option(1).fmap(identity) == identity(Option(1)))
+  assert(OptionFunctor.fmap(identity[Int])(Option(1)) == identity[Option[Int]](Option(1)))
 
   // Case: None
-  assert(none.fmap(identity) == identity(none))
+  assert(OptionFunctor.fmap(identity[Int])(none) == identity[Option[Int]](none))
 }
 ```
 
 テストを実行してみると、成功しました！ここで実装した `fmap` は関手性を満たしてそうです。
 
 ```sh
-sbt:scala-category-training> testOnly category.data.FunctorSpec
-[info] FunctorSpec:
+sbt:scala-category-training> testOnly category.data.FunctorOptionSpec
+[info] FunctorOptionSpec:
 [info] Option functor
 [info] - should 射の合成を保存する
 [info] - should 恒等射を恒等射へ写す
-...
+[info] Run completed in 452 milliseconds.
+[info] Total number of tests run: 2
+[info] Suites: completed 1, aborted 0
+[info] Tests: succeeded 2, failed 0, canceled 0, ignored 0, pending 0
 [info] All tests passed.
+[success] Total time: 6 s, completed 2020/12/13 10:36:27
 ```
 
 ### 7.2.3 Reader 関手
@@ -243,7 +270,7 @@ Reader 関手のインスタンスは、以下のように実装できます。�
 ```scala
 /** Reader functor */
 implicit def Function1Functor[R]: Functor[Function1[R, ?]] = new Functor[Function1[R, ?]] {
-  def fmap[A, B](f: A => B)(fa: R => A): (R => B) =
+  def fmap[A, B](f: A => B): (R => A) => (R => B) = fa =>
     f compose fa
 }
 ```
@@ -256,7 +283,7 @@ implicit def Function1Functor[R]: Functor[Function1[R, ?]] = new Functor[Functio
 
 ```scala mdoc
 // 偶数かどうか判定する関数を奇数かどうか判定する関数に変換する
-isEven.fmap(negate(_)) (3)
+isEven.fmap(negate) (3)
 ```
 
 `compose` が関手の射関数であるのですね。

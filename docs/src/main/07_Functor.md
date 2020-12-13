@@ -81,17 +81,24 @@ Option(3).map(isEven)
 1つ目の性質は、関手が射の合成を保存することを意味します。
 
 ```scala
+import category.Implicits._
+
 // f: isEven
 // g: negate
 def negate: Boolean => Boolean = b => !b
+```
 
+```scala
 // fmap(g compose f)
-Option(3).map(negate compose isEven)
-// res3: Option[Boolean] = Some(value = true)
+OptionFunctor.fmap(negate compose isEven)
 
 // fmap(g) compose fmap(f)
-Option(3).map(isEven).map(negate)
-// res4: Option[Boolean] = Some(value = true)
+OptionFunctor.fmap(negate) compose OptionFunctor.fmap(isEven)
+```
+
+```scala
+OptionFunctor.fmap(negate compose isEven)(Option(3)) == (OptionFunctor.fmap(negate) compose OptionFunctor.fmap(isEven))(Option(3))
+// res3: Boolean = true
 ```
 
 <div align="center">
@@ -103,15 +110,20 @@ Option(3).map(isEven).map(negate)
 2つ目の性質は、関手が恒等射を保存することを意味します。
 
 ```scala
-def identity[A]: A => A = a => a
+import category.data.identity
+```
 
+```scala
 // fmap(identity[A])
-Option(3).map(identity)
-// res5: Option[Int] = Some(value = 3)
+OptionFunctor.fmap(identity[Int])
 
 // identity[F[A]]
-identity(Option(3))
-// res6: Option[Int] = Some(value = 3)
+identity[Option[Int]]
+```
+
+```scala
+OptionFunctor.fmap(identity[Int])(Option(3)) == identity[Option[Int]](Option(3))
+// res4: Boolean = true
 ```
 
 以上の性質は圏の構造を保存する対応を表す性質です。このような2つの性質を**関手性** (functor laws) と呼びます。
@@ -143,8 +155,9 @@ identity(Option(3))
 関手は Scala において、以下のような型クラス [Functor](https://github.com/taretmch/scala-category-training/blob/master/src/main/scala/data/Functor.scala) として実装できます。`Functor` 型クラスは、対象関数として型構築子 `F[_]` をもち、射関数として `fmap` メソッドを持ちます。
 
 ```scala
+// Functor
 trait Functor[F[_]] {
-  def fmap[A, B](fa: F[A])(f: A => B): F[B]
+  def fmap[A, B](f: A => B): F[A] => F[B]
 }
 ```
 
@@ -157,11 +170,9 @@ trait Functor[F[_]] {
 Option 関手のインスタンスは、以下のように実装できます。`Functor` に必要なパラメータは型構築子としての `Option` です。また、抽象メソッドである射関数 `fmap` を実装する必要があります。
 
 ```scala
+/** Option functor */
 implicit val OptionFunctor: Functor[Option] = new Functor[Option] {
-  def fmap[A, B](f: A => B)(fa: Option[A]): Option[B] = fa match {
-    case None    => None
-    case Some(a) => Some(f(a))
-  }
+  def fmap[A, B](f: A => B): Option[A] => Option[B] = _.map(f)
 }
 ```
 
@@ -173,7 +184,7 @@ Option 関手の `fmap` メソッドは `Option#map` メソッドと同じです
 import category.Implicits._
 
 OptionFunctor.fmap(isEven)(Option(3))
-// res7: Option[Boolean] = Some(value = false)
+// res5: Option[Boolean] = Some(value = false)
 ```
 
 なお、毎回 `OptionFunctor.fmap(...)` と書くのは面倒ですし、不便です。この場合、以下のようにシンタックスを定義することによって `Option#fmap` メソッドとして呼び出せるようになります。
@@ -186,7 +197,7 @@ implicit class FunctorOps[F[_], A](v: F[A])(implicit functor: Functor[F]) {
 
 ```scala
 Option(3).fmap(isEven)
-// res8: Option[Boolean] = Some(value = false)
+// res6: Option[Boolean] = Some(value = false)
 ```
 
 これは Enrich my library パターンと言われるものです。
@@ -209,9 +220,19 @@ val none:        Option[Int]    = None
 "Option functor" should "射の合成を保存する" in {
   // fmap(g compose f) == fmap(g) compose fmap(f)
   // Case: Some(1)
+  assert(
+    OptionFunctor.fmap(isEven compose increment)(Option(1))
+      ==
+    (OptionFunctor.fmap(isEven) compose OptionFunctor.fmap(increment))(Option(1))
+  )
   assert(Option(1).fmap(isEven compose increment) == Option(1).fmap(increment).fmap(isEven))
 
   // Case: None
+  assert(
+    OptionFunctor.fmap(isEven compose increment)(none)
+      ==
+    (OptionFunctor.fmap(isEven) compose OptionFunctor.fmap(increment))(none)
+  )
   assert(none.fmap(isEven compose increment) == none.fmap(increment).fmap(isEven))
 }
 ```
@@ -220,25 +241,29 @@ val none:        Option[Int]    = None
 
 ```scala
 it should "恒等射を恒等射へ写す" in {
-  // fmap(identity[A]) == idenity[F[A]]
+  // fmap(identity[A]) == identity[F[A]]
   // Case: Some(1)
-  assert(Option(1).fmap(identity) == identity(Option(1)))
+  assert(OptionFunctor.fmap(identity[Int])(Option(1)) == identity[Option[Int]](Option(1)))
 
   // Case: None
-  assert(none.fmap(identity) == identity(none))
+  assert(OptionFunctor.fmap(identity[Int])(none) == identity[Option[Int]](none))
 }
 ```
 
 テストを実行してみると、成功しました！ここで実装した `fmap` は関手性を満たしてそうです。
 
 ```sh
-sbt:scala-category-training> testOnly category.data.FunctorSpec
-[info] FunctorSpec:
+sbt:scala-category-training> testOnly category.data.FunctorOptionSpec
+[info] FunctorOptionSpec:
 [info] Option functor
 [info] - should 射の合成を保存する
 [info] - should 恒等射を恒等射へ写す
-...
+[info] Run completed in 452 milliseconds.
+[info] Total number of tests run: 2
+[info] Suites: completed 1, aborted 0
+[info] Tests: succeeded 2, failed 0, canceled 0, ignored 0, pending 0
 [info] All tests passed.
+[success] Total time: 6 s, completed 2020/12/13 10:36:27
 ```
 
 ### 7.2.3 Reader 関手
@@ -252,7 +277,7 @@ Reader 関手のインスタンスは、以下のように実装できます。�
 ```scala
 /** Reader functor */
 implicit def Function1Functor[R]: Functor[Function1[R, ?]] = new Functor[Function1[R, ?]] {
-  def fmap[A, B](f: A => B)(fa: R => A): (R => B) =
+  def fmap[A, B](f: A => B): (R => A) => (R => B) = fa =>
     f compose fa
 }
 ```
@@ -265,8 +290,8 @@ implicit def Function1Functor[R]: Functor[Function1[R, ?]] = new Functor[Functio
 
 ```scala
 // 偶数かどうか判定する関数を奇数かどうか判定する関数に変換する
-isEven.fmap(negate(_)) (3)
-// res9: Boolean = true
+isEven.fmap(negate) (3)
+// res7: Boolean = true
 ```
 
 `compose` が関手の射関数であるのですね。
@@ -311,7 +336,7 @@ val increment: Int => Int = _ + 1
 
 ```scala
 fmapC(increment)(intOptionList)
-// res10: List[Option[Int]] = List(
+// res8: List[Option[Int]] = List(
 //   Some(value = 2),
 //   Some(value = 4),
 //   None,
@@ -323,7 +348,7 @@ fmapC(increment)(intOptionList)
 
 ```scala
 intOptionList.fmap(_.fmap(increment))
-// res11: List[Option[Int]] = List(
+// res9: List[Option[Int]] = List(
 //   Some(value = 2),
 //   Some(value = 4),
 //   None,
@@ -338,11 +363,11 @@ intOptionList.fmap(_.fmap(increment))
 ```scala
 // fmap(g compose f) == fmap(g) compose fmap(f)
 fmapC(isEven compose increment)(intOptionList) == (fmapC(isEven) compose fmapC(increment))(intOptionList)
-// res12: Boolean = true
+// res10: Boolean = true
 
 // fmap(identity[A]) == identity[F[A]]
 fmapC(identity[Int])(intOptionList) == identity[List[Option[Int]]](intOptionList)
-// res13: Boolean = true
+// res11: Boolean = true
 ```
 
 したがって、関手の合成もまた、関手であることがわかります。
