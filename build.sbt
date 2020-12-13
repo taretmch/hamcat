@@ -7,7 +7,7 @@ ThisBuild / organizationName := "taretmch"
 
 lazy val core = project
   .settings(
-    name := "hamcats",
+    name := "hamcat",
     libraryDependencies ++= Seq(
       scalaTest % Test,
       "org.typelevel" %% "cats-kernel" % "2.2.0",
@@ -27,6 +27,6 @@ lazy val docs = project
 
 lazy val example = project
   .settings(
-    name := "hamcats-sample"
+    name := "hamcat-sample"
   )
   .dependsOn(core)

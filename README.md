@@ -25,10 +25,10 @@
 本プロジェクトをクローンして、ローカル環境にてお使いください。
 
 ```sh
-% git clone git@github.com:taretmch/scala-category-training.git
+% git clone git@github.com:taretmch/hamcat.git
 
 % sbt
-sbt:scala-category-training> core/console
+sbt:hamcat> core/console
 [info] Starting scala interpreter...
 Welcome to Scala 2.13.3 (Java HotSpot(TM) 64-Bit Server VM, Java 10.0.1).
 Type in expressions for evaluation. Or try :help.
