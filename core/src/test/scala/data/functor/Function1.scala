@@ -3,7 +3,7 @@ package category.data
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-import category.Implicits._
+import hamcat.Implicits._
 
 class FunctorFunction1Spec extends AnyFlatSpec with Matchers {
   val increment:   Int => Int     = n => n + 1
