@@ -27,6 +27,7 @@ lazy val docs = project
 
 lazy val example = project
   .settings(
-    name := "hamcat-sample"
+    name := "hamcat-sample",
+    addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.1" cross CrossVersion.full)
   )
   .dependsOn(core)

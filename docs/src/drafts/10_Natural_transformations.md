@@ -41,10 +41,7 @@
 List 関手から Option 関手への自然変換の例として、 `headOption`、`listToNone` などがあります。
 
 ```scala mdoc
-def headOption[A]: List[A] => Option[A] = {
-  case head :: tail => Some(head)
-  case Nil          => None
-}
+def headOption[A]: List[A] => Option[A] = _.headOption
 
 def listToNone[A](list: List[A]): Option[A] = None
 ```
@@ -128,20 +125,45 @@ alpha[B] compose fmapF(f): F[A] => G[B]
 
 定義の2つ目の条件は、関手の射関数の変換に関する条件で、自然性と呼ばれるものです。
 
+### 10.1.4 自然変換を表す型クラス
+
+自然変換を表す型クラスとして、`FunctionK` 型クラスを導入します：
+
+```scala
+/** FunctionK: typeclass for mapping between first-order-kinded types */
+trait FunctionK[F[_], G[_]] { self =>
+  /** Apply method */
+  def apply[A](fa: F[A]): G[A]
+}
+```
+
+例によって、この型クラスを実装するだけでは自然変換かどうかはわかりません。そのため、FunctionK は単に first-order 型間の関数、すなわち `F[_]` から `G[_]` への関数の一般化となります。FunctionK の実装のうち、自然性を満たすような実装のみが自然変換です。
+
+では先ほどの例から抜粋して、FunctionK のインスタンスを作ってみましょう。
+
+`headOption` は以下のように定義されますが
+
+```scala
+def headOption[A]: List[A] => Option[A] = _.headOption
+```
+
+これの FunctionK のインスタンスを実装すると、以下のようになります。
+
+```scala mdoc
+import hamcat.arrow.FunctionK
+
+val headOptionK: FunctionK[List, Option] = new FunctionK[List, Option] {
+  def apply[A](fa: List[A]): Option[A] = fa.headOption
+}
+```
+
 ### 10.1.4 自然変換の例は、自然性を満たすか
 
 自然変換の具体例と定義を見ましたので、具体例が実際に自然変換の定義を満たすかどうかについて考えていきます。
 
 #### headOption: List => Option
 
-headOption 関数は、List 関手から Option 関手への自然変換です：
-
-```scala
-def headOption[A]: List[A] => Option[A] = {
-  case head :: tail => Some(head)
-  case Nil          => None
-}
-```
+headOption 関数は、List 関手から Option 関手への自然変換です。
 
 実際、`List(1, 2, 3, 4, 5)` と `isEven` 関数に対して、自然性を満たします：
 
@@ -152,8 +174,8 @@ def isEven: Int => Boolean = _ % 2 == 0
 val list = List(1, 2, 3, 4, 5)
 
 // 自然性
-val listToOption1 = (OptionFunctor.fmap(isEven) compose headOption[Int])(list)
-val listToOption2 = (headOption[Boolean] compose ListFunctor.fmap(isEven))(list)
+val listToOption1 = (OptionFunctor.fmap(isEven) compose headOptionK[Int])(list)
+val listToOption2 = (headOptionK[Boolean] _ compose ListFunctor.fmap(isEven))(list)
 listToOption1 == listToOption2
 ```
 
@@ -165,12 +187,18 @@ length 関数は、List 関手から Const 関手への自然変換です：
 def length[A]: List[A] => Const[Int, A] = list => Const(list.length)
 ```
 
+```scala mdoc
+val lengthK = new FunctionK[List, Const[Int, ?]] {
+  def apply[A](fa: List[A]): Const[Int, A] = Const(fa.length)
+}
+```
+
 length もまた、`List(1, 2, 3, 4, 5)` と `isEven` 関数に対して、自然性を満たします：
 
 ```scala mdoc
 // 自然性
-val listToConst1 = (ConstFunctor.fmap(isEven) compose length[Int])(list)
-val listToConst2 = (length[Boolean] compose ListFunctor.fmap(isEven))(list)
+val listToConst1 = (ConstFunctor.fmap(isEven) compose lengthK[Int])(list)
+val listToConst2 = (lengthK[Boolean] _ compose ListFunctor.fmap(isEven))(list)
 listToConst1 == listToConst2
 ```
 
@@ -182,6 +210,13 @@ flattenListOption 関数は、List[Option] 関手から List 関手への自然�
 def flattenListOption[A]: List[Option[A]] => List[A] = _.flatten
 ```
 
+```scala mdoc
+type ListOption[A] = List[Option[A]]
+val flattenListOptionK = new FunctionK[ListOption, List] {
+  def apply[A](fa: List[Option[A]]): List[A] = fa.flatten
+}
+```
+
 `List(Some(1), Some(2), None, Some(3))` と `isEven` 関数に対して、自然性を満たします：
 
 ```scala mdoc
@@ -190,8 +225,8 @@ def fmapLO[A, B]: (A => B) => List[Option[A]] => List[Option[B]] = f => listA =>
   listA.fmap(_.fmap(f))
 
 // 自然性
-val listOptionToList1 = (ListFunctor.fmap(isEven) compose flattenListOption[Int])(listOption)
-val listOptionToList2 = (flattenListOption[Boolean] compose fmapLO(isEven))(listOption)
+val listOptionToList1 = (ListFunctor.fmap(isEven) compose flattenListOptionK[Int])(listOption)
+val listOptionToList2 = (flattenListOptionK[Boolean] _ compose fmapLO(isEven))(listOption)
 listOptionToList1 == listOptionToList2
 ```
 
