@@ -16,6 +16,12 @@
     - [10.3.1 TODO: 自然同値](#1031-todo-自然同値)
     - [10.3.2 TODO: 反変関手の自然変換](#1032-todo-反変関手の自然変換)
     - [10.3.3 TODO: 水平合成と垂直合成](#1033-todo-水平合成と垂直合成)
+- [おまけ: 先取り！モナド](#おまけ-先取りモナド)
+  - [モナドの定義](#モナドの定義)
+  - [Option モナドをみてみよう](#option-モナドをみてみよう)
+  - [モナドの型クラスを作る](#モナドの型クラスを作る)
+  - [おわり](#おわり)
+- [まとめ](#まとめ)
 
 # 10. 自然変換
 
@@ -434,3 +440,133 @@ import hamcat.arrow.FunctionK.identityK
 ### 10.3.2 TODO: 反変関手の自然変換
 
 ### 10.3.3 TODO: 水平合成と垂直合成
+
+# おまけ: 先取り！モナド
+
+実は、関手と自然変換さえ学べば、モナドの定義を読むことができます。
+
+実際にモナドを使うのはだいぶ後になりますが、ここでモナドの定義をサクッと読んでみましょう！
+
+## モナドの定義
+
+モナドは、以下のように定義されます：
+
+---
+
+圏 `C` 上のモナドとは、自己関手 `T[_]`、自然変換 `eta: Id ~> T` と `mu: T[T] ~> T` の三つ組 `<T, eta, mu>` であって、以下が成り立つもののことです。
+
+1. `mu[A] compose T[eta[A]] == identity[T[A]]`
+2. `mu[A] compose eta[T[A]] == identity[T[A]]`
+3. `mu[A] compose mu[T[A]] == mu[A] compose T[mu[A]]`
+
+この3つの条件をモナドの公理と呼びます。
+
+---
+
+何言ってるかわからねーと思うので、Option モナドについて考えてみましょう。
+
+## Option モナドをみてみよう
+
+Scala 圏における Option モナドは、自己関手 `Option[_]`、自然変換 `eta: Id ~> Option`、`mu: Option[Option] ~> Option` の三つ組です。`eta` と `mu` はそれぞれ `Option.apply` メソッドおよび `flatten` メソッドとします。つまり、`eta` が `T` で型を包む操作で、`mu` が `T` のネストを平滑化する操作です。
+
+```scala mdoc
+type Id[A] = A
+type OptionOption[A] = Option[Option[A]]
+
+object eta extends (Id ~> Option) { def apply[A](fa: Id[A]): Option[A] = Option(fa) }
+object mu extends (OptionOption ~> Option) { def apply[A](fa: Option[Option[A]]): Option[A] = fa.flatten }
+```
+
+これらがモナドの公理を満たすか確認してみます。
+
+まず1つ目。
+
+1. `mu[A] compose T[eta[A]] == identity[T[A]]`
+
+```scala mdoc
+import hamcat.data.identity
+
+(mu[Int] _ compose OptionFunctor.fmap(eta[Int]))(Option(3)) == identity[Option[Int]](Option(3))
+```
+
+T[A] を T[T[A]] にしたあと flatten すると T[A] になる、という条件みたいですね。
+
+次に2つ目。
+
+2. `mu[A] compose eta[T[A]] == identity[T[A]]`
+
+```scala mdoc
+(mu[Int] _ compose eta[Option[Int]])(Option(3)) == identity[Option[Int]](Option(3))
+```
+
+これも T[A] ~> T[T[A]] ~> T[A] についての条件ですね。結合律みたいなもんでしょうか。
+
+最後に3つ目。
+
+3. `mu[A] compose mu[T[A]] == mu[A] compose T[mu[A]]`
+
+```scala mdoc
+(mu[Int] _ compose mu[Option[Int]])(Option(Option(Option(3)))) == (mu[Int] _ compose OptionFunctor.fmap(mu[Int]))(Option(Option(Option(3))))
+```
+
+これは、どれだけネストされても平滑化できるという条件ですね。
+
+Option はモナドの公理を満たすので、モナドであると言えます！
+
+## モナドの型クラスを作る
+
+さて、モナドは関手に加えて、平滑化のメソッドを備えたものであることがわかりました。モナドの型クラス `Monad` は、以下のように実装できます。自己関手 `T` に対して、平滑化の自然変換 `mu` を抽象メソッド `flatten` にし、自然変換 `eta` を抽象メソッド `pure` としています。
+
+```scala
+trait Monad[T[_]] {
+  def flatten[A](tta: T[T[A]]): T[A]
+  def pure[A](a: A): T[A]
+}
+```
+
+なお、`flatten` があると `flatMap` メソッドを作ることができます。
+
+```scala
+def flatMap[A, B](f: A => T[B])(ta: T[A])(implicit functor: Functor[T]): T[B] =
+  flatten(ta.fmap(f))
+```
+
+逆に、`flatMap` から `flatten` を作ることもできます。
+
+```scala
+def flatten[A](tta: T[T[A]]): T[A] = flatMap(identity[T[A]])(tta)
+```
+
+したがって、`Monad` 型クラスの抽象メソッド `flatMap` と `pure` でも良いです。
+
+```scala
+trait Monad[T[_]] {
+  def flatMap[A, B](f: A => T[B])(ta: T[A]): T[B]
+  def pure[A](a: A): T[A]
+}
+```
+
+また、Writer 圏のところで学んだ fish 演算子 `>=>` と `pure` でも良いです。
+
+## おわり
+
+モナドの定義を見て、型クラスを定義してみました。関手と自然変換がわかれば、モナドを定義することができるのですね。
+
+計算効果をラップするといった実用的な性質については、モナドを学ぶ章に改めて学んでいきましょう。
+
+# まとめ
+
+- 自然変換は、圏 `C` から圏 `D` への2つの関手 `F` と `G` の間の変換であって、`C` の各対象 `A` に対して `F[A] => G[A]` を対応させる。
+  - Scala 圏においては、自己関手から自己関手への変換となり、自然変換は Scala 圏における射 `F[A] => G[A]` になる。
+  - 例えば、List 関手から Option 関手への自然変換として headOption がある。
+- 自然変換 `alpha` が満たすべき以下の性質を自然性と呼ぶ。
+  - `(fmapG(f) compose alpha[A])(fa) == (alpha[B] compose fmapF(f))(fa)`
+- 自然変換は Scala において、型クラス `FunctionK` によって表現される。
+  - `FunctionK` が自然変換になるかは実装によるので、厳密には `FunctionK` は first-order-kinded 型間の関数を表現している。
+  - `FunctionK[F, G]` は `F ~> G` とも書くことができる。こちらの記法の方が直感的である。
+- 圏 `C` から圏 `D` への関手を対象とし、その間の自然変換を射とする圏を圏 `C` から圏 `D` への関手圏と呼び、`Fun(C, D)` と書く。
+  - 自然変換の合成は、単に射の合成である。
+  - 自然変換の合成は結合律を満たす。
+- 圏 `C` から圏 `D` への反変関手を対象とし、その間の自然変換を射とする関手圏は `Fun(C^op, D)` と書かれる。
+  - 反変関手間の自然変換は自然性を満たさないが、反自然性？ (opposite naturality condition) は満たす。
+- 圏 `C` 上のモナドとは、型の引き上げと平滑化の機能を持つ関手のことを表す。Scala 圏においては、`pure` メソッドと `flatten` メソッドによって表現される。
