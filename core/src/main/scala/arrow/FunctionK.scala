@@ -10,7 +10,7 @@ package hamcat.arrow
  * scala> val list = List(1, 2, 3, 4, 5)
  * scala> def isEven(num: Int): Boolean = num % 2 == 0
  * scala> (OptionFunctor.fmap(isEven) compose headOption[Int] _)(list) == (headOption[Boolean] _ compose ListFunctor.fmap(isEven))(list)
- * val res20: Boolean = true
+ * val res1: Boolean = true
  * }}}
  */
 trait FunctionK[F[_], G[_]] { self =>
