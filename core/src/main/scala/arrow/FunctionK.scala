@@ -33,7 +33,7 @@ trait FunctionK[F[_], G[_]] { self =>
 object FunctionK {
 
   /** Identity */
-  def identity[F[_]]: FunctionK[F, F] = new FunctionK[F, F] {
+  def identityK[F[_]]: FunctionK[F, F] = new FunctionK[F, F] {
     def apply[A](fa: F[A]): F[A] = fa
   }
 }

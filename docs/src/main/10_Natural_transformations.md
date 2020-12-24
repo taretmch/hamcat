@@ -3,18 +3,19 @@
     - [10.1.1 自然変換の例](#1011-自然変換の例)
     - [10.1.2 自然性](#1012-自然性)
     - [10.1.3 自然変換の定義](#1013-自然変換の定義)
+    - [10.1.4 自然変換を表す型クラス](#1014-自然変換を表す型クラス)
     - [10.1.4 自然変換の例は、自然性を満たすか](#1014-自然変換の例は自然性を満たすか)
       - [headOption: List => Option](#headoption-list--option)
       - [length: List => Const](#length-list--const)
       - [flattenListOption: List[Option] => List](#flattenlistoption-listoption--list)
   - [10.2 関手圏](#102-関手圏)
     - [10.2.1 自然変換の合成](#1021-自然変換の合成)
-    - [10.2.2 自然変換は結合律を満たすか](#1022-自然変換は結合律を満たすか)
-    - [10.2.3 自然変換は単位律を満たすか](#1023-自然変換は単位律を満たすか)
-  - [10.3 自然変換の性質](#103-自然変換の性質)
-    - [10.3.1 自然同値](#1031-自然同値)
-    - [10.3.2 共変関手の自然変換](#1032-共変関手の自然変換)
-    - [10.3.3 水平合成と垂直合成](#1033-水平合成と垂直合成)
+    - [10.2.2 FunctionK の合成](#1022-functionk-の合成)
+    - [10.2.3 関手圏は単位律を満たすか](#1023-関手圏は単位律を満たすか)
+  - [10.3 TODO: 自然変換の性質](#103-todo-自然変換の性質)
+    - [10.3.1 TODO: 自然同値](#1031-todo-自然同値)
+    - [10.3.2 TODO: 反変関手の自然変換](#1032-todo-反変関手の自然変換)
+    - [10.3.3 TODO: 水平合成と垂直合成](#1033-todo-水平合成と垂直合成)
 
 # 10. 自然変換
 
@@ -45,6 +46,12 @@ def headOption[A]: List[A] => Option[A] = _.headOption
 
 def listToNone[A](list: List[A]): Option[A] = None
 ```
+
+<div align="center">
+
+![自然変換としての headOption](./images/10_natural_transformation_example.png)
+
+</div>
 
 Option 関手から List 関手への自然変換の例としては `toList`、`optionToNil` などがあります。
 
@@ -97,6 +104,12 @@ implicit def ConstFunctor[C]: Functor[Const[C, ?]] = new Functor[Const[C, ?]] {
 
 圏 `C` から圏 `D` への関手を `F` と `G` とし、`F` から `G` への変換 `alpha` を考えます。
 
+<div align="center">
+
+![自然変換](./images/10_natural_transformation.png)
+
+</div>
+
 関手の対象関数は、圏 `C` の対象 `A` を `F[A]` および `G[A]` に対応させるものでした。この2つの対象 `F[A]` と `G[A]` は圏 `D` の対象であるため、対象関数の変換は `D` の射 `alpha[A]` として定義されます：
 
 ```scala
@@ -142,9 +155,15 @@ alpha[B] compose fmapF(f): F[A] => G[B]
 
 定義の2つ目の条件は、関手の射関数の変換に関する条件で、自然性と呼ばれるものです。
 
+<div align="center">
+
+![自然変換の定義](./images/10_natural_transformation.png)
+
+</div>
+
 ### 10.1.4 自然変換を表す型クラス
 
-自然変換を表す型クラスとして、`FunctionK` 型クラスを導入します：
+自然変換を表す型クラスとして、以下のような `FunctionK` 型クラスを導入します。この型クラスは、型パラメータとして型構築子 `F[_]` と `G[_]` を持ち、抽象メソッドとして `F[A]` を受け取ったら `G[A]` を返すような `apply` メソッドを持ちます。すなわち、関手 `F` から `G` への変換を表します。
 
 ```scala
 /** FunctionK: typeclass for mapping between first-order-kinded types */
@@ -154,7 +173,7 @@ trait FunctionK[F[_], G[_]] { self =>
 }
 ```
 
-例によって、この型クラスを実装するだけでは自然変換かどうかはわかりません。そのため、FunctionK は単に first-order-kinded 型間の関数、すなわち `F[_]` から `G[_]` への関数の一般化となります。FunctionK の実装のうち、自然性を満たすような実装のみが自然変換です。
+例によって、この型クラスを実装するだけでは自然変換かどうかはわかりません。そのため、FunctionK は単に型構築子 `F[_]` から `G[_]` への関数の一般化となります。FunctionK の実装のうち、自然性を満たすような実装のみが自然変換です。
 
 では先ほどの例から抜粋して、FunctionK のインスタンスを作ってみましょう。
 
@@ -169,10 +188,29 @@ def headOption[A]: List[A] => Option[A] = _.headOption
 ```scala
 import hamcat.arrow.FunctionK
 
-val headOptionK: FunctionK[List, Option] = new FunctionK[List, Option] {
+def headOptionK: FunctionK[List, Option] = new FunctionK[List, Option] {
   def apply[A](fa: List[A]): Option[A] = fa.headOption
 }
-// headOptionK: FunctionK[List, Option] = repl.MdocSession$App$$anon$1@523bd6a4
+```
+
+なお、この定義は kind-projector の Lambda (λ) を使えば少し簡単に書くことができます。
+
+```scala
+def lambdaHeadOption: FunctionK[List, Option] = Lambda[FunctionK[List, Option]](_.headOption)
+def λHeadOption: FunctionK[List, Option] = λ[FunctionK[List, Option]](_.headOption)
+```
+
+また、FunctionK のエイリアスとして `~>` が使われることが多いです。
+
+```scala
+/** Alias for FunctionK */
+type ~>[F[_], G[_]] = FunctionK[F, G]
+```
+
+したがって、headOption は、以下のようにも書けます。
+
+```scala
+def headOptionK2: (List ~> Option) = Lambda[List ~> Option](_.headOption)
 ```
 
 ### 10.1.4 自然変換の例は、自然性を満たすか
@@ -213,7 +251,7 @@ def length[A]: List[A] => Const[Int, A] = list => Const(list.length)
 val lengthK = new FunctionK[List, Const[Int, ?]] {
   def apply[A](fa: List[A]): Const[Int, A] = Const(fa.length)
 }
-// lengthK: AnyRef with FunctionK[List, Const[Int, β$0$]] = repl.MdocSession$App$$anon$2@244bb060
+// lengthK: AnyRef with FunctionK[List, Const[Int, β$3$]] = repl.MdocSession$App$$anon$5@271ce53a
 ```
 
 length もまた、`List(1, 2, 3, 4, 5)` と `isEven` 関数に対して、自然性を満たします：
@@ -238,10 +276,9 @@ def flattenListOption[A]: List[Option[A]] => List[A] = _.flatten
 
 ```scala
 type ListOption[A] = List[Option[A]]
-val flattenListOptionK = new FunctionK[ListOption, List] {
+def flattenListOptionK = new FunctionK[ListOption, List] {
   def apply[A](fa: List[Option[A]]): List[A] = fa.flatten
 }
-// flattenListOptionK: AnyRef with FunctionK[ListOption, List] = repl.MdocSession$App$$anon$3@28c9ccbb
 ```
 
 `List(Some(1), Some(2), None, Some(3))` と `isEven` 関数に対して、自然性を満たします：
@@ -272,9 +309,11 @@ listOptionToList1 == listOptionToList2
 
 ---
 
-一般に、圏 `C` から圏 `D` への関手を対象とし、その間の自然変換を射とする圏を圏 `C` から圏 `D` への**関手圏** (functor category) と呼び、`Fun(C, D)` と書きます。
+一般に、（小さい）圏 `C` から（局所的に小さい）圏 `D` への関手を対象とし、その間の自然変換を射とする圏を圏 `C` から圏 `D` への**関手圏** (functor category) と呼び、`Fun(C, D)` と書きます。
 
 ---
+
+また、圏 `C` から圏 `D` への反変関手を対象とし、その間の自然変換を射とする圏は `Fun(C^op, D)` と書きます。
 
 ### 10.2.1 自然変換の合成
 
@@ -364,34 +403,54 @@ def compose[H[_]](v: FunctionK[H, F]): FunctionK[H, G] =
   v andThen self
 ```
 
-### 10.2.4 関手圏は単位律を満たすか
+例えば、`flattenK: ListList ~> List` と `headOptionK: List ~> Option` とを合成することができます。
+
+```scala
+type ListList[A] = List[List[A]]
+
+def flattenK: ListList ~> List = Lambda[ListList ~> List](_.flatten)
+def flattenThenHeadOption = headOptionK compose flattenK
+flattenThenHeadOption(List(List(1, 2, 3), List(4, 5), Nil, List(6)))
+// res3: Option[Int] = Some(value = 1)
+```
+
+### 10.2.3 関手圏は単位律を満たすか
 
 関手圏における恒等射について考えていきましょう。
 
-恒等射 `functorIdentity` は、関手の対象関数 `F[_]` を `F[_] ⇒ F[_]` に対応させ、この変換が自然性を満たすことを見ればよさそうです。
+恒等射 `identityK` は、関手の対象関数 `F[_]` を `F[_] ⇒ F[_]` に対応させ、この変換が自然性を満たすことを見ればよさそうです。
 
 実際、この対応は自然性を満たします：
 
-...
+```
+fmapF(f) compose identityK[A] == identityK[B] compose fmapF(f)
+```
 
-Scala においては、`FunctionK.identity` として実装できます。
+Scala においては、`FunctionK.identityK` として実装できます。
 
 ```scala
 object FunctionK {
-  def identity[F[_]]: FunctionK[F, F] = new FunctionK[F, F] {
+  def identityK[F[_]]: FunctionK[F, F] = new FunctionK[F, F] {
     def apply[A](fa: F[A]): F[A] = fa
   }
 }
 ```
 
-## 10.3 自然変換の性質
+`FunctionK.identityK` は、恒等射の性質 `f . idA = idB . f` を満たします。
 
-### 10.3.1 自然同値
+```scala
+import hamcat.arrow.FunctionK.identityK
 
-### 10.3.2 共変関手の自然変換
+(headOptionK compose identityK[List])(List(1, 2, 3)) == headOptionK(List(1, 2, 3))
+// res4: Boolean = true
+(identityK[Option] compose headOptionK)(List(1, 2, 3)) == headOptionK(List(1, 2, 3))
+// res5: Boolean = true
+```
 
-TODO: Comming soon
+## 10.3 TODO: 自然変換の性質
 
-### 10.3.3 水平合成と垂直合成
+### 10.3.1 TODO: 自然同値
 
-TODO: Comming soon
+### 10.3.2 TODO: 反変関手の自然変換
+
+### 10.3.3 TODO: 水平合成と垂直合成
