@@ -257,7 +257,7 @@ def length[A]: List[A] => Const[Int, A] = list => Const(list.length)
 val lengthK = new FunctionK[List, Const[Int, ?]] {
   def apply[A](fa: List[A]): Const[Int, A] = Const(fa.length)
 }
-// lengthK: AnyRef with FunctionK[List, Const[Int, β$3$]] = repl.MdocSession$App$$anon$5@38a2a71b
+// lengthK: AnyRef with FunctionK[List, Const[Int, β$3$]] = repl.MdocSession$App$$anon$5@240411d
 ```
 
 length もまた、`List(1, 2, 3, 4, 5)` と `isEven` 関数に対して、自然性を満たします：
@@ -320,6 +320,10 @@ listOptionToList1 == listOptionToList2
 ---
 
 また、圏 `C` から圏 `D` への反変関手を対象とし、その間の自然変換を射とする圏は `Fun(C^op, D)` と書きます。
+
+関手圏は、圏の圏についての Hom 集合 (圏の圏の射は関手であり、Hom 集合はその圏における全ての射の集まりです) に自然変換を与えたものです。
+
+のちに、米田埋め込みによって任意の圏を関手圏に埋め込める (表現できる) ことを学びます。
 
 ### 10.2.1 自然変換の合成
 

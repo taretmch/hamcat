@@ -1,6 +1,6 @@
 package hamcat.data
 
-/** Monda */
+/** Monad */
 trait Monad[M[_]] {
 
   def flatMap[A, B](f: A => M[B])(ma: M[A]): M[B]

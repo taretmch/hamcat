@@ -1,4 +1,4 @@
-package hamcat.example
+package hamcat.example.tut.chapter10
 
 import hamcat.Implicits._
 import hamcat.data.Const

@@ -6,7 +6,10 @@ import hamcat.data._
 
 object FunctionKSample {
 
-  object headOption extends FunctionK[List, Option] {
+  object headOption1 extends FunctionK[List, Option] {
+    def apply[A](fa: List[A]): Option[A] = fa.headOption
+  }
+  val headOption2: FunctionK[List, Option] = new FunctionK[List, Option] {
     def apply[A](fa: List[A]): Option[A] = fa.headOption
   }
 
