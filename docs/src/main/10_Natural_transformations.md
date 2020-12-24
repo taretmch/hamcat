@@ -57,7 +57,7 @@ def toList[A]: Option[A] => List[A] = {
 def optionToNil[A](option: Option[A]): List[A] = Nil
 ```
 
-また、関手の合成もまた関手になるので、List[List[_]] 関手や List[Option[_]] 関手から List 関手への自然変換も考えることができます。
+また、関手の合成もまた関手になるので、List[List] 関手や List[Option] 関手から List 関手への自然変換も考えることができます。
 
 ```scala
 def flattenListList[A]: List[List[A]] => List[A] = _.flatten
@@ -71,6 +71,23 @@ import hamcat.data.Const
 
 def length[A]: List[A] => Const[Int, A] = list => Const(list.length)
 ```
+
+---
+
+Const 関手は以下のように実装されています。
+
+```scala
+/** Const data type */
+case class Const[C, +A](v: C)
+
+/** Const functor */
+implicit def ConstFunctor[C]: Functor[Const[C, ?]] = new Functor[Const[C, ?]] {
+  def fmap[A, B](f: A => B): Const[C, A] => Const[C, B] = fa =>
+    Const(fa.v)
+}
+```
+
+---
 
 以上のように、Scala 圏の自己関手に関する自然変換は、ある型構築子からある型構築子への関数であることがわかります。
 
@@ -137,7 +154,7 @@ trait FunctionK[F[_], G[_]] { self =>
 }
 ```
 
-例によって、この型クラスを実装するだけでは自然変換かどうかはわかりません。そのため、FunctionK は単に first-order 型間の関数、すなわち `F[_]` から `G[_]` への関数の一般化となります。FunctionK の実装のうち、自然性を満たすような実装のみが自然変換です。
+例によって、この型クラスを実装するだけでは自然変換かどうかはわかりません。そのため、FunctionK は単に first-order-kinded 型間の関数、すなわち `F[_]` から `G[_]` への関数の一般化となります。FunctionK の実装のうち、自然性を満たすような実装のみが自然変換です。
 
 では先ほどの例から抜粋して、FunctionK のインスタンスを作ってみましょう。
 
@@ -155,7 +172,7 @@ import hamcat.arrow.FunctionK
 val headOptionK: FunctionK[List, Option] = new FunctionK[List, Option] {
   def apply[A](fa: List[A]): Option[A] = fa.headOption
 }
-// headOptionK: FunctionK[List, Option] = repl.MdocSession$App$$anon$1@667ed30
+// headOptionK: FunctionK[List, Option] = repl.MdocSession$App$$anon$1@523bd6a4
 ```
 
 ### 10.1.4 自然変換の例は、自然性を満たすか
@@ -196,7 +213,7 @@ def length[A]: List[A] => Const[Int, A] = list => Const(list.length)
 val lengthK = new FunctionK[List, Const[Int, ?]] {
   def apply[A](fa: List[A]): Const[Int, A] = Const(fa.length)
 }
-// lengthK: AnyRef with FunctionK[List, Const[Int, β$0$]] = repl.MdocSession$App$$anon$2@28f4fedc
+// lengthK: AnyRef with FunctionK[List, Const[Int, β$0$]] = repl.MdocSession$App$$anon$2@244bb060
 ```
 
 length もまた、`List(1, 2, 3, 4, 5)` と `isEven` 関数に対して、自然性を満たします：
@@ -224,7 +241,7 @@ type ListOption[A] = List[Option[A]]
 val flattenListOptionK = new FunctionK[ListOption, List] {
   def apply[A](fa: List[Option[A]]): List[A] = fa.flatten
 }
-// flattenListOptionK: AnyRef with FunctionK[ListOption, List] = repl.MdocSession$App$$anon$3@58fae2d
+// flattenListOptionK: AnyRef with FunctionK[ListOption, List] = repl.MdocSession$App$$anon$3@28c9ccbb
 ```
 
 `List(Some(1), Some(2), None, Some(3))` と `isEven` 関数に対して、自然性を満たします：
@@ -263,9 +280,109 @@ listOptionToList1 == listOptionToList2
 
 関手圏が圏であるためには、射の合成と結合律、単位律が定義されている必要があります。まずは射の合成、すなわち自然変換の合成について考えてみましょう。
 
-### 10.2.2 自然変換は結合律を満たすか
+自然変換は単に自然性を満たす射であるので、自然変換を合成するには自然性を満たすように射を合成すれば良さそうです。
 
-### 10.2.3 自然変換は単位律を満たすか
+圏 `C` から圏 `D` への3つの関手を `F` と `G`、`H` とし、`F` から `G` への自然変換を `alpha`、`G` から `H` への自然変換を `beta` としましょう。
+
+このとき、圏 `C` の対象 `A` に対して、各自然変換の A 成分は以下のようになるはずです。
+
+```
+alpha[A]: F[A] -> G[A]
+beta[A]: G[A] -> H[A]
+```
+
+これらは圏 `D` の射であるので、合成することができます。
+
+```
+beta[A] compose alpha[A]: F[A] -> H[A]
+```
+
+そして、この射の合成を自然変換の A 成分に関する合成として以下のように定義します。
+
+```
+(beta compose alpha)[A] := beta[A] compose alpha[A]
+```
+
+この合成 `beta compose alpha` は自然性を満たすでしょうか？
+
+満たされるべき自然性は
+
+```
+fmapH compose (beta compose alpha)[A] == (beta compose alpha)[B] compose fmapF
+```
+
+です。
+
+まず、`alpha` と `beta` は自然変換であるので、以下の2つが成り立ちます：
+
+```
+1) fmapG compose alpha[A] == alpha[B] compose fmapF
+2) fmapH compose beta[A] == beta[B] compose fmapG
+```
+
+射の合成により、1) の両辺に `beta[B]` を適用することができます：
+
+```
+3) beta[B] compose fmapG compose alpha[A] == beta[B] compose alpha[B] compose fmapF
+```
+
+2) と 3) より、以下が成り立ちます：
+
+```
+fmapH compose beta[A] compose alpha[A] == beta[B] compose alpha[B] compose fmapF
+```
+
+射の合成は結合律を満たすので、以下のように書け：
+
+```
+fmapH compose (beta[A] compose alpha[A]) == (beta[B] compose alpha[B]) compose fmapF
+```
+
+自然変換の各成分の合成の定義により、求めたい自然性が導かれます：
+
+```
+fmapH compose (beta compose alpha)[A] == (beta compose alpha)[B] compose fmapF
+```
+
+したがって、自然変換の合成は単にその射の合成であると言えます。
+
+また、自然変換の合成は射の合成であるので、合成に関して結合律が成り立ちます。
+
+### 10.2.2 FunctionK の合成
+
+FunctionK に関する合成は、単に射の合成をするだけなので以下のように定義できます：
+
+```scala
+/** Composition of natural transformation */
+def andThen[H[_]](v: FunctionK[G, H]): FunctionK[F, H] =
+  new FunctionK[F, H] {
+    def apply[A](fa: F[A]): H[A] = v(self(fa))
+  }
+
+/** Composition of natural transformation */
+def compose[H[_]](v: FunctionK[H, F]): FunctionK[H, G] =
+  v andThen self
+```
+
+### 10.2.4 関手圏は単位律を満たすか
+
+関手圏における恒等射について考えていきましょう。
+
+恒等射 `functorIdentity` は、関手の対象関数 `F[_]` を `F[_] ⇒ F[_]` に対応させ、この変換が自然性を満たすことを見ればよさそうです。
+
+実際、この対応は自然性を満たします：
+
+...
+
+Scala においては、`FunctionK.identity` として実装できます。
+
+```scala
+object FunctionK {
+  def identity[F[_]]: FunctionK[F, F] = new FunctionK[F, F] {
+    def apply[A](fa: F[A]): F[A] = fa
+  }
+}
+```
 
 ## 10.3 自然変換の性質
 
