@@ -132,6 +132,12 @@ fmapG(f) compose alpha[A]: F[A] => G[B]
 alpha[B] compose fmapF(f): F[A] => G[B]
 ```
 
+<div align="center">
+
+![自然性](./images/10_naturality.png)
+
+</div>
+
 このように、射関数の変換には2通りの作り方があるため、整合性が保たれるようどちらの作り方でも結果が同じでなければいけません：
 
 ```scala
@@ -199,6 +205,14 @@ def headOptionK: FunctionK[List, Option] = new FunctionK[List, Option] {
 }
 ```
 
+あるいは、以下のようにも実装できます。
+
+```scala
+object headOptionK extends FunctionK[List, Option] {
+  def apply[A](fa: List[A]): Option[A] = fa.headOption
+}
+```
+
 なお、この定義は kind-projector の Lambda (λ) を使えば少し簡単に書くことができます。
 
 ```scala
@@ -245,6 +259,12 @@ listToOption1 == listToOption2
 // res0: Boolean = true
 ```
 
+<div align="center">
+
+![headOption の可換図式](./images/10_headOption.png)
+
+</div>
+
 #### length: List => Const
 
 length 関数は、List 関手から Const 関手への自然変換です：
@@ -254,10 +274,8 @@ def length[A]: List[A] => Const[Int, A] = list => Const(list.length)
 ```
 
 ```scala
-val lengthK = new FunctionK[List, Const[Int, ?]] {
-  def apply[A](fa: List[A]): Const[Int, A] = Const(fa.length)
-}
-// lengthK: AnyRef with FunctionK[List, Const[Int, β$3$]] = repl.MdocSession$App$$anon$5@240411d
+val lengthK = Lambda[FunctionK[List, Const[Int, ?]]](fa => Const(fa.length))
+// lengthK: AnyRef with FunctionK[List, Const[Int, β$3$]] = repl.MdocSession$App$$anon$5@2c8143f2
 ```
 
 length もまた、`List(1, 2, 3, 4, 5)` と `isEven` 関数に対して、自然性を満たします：
@@ -271,6 +289,12 @@ val listToConst2 = (lengthK[Boolean] _ compose ListFunctor.fmap(isEven))(list)
 listToConst1 == listToConst2
 // res1: Boolean = true
 ```
+
+<div align="center">
+
+![length の可換図式](./images/10_length.png)
+
+</div>
 
 #### flattenListOption: List[Option] => List
 
@@ -309,6 +333,12 @@ listOptionToList1 == listOptionToList2
 // res2: Boolean = true
 ```
 
+<div align="center">
+
+![flattenListOption の可換図式](./images/10_flatten.png)
+
+</div>
+
 ## 10.2 関手圏
 
 自然変換は関手間の対応であるので、関手を対象として自然変換を射とするような圏を考えることができます。そのような圏は関手圏と呼ばれます。
@@ -340,6 +370,12 @@ alpha[A]: F[A] -> G[A]
 beta[A]: G[A] -> H[A]
 ```
 
+<div align="center">
+
+![自然変換の合成](./images/10_natural_transformation_composition1.png)
+
+</div>
+
 これらは圏 `D` の射であるので、合成することができます。
 
 ```
@@ -352,6 +388,12 @@ beta[A] compose alpha[A]: F[A] -> H[A]
 (beta compose alpha)[A] := beta[A] compose alpha[A]
 ```
 
+<div align="center">
+
+![自然変換の合成2](./images/10_natural_transformation_composition2.png)
+
+</div>
+
 この合成 `beta compose alpha` は自然性を満たすでしょうか？
 
 満たされるべき自然性は
@@ -362,6 +404,12 @@ fmapH compose (beta compose alpha)[A] == (beta compose alpha)[B] compose fmapF
 
 です。
 
+<div align="center">
+
+![自然変換の合成が満たすべき自然性](./images/10_natural_transformation_composition3.png)
+
+</div>
+
 まず、`alpha` と `beta` は自然変換であるので、以下の2つが成り立ちます：
 
 ```
@@ -369,17 +417,35 @@ fmapH compose (beta compose alpha)[A] == (beta compose alpha)[B] compose fmapF
 2) fmapH compose beta[A] == beta[B] compose fmapG
 ```
 
+<div align="center">
+
+![自然変換の合成: 前提条件](./images/10_natural_transformation_composition4.png)
+
+</div>
+
 射の合成により、1) の両辺に `beta[B]` を適用することができます：
 
 ```
 3) beta[B] compose fmapG compose alpha[A] == beta[B] compose alpha[B] compose fmapF
 ```
 
+<div align="center">
+
+![自然変換の合成: 証明1](./images/10_natural_transformation_composition5.png)
+
+</div>
+
 2) と 3) より、以下が成り立ちます：
 
 ```
-fmapH compose beta[A] compose alpha[A] == beta[B] compose alpha[B] compose fmapF
+4) fmapH compose beta[A] compose alpha[A] == beta[B] compose alpha[B] compose fmapF
 ```
+
+<div align="center">
+
+![自然変換の合成: 証明2](./images/10_natural_transformation_composition6.png)
+
+</div>
 
 射の合成は結合律を満たすので、以下のように書け：
 
