@@ -503,9 +503,13 @@ import hamcat.arrow.FunctionK.identityK
 (identityK[Option] compose headOptionK)(List(1, 2, 3)) == headOptionK(List(1, 2, 3))
 ```
 
-## 10.3 TODO: 自然変換の性質
+## 10.3 自然変換の諸概念
 
-### 10.3.1 TODO: 自然同値
+本節では、自然変換に関するいくつかの概念について見ていきます。
+
+### 10.3.1 自然同値
+
+まずは自然同値についてです。
 
 ### 10.3.2 TODO: 反変関手の自然変換
 

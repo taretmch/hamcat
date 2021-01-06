@@ -275,7 +275,7 @@ def length[A]: List[A] => Const[Int, A] = list => Const(list.length)
 
 ```scala
 val lengthK = Lambda[FunctionK[List, Const[Int, ?]]](fa => Const(fa.length))
-// lengthK: AnyRef with FunctionK[List, Const[Int, β$3$]] = repl.MdocSession$App$$anon$5@2c8143f2
+// lengthK: AnyRef with FunctionK[List, Const[Int, β$3$]] = repl.MdocSession$App$$anon$5@795ffb86
 ```
 
 length もまた、`List(1, 2, 3, 4, 5)` と `isEven` 関数に対して、自然性を満たします：
@@ -523,9 +523,13 @@ import hamcat.arrow.FunctionK.identityK
 // res5: Boolean = true
 ```
 
-## 10.3 TODO: 自然変換の性質
+## 10.3 自然変換の諸概念
 
-### 10.3.1 TODO: 自然同値
+本節では、自然変換に関するいくつかの概念について見ていきます。
+
+### 10.3.1 自然同値
+
+まずは自然同値についてです。
 
 ### 10.3.2 TODO: 反変関手の自然変換
 
