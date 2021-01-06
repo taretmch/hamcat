@@ -9,9 +9,7 @@ lazy val core = project
   .settings(
     name := "hamcat",
     libraryDependencies ++= Seq(
-      scalaTest % Test,
-      "org.typelevel" %% "cats-kernel" % "2.2.0",
-      "org.typelevel" %% "cats-core"   % "2.2.0"
+      scalaTest % Test
     ),
     addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.1" cross CrossVersion.full)
   )
@@ -20,6 +18,10 @@ lazy val docs = project
   .settings(
     mdocIn  := file("docs/src/drafts"),
     mdocOut := file("docs/src/main"),
+    libraryDependencies ++= Seq(
+      "org.typelevel" %% "cats-kernel" % "2.2.0",
+      "org.typelevel" %% "cats-core"   % "2.2.0"
+    ),
     addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.1" cross CrossVersion.full)
   )
   .dependsOn(core)
