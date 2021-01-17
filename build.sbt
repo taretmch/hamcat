@@ -5,31 +5,44 @@ ThisBuild / version          := "1.0.0-SNAPSHOT"
 ThisBuild / organization     := "com.criceta"
 ThisBuild / organizationName := "taretmch"
 
+val commonSettings = Seq(
+  scalacOptions ++= Seq(
+    "-deprecation",
+    "-feature",
+    "-unchecked",
+    "-Xfatal-warnings",
+    "-Xlint:-unused,_",
+    "-Ywarn-dead-code",
+    "-Ywarn-unused:imports"
+  ),
+  addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.1" cross CrossVersion.full)
+)
+
 lazy val core = project
-  .settings(
-    name := "hamcat",
-    libraryDependencies ++= Seq(
-      scalaTest % Test
-    ),
-    addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.1" cross CrossVersion.full)
-  )
+  .settings(name := "hamcat-core")
+  .settings(commonSettings: _*)
+  .settings(libraryDependencies ++= Seq(
+    scalaTest % Test
+  ))
 
 lazy val docs = project
-  .settings(
-    mdocIn  := file("docs/src/drafts"),
-    mdocOut := file("docs/src/main"),
-    libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-kernel" % "2.2.0",
-      "org.typelevel" %% "cats-core"   % "2.2.0"
-    ),
-    addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.1" cross CrossVersion.full)
-  )
+  .settings(name := "hamcat-docs")
+  .settings(commonSettings: _*)
+  .settings(mdocIn  := file("docs/src/drafts"))
+  .settings(mdocOut := file("docs/src/main"))
+  .settings(libraryDependencies ++= Seq(
+    "org.typelevel" %% "cats-kernel" % "2.2.0",
+    "org.typelevel" %% "cats-core"   % "2.2.0"
+  ))
   .dependsOn(core)
   .enablePlugins(MdocPlugin)
 
 lazy val example = project
-  .settings(
-    name := "hamcat-sample",
-    addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.1" cross CrossVersion.full)
-  )
+  .settings(name := "hamcat-sample")
+  .dependsOn(core)
+
+lazy val root = (project in file("."))
+  .settings(name := "hamcat")
+  .settings(commonSettings: _*)
+  .aggregate(core)
   .dependsOn(core)
