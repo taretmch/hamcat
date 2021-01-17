@@ -49,5 +49,5 @@ object ProductFunction {
 
   /** Identity morphism */
   def productIdentity[A, B]: ProductFunction[A, B, A, B] =
-    ProductFunction(identity[A], identity[B])
+    ProductFunction((identity[A], identity[B]))
 }

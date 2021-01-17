@@ -1,11 +1,9 @@
 package hamcat.data.instance
 
-import hamcat.data.{ Functor, Monoid, Id, Const }
+import hamcat.data.{ Functor, Id, Const }
 
 /** Instances of functor */
 trait FunctorInstances {
-
-  import hamcat.data.identity
 
   /** Option functor */
   implicit val OptionFunctor: Functor[Option] = new Functor[Option] {
