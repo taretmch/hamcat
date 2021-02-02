@@ -107,7 +107,7 @@ def compose[E, H](v: ProductFunction[E, H, A, B]): ProductFunction[E, H, C, D] =
 ```scala
 /** Identity morphism */
 def productIdentity[A, B]: ProductFunction[A, B, A, B] =
-  ProductFunction(identity[A], identity[B])
+  ProductFunction((identity[A], identity[B]))
 ```
 
 ### 8.1.2 直積圏における射の合成の例
@@ -135,8 +135,8 @@ def isOddL: Long => Boolean = _ % 2 == 1
 import hamcat.arrow.ProductFunction
 
 /** Morphism declaration */
-val func1 = ProductFunction(increment, doubleL)
-val func2 = ProductFunction(isEven, isOddL)
+val func1 = ProductFunction((increment, doubleL))
+val func2 = ProductFunction((isEven, isOddL))
 ```
 
 それぞれの関数の定義は以下のようになっています。

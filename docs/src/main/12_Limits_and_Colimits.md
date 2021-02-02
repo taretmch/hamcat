@@ -24,12 +24,14 @@ def length = Lambda[List ~> Const[Int, ?]](fa => Const(fa.length))
 
 `Const` というデータ構造そのものが関手になっているのではなく、`Const[Int, ?]` のように定数の型 `Int` を与えると関手になるのでした。例えば
 
-```scala mdoc
+```scala
 import hamcat.Implicits._
 import hamcat.data.Const
 
 val const1 = Const[Int, String](3)
+// const1: Const[Int, String] = Const(v = 3)
 val const2 = const1.fmap(str => str.startsWith("a"))
+// const2: Const[Int, Boolean] = Const(v = 3)
 ```
 
 のように、定数 `3` を保持しながら型の変換 `String => Boolean` をするような処理を書くことができます。

@@ -12,10 +12,6 @@
     - [10.2.1 自然変換の合成](#1021-自然変換の合成)
     - [10.2.2 FunctionK の合成](#1022-functionk-の合成)
     - [10.2.3 関手圏は単位律を満たすか](#1023-関手圏は単位律を満たすか)
-  - [10.3 TODO: 自然変換の性質](#103-todo-自然変換の性質)
-    - [10.3.1 TODO: 自然同値](#1031-todo-自然同値)
-    - [10.3.2 TODO: 反変関手の自然変換](#1032-todo-反変関手の自然変換)
-    - [10.3.3 TODO: 水平合成と垂直合成](#1033-todo-水平合成と垂直合成)
 - [おまけ: 先取り！モナド](#おまけ-先取りモナド)
   - [モナドの定義](#モナドの定義)
   - [Option モナドをみてみよう](#option-モナドをみてみよう)
@@ -34,8 +30,6 @@
 次に、自然変換の定義を与え、その定義と具体例とを照らし合わせます。
 
 関手の変換である自然変換を導入すると、関手を対象として自然変換を射とするような圏を考えることができます。そのような圏は関手圏と呼ばれます。関手圏を導入するために、自然変換の合成、合成の結合律、単位律について議論します。
-
-最後に、自然変換に関するいくつかの性質を見ていきます。関手の同等性を議論する際に使われる自然同値、共変関手の自然変換、水平合成と垂直合成について考えます。
 
 ## 10.1 自然変換とは
 
@@ -270,7 +264,7 @@ def length[A]: List[A] => Const[Int, A] = list => Const(list.length)
 ```
 
 ```scala mdoc
-val lengthK = Lambda[FunctionK[List, Const[Int, ?]]](fa => Const(fa.length))
+def lengthK = Lambda[FunctionK[List, Const[Int, ?]]](fa => Const(fa.length))
 ```
 
 length もまた、`List(1, 2, 3, 4, 5)` と `isEven` 関数に対して、自然性を満たします：
@@ -502,18 +496,6 @@ import hamcat.arrow.FunctionK.identityK
 (headOptionK compose identityK[List])(List(1, 2, 3)) == headOptionK(List(1, 2, 3))
 (identityK[Option] compose headOptionK)(List(1, 2, 3)) == headOptionK(List(1, 2, 3))
 ```
-
-## 10.3 自然変換の諸概念
-
-本節では、自然変換に関するいくつかの概念について見ていきます。
-
-### 10.3.1 自然同値
-
-まずは自然同値についてです。
-
-### 10.3.2 TODO: 反変関手の自然変換
-
-### 10.3.3 TODO: 水平合成と垂直合成
 
 # おまけ: 先取り！モナド
 
