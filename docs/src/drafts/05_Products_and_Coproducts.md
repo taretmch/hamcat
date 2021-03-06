@@ -84,7 +84,7 @@ f: A => B = a => a + 1
 
 では、Scala 圏 (前回までは Hask 圏と言っていました) における始対象は何でしょうか。Scala 圏とは、型を対象とし、型間の関数を射とするような圏です。`Set` の空集合に対応する型は、`Nothing` でした。ある1つの型から任意の型 `A` への射で一意なものは、`Nothing` から `A` への関数 `absurd` です。
 
-```scala mdoc
+```scala
 def absurd[A]: Nothing => A = { case _ => ??? }
 ```
 
