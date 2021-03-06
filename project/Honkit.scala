@@ -8,7 +8,7 @@ object Honkit extends TaskConf {
 
   def buildBook = Def.inputTask[Unit] {
     val options = rawStringArg("<honkit command>").parsed
-    printRun(Process(s"$honkitBin build $mdocOutputDir $honkitBookDir $options"))
+    printRun(Process(s"$honkitBin build $bookJsonDir $honkitBookDir $options"))
   }
 
   lazy val textBuildHtml = inputKey[Unit]("build Honkit to html")

@@ -12,13 +12,13 @@ trait TaskConf {
   val nodeBinDir      = file("node_modules/.bin/")
 
   // Directory in which book.json is
-  val honkitConfDir   = file(".")
+  val bookJsonDir     = file(".")
 
   // Workspace of honkit
   val honkitBookDir   = file("honkit/docs")
 
   // Output directory of mdoc
-  val mdocOutputDir   = file("docs/target/mdoc")
+  val mdocOutputDir   = file("mdocOutput")
   val mdocInputDir    = file("docs/src/main")
 
   protected def rawStringArg(argLabel: String = "<arg>"): Parser[String] = {
