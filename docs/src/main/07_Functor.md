@@ -1,18 +1,4 @@
 <!-- omit in toc -->
-# 目次
-
-- [7. 関手](#7-関手)
-  - [7.1 関手とは](#71-関手とは)
-    - [7.1.1 対象関数](#711-対象関数)
-    - [7.1.2 射関数](#712-射関数)
-    - [7.1.3 関手の定義](#713-関手の定義)
-  - [7.2 プログラミングにおける関手](#72-プログラミングにおける関手)
-    - [7.2.1 Functor 型クラス](#721-functor-型クラス)
-    - [7.2.2 Option 関手](#722-option-関手)
-    - [7.2.3 Reader 関手](#723-reader-関手)
-  - [7.3 関手の合成](#73-関手の合成)
-- [本章のまとめ](#本章のまとめ)
-
 # 7. 関手
 
 圏は対象の集まりと射の集まりからなりますが、これまでに何度か「対象を圏として圏を構成できるのではないか？」と思った人もいるのではないでしょうか。
@@ -21,9 +7,23 @@
 
 関手は、非常に単純ですが強力な概念です。本章では、関手とは何かについて定義し、プログラミングにおける関手の例を示します。
 
+<!-- omit in toc -->
+# 目次
+
+- [7.1 関手とは](#71-関手とは)
+  - [7.1.1 対象関数](#711-対象関数)
+  - [7.1.2 射関数](#712-射関数)
+  - [7.1.3 関手の定義](#713-関手の定義)
+- [7.2 プログラミングにおける関手](#72-プログラミングにおける関手)
+  - [7.2.1 Functor 型クラス](#721-functor-型クラス)
+  - [7.2.2 Option 関手](#722-option-関手)
+  - [7.2.3 Reader 関手](#723-reader-関手)
+- [7.3 関手の合成](#73-関手の合成)
+- [まとめ](#まとめ)
+
 ## 7.1 関手とは
 
-**関手** (functor) は、ある圏 C を別のある圏 D に変換する対応 F のことです。
+**関手** (functor) は、ある圏 **C** を別のある圏 **D** に変換する対応 F のことです。
 
 関手の例としては Option 関手、List 関手、Writer 関手、モノイド準同型などがあります。モノイド準同型は、モノイド間の関手です。
 
@@ -41,7 +41,7 @@ Option 関手は、型 `A` の値を `Option` で包んで型 `Option[A]` に変
 
 ### 7.1.1 対象関数
 
-関手において、ある圏の対象を別のある圏の対象に変換するような対応を対象関数といいます。一般に、圏 C から D への関手 F は、圏 C の対象 A を D の対象 F A に対応させます。
+関手において、ある圏の対象を別のある圏の対象に変換するような対応を対象関数といいます。一般に、圏 **C** から **D** への関手 F は、圏 **C** の対象 a を **D** の対象 F(a) に対応させます。
 
 Option 関手の例で言うと、Option 関手は型 `A` を型 `Option[A]` に対応させています。
 
@@ -56,9 +56,9 @@ objOptFunc("Hoge")
 
 ### 7.1.2 射関数
 
-関手において、ある圏の射を別のある圏の射に変換するような対応を射関数といいます。一般に、圏 C から D への関手 F の射関数 `fmap` は、圏 C の射 f: A -> B を D の射 `fmap(f): F[A] -> F[B]` に対応させます。
+関手において、ある圏の射を別のある圏の射に変換するような対応を射関数といいます。一般に、圏 **C** から **D** への関手 F の射関数は、圏 **C** の射 f: a -> b を **D** の射 F(f): F(a) -> F(b) に対応させます。Hamcat において、射関数は `fmap` メソッドとして定義しています。
 
-Option 関手の例で言うと、射 `f: A => B` を `fmap(f): Option[A] => Option[B]` に対応させる必要があります。この対応は、標準ライブラリにある `Option#map` メソッドによって実現されます：
+Option 関手は、例で言うと、射 `f: A => B` を `fmap(f): Option[A] => Option[B]` に対応させる必要があります。この対応は、標準ライブラリにある `Option#map` メソッドによって実現されます：
 
 ```scala
 def isEven: Int => Boolean = n => n % 2 == 0
@@ -75,13 +75,14 @@ Option(3).map(isEven)
 
 この射関数が満たすべき性質として、以下の2つがあります：
 
-1. C の射 f, g の合成 `g compose f` について `fmap(g compose f) == fmap(g) compose fmap(f)` が成り立つこと。
-2. C の任意の対象 A の恒等射 `identity[A]` について `fmap(identity[A]) == identity[F[A]]` が成り立つこと。
+1. **C** の射 f, g の合成 `g compose f` について `fmap(g compose f) == fmap(g) compose fmap(f)` が成り立つこと。
+2. C の任意の対象 A の恒等射 `identity[A]` について `fmap(identity[A]) === identity[F[A]]` が成り立つこと。
 
 1つ目の性質は、関手が射の合成を保存することを意味します。
 
 ```scala
 import hamcat.Implicits._
+import hamcat.util._
 
 // f: isEven
 // g: negate
@@ -90,11 +91,15 @@ def negate: Boolean => Boolean = b => !b
 
 ```scala
 // fmap(g compose f)
-OptionFunctor.fmap(negate compose isEven)
+def lifted1 = OptionFunctor.fmap(negate compose isEven)
 
 // fmap(g) compose fmap(f)
-OptionFunctor.fmap(negate) compose OptionFunctor.fmap(isEven)
+def lifted2 = OptionFunctor.fmap(negate) compose OptionFunctor.fmap(isEven)
+
+lifted1 === lifted2
 ```
+
+例えば、`Option(3)` に対して以下が成り立ちます。
 
 ```scala
 OptionFunctor.fmap(negate compose isEven)(Option(3)) == (OptionFunctor.fmap(negate) compose OptionFunctor.fmap(isEven))(Option(3))
@@ -115,11 +120,15 @@ import hamcat.data.identity
 
 ```scala
 // fmap(identity[A])
-OptionFunctor.fmap(identity[Int])
+def lifted3 = OptionFunctor.fmap(identity[Int])
 
 // identity[F[A]]
-identity[Option[Int]]
+def lifted4 = identity[Option[Int]]
+
+lifted3 === lifted4
 ```
+
+例えば、`Option(3)` に対して以下が成り立ちます。
 
 ```scala
 OptionFunctor.fmap(identity[Int])(Option(3)) == identity[Option[Int]](Option(3))
@@ -134,17 +143,17 @@ OptionFunctor.fmap(identity[Int])(Option(3)) == identity[Option[Int]](Option(3))
 
 ---
 
-圏 C から圏 D への**関手** (functor) `F` とは、以下を満たす対応のことです。
+圏 **C** から圏 **D** への**関手** (functor) `F` とは、以下を満たす対応のことです。
 
-- C の射 f: A -> B を D の射 `fmap(f): F[A] -> F[B]` に対応させること。
-- C の射 f, g の合成 `g compose f` について `fmap(g compose f) == fmap(g) compose fmap(f)` が成り立つこと。
-- C の任意の対象 A の恒等射 `identity[A]` について `fmap(identity[A]) == identity[F[A]]` が成り立つこと。
+- **C** の射 f: a -> b を D の射 F(f): F(a) -> F(b) すなわち `fmap(f): F[A] => F[B]` に対応させること。
+- **C** の射 f, g の合成 `g compose f` について `fmap(g compose f) == fmap(g) compose fmap(f)` が成り立つこと。
+- **C** の任意の対象 A の恒等射 `identity[A]` について `fmap(identity[A]) == identity[F[A]]` が成り立つこと。
 
 ---
 
 先ほどみたように、2 番目と 3 番目は関手性を表します。
 
-なお、圏 C と D は同じであってもよく、特に圏 C から圏 C への関手は**自己関手** (endofunctor) と呼ばれます。Scala 圏における関手は全て、自己関手です。
+なお、圏 **C** と **D** は同じであってもよく、特に圏 **C** から圏 **C** への関手は**自己関手** (endofunctor) と呼ばれます。Scala 圏における関手は全て、自己関手です。
 
 ## 7.2 プログラミングにおける関手
 
@@ -206,8 +215,8 @@ Option(3).fmap(isEven)
 
 関手性とは、以下が成り立つことでした。
 
-- C の射 f, g の合成 `g compose f` について `fmap(g compose f) == fmap(g) compose fmap(f)` が成り立つこと。
-- C の任意の対象 A の恒等射 `identity[A]` について `fmap(identity[A]) == identity[F[A]]` が成り立つこと。
+- **C** の射 f, g の合成 `g compose f` について `fmap(g compose f) == fmap(g) compose fmap(f)` が成り立つこと。
+- **C** の任意の対象 A の恒等射 `identity[A]` について `fmap(identity[A]) == identity[F[A]]` が成り立つこと。
 
 1つ目について、以下のテストコードで検証します。
 
@@ -374,7 +383,7 @@ fmapC(identity[Int])(intOptionList) == identity[List[Option[Int]]](intOptionList
 
 自己関手の場合のみを取り上げましたが、自己関手でない一般の関手に関してもこれは成り立ちます。興味があれば証明してみてください。
 
-# 本章のまとめ
+## まとめ
 
 - 関手は、ある圏を、構造を維持しながら別のある圏に変換する対応のこと。
   - 関手の例として、Option、List、Reader などがある。
