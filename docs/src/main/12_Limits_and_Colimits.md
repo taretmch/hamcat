@@ -95,7 +95,7 @@ D 2 = B
 
 <div align="center">
 
-![圏の1つの対象の選択: 積の候補となる対象](./images/12_connst_functor_from_category_2.png)
+![圏の1つの対象の選択: 積の候補となる対象](./images/12_const_functor_from_category_2.png)
 
 </div>
 
