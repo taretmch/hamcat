@@ -1,0 +1,12 @@
+{
+  "name": "category-theory-with-scala",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:taretmch/category-theory-with-scala.git",
+  "author": "tomoki.mizogami",
+  "license": "MIT",
+  "scripts": {
+    "start": "honkit serve . gitbook",
+    "build": "honkit build . gitbook"
+  }
+}
