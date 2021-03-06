@@ -23,8 +23,8 @@ object Eq {
   def apply[A](lhs: A, rhs: A):             Eq2[A] = Eq2(lhs, rhs)
   def apply[A](_1: A, _2: A, _3: A):        Eq3[A] = Eq3(_1, _2, _3)
   def apply[A](_1: A, _2: A, _3: A, _4: A): Eq4[A] = Eq4(_1, _2, _3, _4)
-}
 
-case class Eq2[A](lhs: A, rhs: A)             extends Eq[A]
-case class Eq3[A](_1: A, _2: A, _3: A)        extends Eq[A]
-case class Eq4[A](_1: A, _2: A, _3: A, _4: A) extends Eq[A]
+  case class Eq2[A](lhs: A, rhs: A)             extends Eq[A]
+  case class Eq3[A](_1: A, _2: A, _3: A)        extends Eq[A]
+  case class Eq4[A](_1: A, _2: A, _3: A, _4: A) extends Eq[A]
+}
