@@ -1,0 +1,13 @@
+{
+  "name": "hamcat",
+  "version": "1.0.0",
+  "main": "index.js",
+  "description": "Scalaで始める圏論入門",
+  "repository": "git@github.com:taretmch/scala-category-training.git",
+  "author": "taretmch <tomochuri25@gmail.com>",
+  "license": "MIT",
+  "scripts": {},
+  "devDependencies": {
+    "honkit": "3.6.17"
+  }
+}

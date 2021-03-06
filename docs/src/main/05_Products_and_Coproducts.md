@@ -50,11 +50,7 @@
 
 これを図式で書くと、以下のような圏とみなせます。
 
-<div align="center">
-
 ![自然数の全順序集合](./images/natural_number_and_less_than_or_equals_to.png)
-
-</div>
 
 図式を見る通り、0 から任意の自然数 (対象) への順序 (射) が定義されており、一方で 0 への順序は `(0, 0)` のみであることがわかります。自然数の集合における 0 の性質を一般化すると、始対象を以下のように定義できます。
 
@@ -88,15 +84,11 @@ f: A => B = a => a + 1
 def absurd[A]: Nothing => A = { case _ => ??? }
 ```
 
-<div align="center">
-
 ![始対象](./images/05_initial_object.png)
-
-</div>
 
 ちなみに、 `Set` 圏においてシングルトン集合は始対象ではありません。というのも、`{ a }` (a は任意の値) から空集合への射は存在しないからです。空集合は、(入力 a に対しての出力が定義されないので) シングルトン集合から空集合への関数ではありません。また、`{ a }` から `{ true, false }` への射は1つには限りません。
 
-```scala
+```scala mdoc
 def f: Unit => Boolean = _ => true
 def g: Unit => Boolean = _ => false
 ```
@@ -139,15 +131,11 @@ f compose g = id[I2]
 
 シングルトン集合は `Unit` 型に対応するので、Scala 圏における終対象は `Unit` 型です。任意の型 `A` から `Unit` への関数 `unit` がただ1つ存在します。
 
-```scala
+```scala mdoc
 def unit[A]: A => Unit = _ => ()
 ```
 
-<div align="center">
-
 ![終対象](./images/05_terminal_object.png)
-
-</div>
 
 終対象も始対象同様、同型を除いて一意です。
 
@@ -185,16 +173,14 @@ f compose g === identity[T1]
 
 簡単に言えば、積は2つの対象のタプルを表します。Scala において、積はタプルやケースクラスとして組み込まれています。
 
-```scala
+```scala mdoc
 val intBoolTuple: (Int, Boolean) = (44, true)
-// intBoolTuple: (Int, Boolean) = (44, true)
 ```
 
-```scala
+```scala mdoc
 case class Pair(a: Int, b: Boolean)
 
 val intBoolPair = Pair(44, true)
-// intBoolPair: Pair = Pair(a = 44, b = true)
 ```
 
 Scala には [Product](https://github.com/scala/scala/blob/v2.13.3/src/library/scala/Product.scala) というトレイトがあり、これが積を表します。タプルやケースクラスはすべて `Product` を継承しています。
@@ -221,11 +207,7 @@ projB compose m == xB
 
 が成り立つことを言います。このとき対象 `C` を `A x B` と書きます。
 
-<div align="center">
-
 ![積の定義](./images/05_product.png)
-
-</div>
 
 ---
 
@@ -233,7 +215,7 @@ projB compose m == xB
 
 型 `A` と `B` の積 `(A, B)` について、射影 `fst` と `snd` は以下のように定義されます。
 
-```scala
+```scala mdoc
 def fst[A, B]: ((A, B)) => A = _._1
 
 def snd[A, B]: ((A, B)) => B = _._2
@@ -243,7 +225,7 @@ def snd[A, B]: ((A, B)) => B = _._2
 
 そして、ある型 `X` に対して、`X` から `(A, B)` への一意の関数 `productFactorizer` が存在します。
 
-```scala
+```scala mdoc
 def productFactorizer[X, A, B](xA: X => A)(xB: X => B): X => ((A, B)) = x => (xA(x), xB(x))
 ```
 
@@ -253,47 +235,36 @@ def productFactorizer[X, A, B](xA: X => A)(xB: X => B): X => ((A, B)) = x => (xA
 
 そして、`List[Int]` の `String` への射影と、`Int` への射影をそれぞれ以下のように定義します：
 
-```scala
+```scala mdoc
 val listToString: List[Int] => String = _.toString
-// listToString: List[Int] => String = <function1>
 
 val listToInt: List[Int] => Int = _.length
-// listToInt: List[Int] => Int = <function1>
 ```
 
 このとき、`List[Int]` から積 `(A, B)` への一意の関数 `listToTuple` を構成できます：
 
-```scala
+```scala mdoc
 val listToTuple: List[Int] => ((String, Int)) = productFactorizer(listToString)(listToInt)
-// listToTuple: List[Int] => (String, Int) = <function1>
 ```
 
 この関数に対して `List(1, 2, 3, 4, 5)` を与えると、`String` への射影 `listToString` と `Int` への射影 `listToInt` をそれぞれ適用したタプルが得られます。
 
-```scala
+```scala mdoc
 listToTuple(List(1, 2, 3, 4, 5))
-// res0: (String, Int) = ("List(1, 2, 3, 4, 5)", 5)
 ```
 
 したがって、積 `(A, B)` には、`A` の成分と `B` の成分とで分解して計算できる性質があることがわかります。この性質がまさに、積の定義となっています。
 
 実際、以下の図式は可換になります。
 
-```scala
+```scala mdoc
 val list = List(1, 2, 3, 4, 5)
-// list: List[Int] = List(1, 2, 3, 4, 5)
 
 (fst compose listToTuple)(list) == listToString(list)
-// res1: Boolean = true
 (snd compose listToTuple)(list) == listToInt(list)
-// res2: Boolean = true
 ```
 
-<div align="center">
-
 ![積の例](./images/05_product_example.png)
-
-</div>
 
 もう一つ、集合圏における積の例を見てみます [2]。集合 `A = { 7, 8, 9 }`、`B = { a, b, c }`、`X = { 1, 2, 3, 4 }` として、`X` から `A` および `B` への射影 `xA` と `xB` を以下のようにします。
 
@@ -310,19 +281,14 @@ f = { (1, (7, a)), (2, (8, b)), (3, (9, c)), (4, (7, c)) }
 
 この例について、以下の図式は可換になります。
 
-<div align="center">
-
 ![集合圏における積の例](./images/05_product_example2.png)
-
-</div>
 
 積の定義において対象から `X` から `AxB` への射 `m` は、以下のように定義することができます。
 
-```scala
+```scala mdoc
 def factorize[X, A, B](xA: X => A)(xB: X => B)(x: X): (A, B) = (xA(x), xB(x))
 
 factorize{ s: String => s.length }{ s: String => s.startsWith("a") }("abcdefg")
-// res3: (Int, Boolean) = (7, true)
 ```
 
 
@@ -339,15 +305,11 @@ Scala 圏における積は二項演算として、数の乗算に対応しま�
 (A, (B, C))
 ```
 
-<div align="center">
-
 ![積のネスト](./images/05_nest_product.png)
-
-</div>
 
 これら2つのタプルは、同型です。同型射 (つまり、逆射を持つ射) は、以下のように定義できます。
 
-```scala
+```scala mdoc
 def isomorTuple1[A, B, C]: (((A, B), C)) => ((A, (B, C))) = {
   case ((a, b), c) => (a, (b, c))
 }
@@ -357,14 +319,12 @@ def isomorTuple2[A, B, C]: ((A, (B, C))) => (((A, B), C)) = {
 }
 
 isomorTuple1(((44, "hoge"), true))
-// res4: (Int, (String, Boolean)) = (44, ("hoge", true))
 isomorTuple2((44, ("hoge", true)))
-// res5: ((Int, String), Boolean) = ((44, "hoge"), true)
 ```
 
 なお、これらと同型である3-タプル `(A, B, C)` も積です。
 
-```scala
+```scala mdoc
 def isomorTuple3[A, B, C]: (((A, B), C)) => ((A, B, C)) = {
   case ((a, b), c) => (a, b, c)
 }
@@ -382,7 +342,7 @@ def isomorTuple4[A, B, C]: ((A, B, C)) => (((A, B), C)) = {
 
 型の積における単位元は、`Unit` 型です。以下のような同型射が存在するので、タプル `(Unit, A)` と `(A, Unit)` はどちらも `A` と同型です。
 
-```scala
+```scala mdoc
 def isomorProduct1[A]: A => ((Unit, A)) = a => ((), a)
 def isomorProduct2[A]: ((A, Unit)) => A = {
   case (a, ()) => a
@@ -417,11 +377,7 @@ x compose injB == xB
 
 が成り立つことを言います。このとき対象 `C` を `A+B` と書きます。また、`injA: A => C` および `injB: B => C` を入射 (injection) と呼びます。
 
-<div align="center">
-
 ![余積](./images/05_coproduct.png)
-
-</div>
 
 ---
 
@@ -429,14 +385,14 @@ x compose injB == xB
 
 型 `A` と `B` の余積 `Either[A, B]` について、射 `injA` と `injB` は以下のように定義されます。
 
-```scala
+```scala mdoc
 def injA[A, B](a: A): Either[A, B] = Left(a)
 def injB[A, B](b: B): Either[A, B] = Right(b)
 ```
 
 すなわち、余積の入射は `Left.apply` メソッドと `Right.apply` メソッドです。そして、ある型 `X` に対して、`Either[A, B]` から `X` への一意の関数 `coproductFactorizer` が存在します。
 
-```scala
+```scala mdoc
 def coproductFactorizer[X, A, B](xA: A => X)(xB: B => X): Either[A, B] => X = {
   case Left(a) => xA(a)
   case Right(b) => xB(b)
@@ -449,36 +405,27 @@ def coproductFactorizer[X, A, B](xA: A => X)(xB: B => X): Either[A, B] => X = {
 
 そして、`String` から `Boolean` への入射と、`Int` からの入射をそれぞれ以下のように定義します：
 
-```scala
+```scala mdoc
 val strToBool: String => Boolean = _.contains("a")
-// strToBool: String => Boolean = <function1>
 val isEven: Int => Boolean = _ % 2 == 0
-// isEven: Int => Boolean = <function1>
 ```
 
 このとき、余積 `Either[String, Int]` から型 `Boolean` への一意の関数 `eitherToBool` を構成できます。この関数は、`String` については文字列 `"a"` を含むかどうか判定し、`Int` が偶数かどうかを判定する関数です。
 
-```scala
+```scala mdoc
 val eitherToBool: Either[String, Int] => Boolean = coproductFactorizer(strToBool)(isEven)
-// eitherToBool: Either[String, Int] => Boolean = <function1>
 ```
 
 この関数に対して `String` および `Int` を与えると、それぞれに対して関数が適用されます：
 
-```scala
+```scala mdoc
 eitherToBool(Left("abcdefg"))
-// res6: Boolean = true
 eitherToBool(Right(3))
-// res7: Boolean = false
 ```
 
 Either について、以下の図式は可換になります。
 
-<div align="center">
-
 ![余積としての Either](./images/05_coproduct_example.png)
-
-</div>
 
 ### 5.5.4 モノイダル圏としての Scala 圏
 
@@ -488,7 +435,7 @@ Scala 圏において、余積 `A+B` は加算に対応する二項演算と考�
 
 余積における単位元は `Nothing` 型です。
 
-```scala
+```scala mdoc
 def isomorCoproductLeft[A]: A => Either[A, Nothing] = a => Left(a)
 def isomorCoproductLeftInv[A]: Either[A, Nothing] => A = {
   case Left(a)  => a
@@ -496,21 +443,17 @@ def isomorCoproductLeftInv[A]: Either[A, Nothing] => A = {
 }
 
 isomorCoproductLeft("Oh my god!")
-// res8: Either[String, Nothing] = Left(value = "Oh my god!")
 isomorCoproductLeftInv(Left("Oh my god!"))
-// res9: String = "Oh my god!"
 ```
 
-```scala
+```scala mdoc
 def isomorCoproductRight[B]: B => Either[Nothing, B] = b => Right(b)
 def isomorCoproductRightInv[B]: Either[Nothing, B] => B = {
   case Right(b) => b
   case Left(_)  => ??? // Left は Nothing なので来ない
 }
 isomorCoproductRight("Good")
-// res10: Either[Nothing, String] = Right(value = "Good")
 isomorCoproductRightInv(Right("Good"))
-// res11: String = "Good"
 ```
 
 ## まとめ

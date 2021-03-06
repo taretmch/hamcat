@@ -1,4 +1,5 @@
 import Dependencies._
+import TaskConf._
 
 ThisBuild / scalaVersion     := "2.13.3"
 ThisBuild / version          := "1.0.0-SNAPSHOT"
@@ -28,14 +29,15 @@ lazy val core = project
 lazy val docs = project
   .settings(name := "hamcat-docs")
   .settings(commonSettings: _*)
-  .settings(mdocIn  := file("docs/src/drafts"))
-  .settings(mdocOut := file("docs/src/main"))
+  .settings(mdocIn  := mdocInputDir)
+  .settings(mdocOut := mdocOutputDir)
   .settings(libraryDependencies ++= Seq(
     "org.typelevel" %% "cats-kernel" % "2.2.0",
     "org.typelevel" %% "cats-core"   % "2.2.0"
   ))
-  .dependsOn(core)
   .enablePlugins(MdocPlugin)
+  .settings(Honkit.settings)
+  .dependsOn(core)
 
 lazy val example = project
   .settings(name := "hamcat-sample")

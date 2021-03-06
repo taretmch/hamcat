@@ -33,11 +33,7 @@ Option 関手は、型 `A` の値を `Option` で包んで型 `Option[A]` に変
 
 圏は対象と射から構成されるので、圏を変換するには対象と射それぞれに関する対応を定義する必要があります。
 
-<div align="center">
-
 ![関手](./images/07_functor.png)
-
-</div>
 
 ### 7.1.1 対象関数
 
@@ -45,13 +41,11 @@ Option 関手は、型 `A` の値を `Option` で包んで型 `Option[A]` に変
 
 Option 関手の例で言うと、Option 関手は型 `A` を型 `Option[A]` に対応させています。
 
-```scala
+```scala mdoc
 def objOptFunc[A]: A =>  Option[A] = Option(_)
 
 objOptFunc(3)
-// res0: Option[Int] = Some(value = 3)
 objOptFunc("Hoge")
-// res1: Option[String] = Some(value = "Hoge")
 ```
 
 ### 7.1.2 射関数
@@ -60,18 +54,13 @@ objOptFunc("Hoge")
 
 Option 関手は、例で言うと、射 `f: A => B` を `fmap(f): Option[A] => Option[B]` に対応させる必要があります。この対応は、標準ライブラリにある `Option#map` メソッドによって実現されます：
 
-```scala
+```scala mdoc
 def isEven: Int => Boolean = n => n % 2 == 0
 
 Option(3).map(isEven)
-// res2: Option[Boolean] = Some(value = false)
 ```
 
-<div align="center">
-
 ![Option 関手](./images/07_option_functor.png)
-
-</div>
 
 この射関数が満たすべき性質として、以下の2つがあります：
 
@@ -80,7 +69,7 @@ Option(3).map(isEven)
 
 1つ目の性質は、関手が射の合成を保存することを意味します。
 
-```scala
+```scala mdoc
 import hamcat.Implicits._
 import hamcat.util._
 
@@ -101,20 +90,15 @@ lifted1 === lifted2
 
 例えば、`Option(3)` に対して以下が成り立ちます。
 
-```scala
+```scala mdoc
 OptionFunctor.fmap(negate compose isEven)(Option(3)) == (OptionFunctor.fmap(negate) compose OptionFunctor.fmap(isEven))(Option(3))
-// res3: Boolean = true
 ```
-
-<div align="center">
 
 ![合成の保存](./images/07_functor_composition.png)
 
-</div>
-
 2つ目の性質は、関手が恒等射を保存することを意味します。
 
-```scala
+```scala mdoc
 import hamcat.data.identity
 ```
 
@@ -130,9 +114,8 @@ lifted3 === lifted4
 
 例えば、`Option(3)` に対して以下が成り立ちます。
 
-```scala
+```scala mdoc
 OptionFunctor.fmap(identity[Int])(Option(3)) == identity[Option[Int]](Option(3))
-// res4: Boolean = true
 ```
 
 以上の性質は圏の構造を保存する対応を表す性質です。このような2つの性質を**関手性** (functor laws) と呼びます。
@@ -189,11 +172,10 @@ Option 関手の `fmap` メソッドは `Option#map` メソッドと同じです
 
 実際にこのインスタンスを使ってみましょう。本リポジトリでは、型クラスのインスタンスは `hamcat.Implicits` パッケージ内においてあります。コンソールにおいて `hamcat.Implicits._` をインポートすれば、インスタンスが使えるようになります。`fmap` に `Option(3)` と `isEven` (偶数かどうかを判定する関数) を与えると、`Option(3)` の中の値に `isEven` を適用した結果 (すなわち `Some(false)`) が出力されます。
 
-```scala
+```scala mdoc
 import hamcat.Implicits._
 
 OptionFunctor.fmap(isEven)(Option(3))
-// res5: Option[Boolean] = Some(value = false)
 ```
 
 なお、毎回 `OptionFunctor.fmap(...)` と書くのは面倒ですし、不便です。この場合、以下のようにシンタックスを定義することによって `Option#fmap` メソッドとして呼び出せるようになります。
@@ -204,9 +186,8 @@ implicit class FunctorOps[F[_], A](v: F[A])(implicit functor: Functor[F]) {
 }
 ```
 
-```scala
+```scala mdoc
 Option(3).fmap(isEven)
-// res6: Option[Boolean] = Some(value = false)
 ```
 
 これは Enrich my library パターンと言われるものです。
@@ -297,10 +278,9 @@ implicit def Function1Functor[R]: Functor[Function1[R, ?]] = new Functor[Functio
 
 これを使うと、例えば以下のようなことができます。
 
-```scala
+```scala mdoc
 // 偶数かどうか判定する関数を奇数かどうか判定する関数に変換する
 isEven.fmap(negate) (3)
-// res7: Boolean = true
 ```
 
 `compose` が関手の射関数であるのですね。
@@ -315,19 +295,13 @@ Scala 圏における関手は全て自己関手なので、自己関手どう�
 
 対象関数は、型 `Int` を Option 関手によって `Option[Int]` に変換し、List 関手によって `List[Option[Int]]` に変換するものとします。
 
-```scala
+```scala mdoc
 val intOptionList: List[Option[Int]] = List(Some(1), Some(3), None, Some(4))
-// intOptionList: List[Option[Int]] = List(
-//   Some(value = 1),
-//   Some(value = 3),
-//   None,
-//   Some(value = 4)
-// )
 ```
 
 次に、射関数は、List 関手の `fmap` メソッドと Option 関手の `fmap` メソッドの合成 `fmapC` と定義します。
 
-```scala
+```scala mdoc
 def fmapL[A, B]: (A => B) => List[A] => List[B] = ListFunctor.fmap
 def fmapO[A, B]: (A => B) => Option[A] => Option[B] = OptionFunctor.fmap
 
@@ -336,47 +310,32 @@ def fmapC[A, B]: (A => B) => List[Option[A]] => List[Option[B]] = fmapL.compose(
 
 この `fmapC` メソッドを用いると、2つの関手によって包まれた型 `Int` 上の関数
 
-```scala
+```scala mdoc
 val increment: Int => Int = _ + 1
-// increment: Int => Int = <function1>
 ```
 
 を `List[Option[Int]]` 上の関数として引き上げることができます。
 
-```scala
+```scala mdoc
 fmapC(increment)(intOptionList)
-// res8: List[Option[Int]] = List(
-//   Some(value = 2),
-//   Some(value = 4),
-//   None,
-//   Some(value = 5)
-// )
 ```
 
 これは、`fmap` メソッドを2回呼び出すことに等しいです。
 
-```scala
+```scala mdoc
 intOptionList.fmap(_.fmap(increment))
-// res9: List[Option[Int]] = List(
-//   Some(value = 2),
-//   Some(value = 4),
-//   None,
-//   Some(value = 5)
-// )
 ```
 
 外側の `fmap` は List 関手の射関数で、内側の `fmap` は Option 関手の射関数です。
 
 関手の合成によって定義された射関数 `fmapC` は射の合成を保存しますし、恒等射を保存します。
 
-```scala
+```scala mdoc
 // fmap(g compose f) == fmap(g) compose fmap(f)
 fmapC(isEven compose increment)(intOptionList) == (fmapC(isEven) compose fmapC(increment))(intOptionList)
-// res10: Boolean = true
 
 // fmap(identity[A]) == identity[F[A]]
 fmapC(identity[Int])(intOptionList) == identity[List[Option[Int]]](intOptionList)
-// res11: Boolean = true
 ```
 
 したがって、関手の合成もまた、関手であることがわかります。

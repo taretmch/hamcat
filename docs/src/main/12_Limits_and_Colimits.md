@@ -24,14 +24,12 @@ def length = Lambda[List ~> Const[Int, ?]](fa => Const(fa.length))
 
 `Const` というデータ構造そのものが関手になっているのではなく、`Const[Int, ?]` のように定数の型 `Int` を与えると関手になるのでした。例えば
 
-```scala
+```scala mdoc
 import hamcat.Implicits._
 import hamcat.data.Const
 
 val const1 = Const[Int, String](3)
-// const1: Const[Int, String] = Const(v = 3)
 val const2 = const1.fmap(str => str.startsWith("a"))
-// const2: Const[Int, Boolean] = Const(v = 3)
 ```
 
 のように、定数 `3` を保持しながら型の変換 `String => Boolean` をするような処理を書くことができます。
@@ -48,12 +46,8 @@ val const2 = const1.fmap(str => str.startsWith("a"))
 
 圏 **A** から圏 **B** の対象 c への定関手 Δc は **A** から **B** への関手です。一方で、対角関手 Δ は、圏 **B** から関手圏 **Func(A, B)** への関手です。
 
-<div align="center">
-
 ![定関手](./images/12_constant_functor.png)
 ![対角関手](./images/12_diagonal_functor.png)
-
-</div>
 
 定関手を使うと何が嬉しいかと言いますと、任意の圏から対象を1つだけとってくるような操作を表現することができます。上記画像の例だと、c という対象そのものを表現する関手であるとみなすこともできます。`Const[Int, String]` が `Int` 型の定数を表すことができるように、定関手は関手でありながら1つの対象そのものを表すことができるのです。
 
@@ -63,11 +57,7 @@ val const2 = const1.fmap(str => str.startsWith("a"))
 
 早速ですが、圏 **C** における対象 A と B の積 AxB を定義するとき、まず対象 A と B を選択するという操作が行われます。この2つの対象を選択するという操作は、シンプルな圏 **2** を用いることによって表現できます。圏 **2** は、対象を2つだけ持ち、射を恒等射しか持たないような圏とします：
 
-<div align="center">
-
 ![圏2](./images/12_2_category.png)
-
-</div>
 
 この圏 **2** から圏 **C** への関手 D を考えてみましょう。圏 **2** における対象 1 と 2 が、関手 D によって圏 **C** の対象 A と B に写されるとすると
 
@@ -78,11 +68,7 @@ D 2 = B
 
 となります。
 
-<div align="center">
-
 ![圏の2つの対象の選択: 積をとりたい対象](./images/12_functor_from_category_2.png)
-
-</div>
 
 この関手 D によって、積をとりたい対象 A と B を選択できるようになりました。
 
@@ -93,11 +79,7 @@ D 2 = B
 Δc 2 = C
 ```
 
-<div align="center">
-
 ![圏の1つの対象の選択: 積の候補となる対象](./images/12_const_functor_from_category_2.png)
-
-</div>
 
 これで、2つの関手 D と Δc を得られました。これら2つはどちらも圏 **2** から圏 **C** への関手なので、自然変換を考えることができます。定関手 Δc から関手 D への自然変換 α を考えると、これは圏 **C** における射になります。
 
@@ -110,11 +92,7 @@ D 2 = B
 
 圏 **2** における射は恒等射のみなので、この変換が自然性を満たすことは自明です。
 
-<div align="center">
-
 ![定関手から関手 D への自然変換](./images/12_natural_transformation_projection.png)
-
-</div>
 
 さて、自然変換とは、ただの射でした。よく見てみると、この自然変換は C から A への (圏 **C** における) 射と、C から B への (圏 **C** における) 射を選ぶことに等しいです。すなわち、積における A と B への射影を表します。
 
@@ -159,11 +137,7 @@ D 3 = c
 D 4 = d
 ```
 
-<div align="center">
-
 ![パターンの圏 I から圏 C への関手 D (図式)](./images/12_functor_from_category_i.png)
-
-</div>
 
 次に、錐の頂点として **C** の対象 c を選びます。この c への定関手 Δc を考えましょう。定関手の定義より、この関手は圏 **I** の任意の対象を c に写し、任意の射を c の恒等射に写します。
 
@@ -175,11 +149,7 @@ D 4 = d
 Δc 4 = c
 ```
 
-<div align="center">
-
 ![パターンの圏 I から圏 C への定関手 Δc](./images/12_const_functor_from_category_i.png)
-
-</div>
 
 そして、圏 **I** から圏 **C** への関手 D と Δc の間の自然変換 α を考えます。Δc から D への自然変換の各成分は、圏 **C** における射になります。
 
@@ -191,11 +161,7 @@ D 4 = d
 α4: c -> d
 ```
 
-<div align="center">
-
 ![Δc から D への自然変換 α](./images/12_natural_transformation.png)
-
-</div>
 
 α が自然性を満たすのであれば、上図の図式は可換図式になります。自然変換 α は、対象 c を図式 (D による **I** の像) に繋げる射の束になります。これはまさに、c を頂点とするような錐を形成しています。
 

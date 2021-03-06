@@ -58,11 +58,7 @@ trait Bifunctor[F[_, _]] {
 
 `bimap` メソッドを定義すれば `first` メソッドと `second` メソッドを実装できますし、`first` メソッドと `second` メソッドを実装すれば `bimap` メソッドを実装することができます。
 
-<div align="center">
-
 ![双関手](./images/08_bifunctor.png)
-
-</div>
 
 ### 8.1.1 直積圏を定義する
 
@@ -116,51 +112,42 @@ def productIdentity[A, B]: ProductFunction[A, B, A, B] =
 
 対象は、2つの Scala 圏の対象、すなわち型 `A` と型 `B` のタプルです。例として、`A` を `Int` とし、`B` を `Long` としておきます。
 
-```scala
+```scala mdoc
 /** Object declaration */
 val obj = (3, 4L)
-// obj: (Int, Long) = (3, 4L)
 ```
 
 直積圏における射 `func1` と `func2` は、Scala 圏の2つの射、すなわち関数 `A => C` 関数 `B => D` のタプルです。`func1` は第1引数として `Int` 型のインクリメント関数 `increment` を持ち、第2引数として `Long` 型の数を2倍する関数 `doubleL` を持ちます。`func2` は第1引数として `Int` 型の数が偶数かどうか判定する関数 `isEven` を持ち、第2引数として `Long` 型の数が奇数かどうか判定する関数 `isOddL` を持ちます。
 
 
-```scala
+```scala mdoc
 def increment: Int => Int = _ + 1
 def doubleL: Long => Long = _ * 2
 def isEven: Int => Boolean = _ % 2 == 0
 def isOddL: Long => Boolean = _ % 2 == 1
 ```
 
-```scala
+```scala mdoc
 import hamcat.arrow.ProductFunction
 
 /** Morphism declaration */
 val func1 = ProductFunction((increment, doubleL))
-// func1: ProductFunction[Int, Long, Int, Long] = ProductFunction(
-//   run = (<function1>, <function1>)
-// )
 val func2 = ProductFunction((isEven, isOddL))
-// func2: ProductFunction[Int, Long, Boolean, Boolean] = ProductFunction(
-//   run = (<function1>, <function1>)
-// )
 ```
 
 それぞれの関数の定義は以下のようになっています。
 
 `ProductFunction` クラスには関数適用のために `apply` メソッドをはやしているので、以下のように関数適用の結果を出力できます。
 
-```scala
+```scala mdoc
 /** Apply morphism to object */
 val func1Apply: (Int, Long)        = func1(obj)
-// func1Apply: (Int, Long) = (4, 8L)
 val func2Apply: (Boolean, Boolean) = func2(obj)
-// func2Apply: (Boolean, Boolean) = (false, false)
 ```
 
 この直積圏における射の合成は、先ほど定義した `andThen` メソッドおよび `compose` メソッドを使って構築できます。この合成関数は、第1引数として `Int` 型の数が奇数かどうか判定する（インクリメントして偶数かどうか判定するので）関数を持ち、第2引数として常に `false` を返す（数を2倍したあと奇数かどうかを判定するので）関数を持ちます。
 
-```scala
+```scala mdoc
 /** Compose morphism */
 def func2ComposeFunc1 = func2 compose func1
 def func1AndThenFunc2 = func1 andThen func2
@@ -168,12 +155,10 @@ def func1AndThenFunc2 = func1 andThen func2
 
 これらの関数に `(3, 4L)` を適用すると以下の結果が返ります。
 
-```scala
+```scala mdoc
 /** Apply composition of morphism */
 val result1 = func2ComposeFunc1(obj)
-// result1: (Boolean, Boolean) = (true, false)
 val result2 = func1AndThenFunc2(obj)
-// result2: (Boolean, Boolean) = (true, false)
 ```
 
 ### 8.1.3 双関手の一般的な定義
@@ -194,13 +179,13 @@ Scala 圏において関手は自己関手となるので、Scala 圏におけ�
 
 なお、`bimap` の引数が `(A => C, B => D)` ではなく `A => C` と `B => D` であるのは、使いやすさの観点からです。これらは、互いに同型であるので、どちらの形でも問題はありません。
 
-```scala
+```scala mdoc
 def isomorpTupleToFunc1[A, B, C, D]: ((A => C, B => D)) => (A => C) => (B => D) = {
   case (f, g) => f => g
 }
 
 def isomorpFuncToTuple[A, B, C, D]: (A => C) => (B => D) => ((A => C, B => D)) =
-  f => g => (f, g)
+  f => g => (f, g) 
 ```
 
 では、双関手のいくつかの例をみていきましょう。
@@ -209,9 +194,8 @@ def isomorpFuncToTuple[A, B, C, D]: (A => C) => (B => D) => ((A => C, B => D)) =
 
 積は、2つの型パラメータから構築されます。
 
-```scala
+```scala mdoc
 val tuple: Tuple2[Int, String] = (33, "thirty three")
-// tuple: (Int, String) = (33, "thirty three")
 ```
 
 `Tuple2` は2つの型パラメータを持つため、双関手の候補になります。
@@ -235,9 +219,8 @@ implicit val Tuple2Bifunctor = new Bifunctor[Tuple2] {
 
 余積も積と同様、2つの型パラメータから構築されます。
 
-```scala
+```scala mdoc
 val right: Either[Int, String] = Right("thirty three")
-// right: Either[Int, String] = Right(value = "thirty three")
 ```
 
 余積を構築する**余積関手** `Either` は、双関手の例です。
