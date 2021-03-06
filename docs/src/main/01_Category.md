@@ -4,10 +4,7 @@
 
 圏は**対象** (object) の集まりと、対象から対象へのなんらかの操作を表す**射** (arrow, morphism) の集まりからなります。
 
-<div align="center">
-
 ![圏のイメージ](./images/category.png)
-</div>
 
 例えば、Scala を圏として考えてみると、対象は `Int`、 `String`、 `List[A]` などの型を表し，射は `f: Int -> String` のように関数を表します。
 
@@ -51,15 +48,13 @@ Scala の関数も射とみなせます。
 
 数をインクリメントする（つまり1を足す）関数 `increment: Int => Int` は、型 `Int` から型 `Int` への関数です。圏論の言葉にすると、`Int` 型という対象から `Int` 型という対象への射です。
 
-```scala
+```scala mdoc
 def increment: Int => Int = _ + 1
 ```
 
-```scala
+```scala mdoc
 increment(1)
-// res0: Int = 2
 increment(3)
-// res1: Int = 4
 ```
 ### 1.1.3 始域と終域
 
@@ -70,11 +65,7 @@ increment(3)
 ```
 f: a -> b
 ```
-<div align="center">
-
 ![射は対象から対象への矢印](./images/01_morphism.png)
-
-</div>
 
 このとき、矢印が出ている方の対象のことを**始域**あるいは**域** (domain) と呼び、矢印の先の対象のことを**終域**あるいは**余域** (codomain) と呼びます。個人的には始集合・終集合との関連で始域と終域の方が好きです。
 
@@ -93,37 +84,29 @@ dom(f) = a, cod(f) = b
 
 例えば、以下のような `String` から `Int` への関数 `length` と、`Int` から `Boolean` への関数 `isEven` を合成してみます。
 
-```scala
+```scala mdoc
 def length: String => Int = _.length
 def isEven: Int => Boolean = _ % 2 == 0
 
 length("abcdefg")
-// res2: Int = 7
 isEven(3)
-// res3: Boolean = false
 isEven(8)
-// res4: Boolean = true
 ```
 
 `length` は文字列の長さを返す関数で、 `isEven` は数が偶数かどうかを判定する関数です。Scala において、関数の合成は `compose` や `andThen` メソッドで行われます。
 
-```scala
+```scala mdoc
 def isLengthEven1: String => Boolean = isEven compose length
 // or
-def isLengthEven2: String => Boolean = length andThen isEven  
+def isLengthEven2: String => Boolean = length andThen isEven 
 // or
 def isLengthEven3: String => Boolean = str => isEven(length(str))
 
 isLengthEven1("abcdefg")
-// res5: Boolean = false
 isLengthEven2("abcdefg")
-// res6: Boolean = false
 isLengthEven3("abcdefg")
-// res7: Boolean = false
 val len = length("abcdefg")
-// len: Int = 7
 isEven(len)
-// res8: Boolean = false
 ```
 
 この `isLengthEven*` 関数は、文字列に `length` 関数を適用したあと、その返り値に `isEven` 関数を適用するような新しい関数です。合成によって作られた関数は、しばしば合成関数と呼ばれます。
@@ -133,11 +116,7 @@ isEven(len)
 ---
 2つの射 `f` と `g` について、`cod(f) = dom(g)` であれば `dom(f)` から `cod(g)` への一意の射が存在します。そのような射を `f` と `g` の**合成** (composition) と呼び、`g . f` と書きます。
 
-<div align="center">
-
 ![射の合成](./images/01_composition.png)
-
-</div>
 
 ---
 
@@ -179,7 +158,7 @@ h . (g . f) = (h . g) . f = h . g. f
 
 結合律は、Scala で書くと以下のようになります（`===` は Hamcat で用意している「等しくあるべきものを主張するための文法」です）。
 
-```scala
+```scala mdoc
 def f[A, B]: A => B = ???
 def g[B, C]: B => C = ???
 def h[C, D]: C => D = ???
@@ -193,7 +172,7 @@ def associativeLaw3 = ((h compose  g) compose f)  === ( h compose g  compose f)
 
 以下の3つの関数を考えます。
 
-```scala
+```scala mdoc
 def negate: Boolean => Boolean = b => !b
 ```
 
@@ -204,13 +183,10 @@ def isEven: Int => Boolean = _ % 2 == 0
 
 これらの関数を合成して、"abcdefg" という文字列を入力してみます。
 
-```scala
+```scala mdoc
 ( negate compose  isEven  compose length)  ("abcdefg")
-// res9: Boolean = true
 ((negate compose  isEven) compose length)  ("abcdefg")
-// res10: Boolean = true
 ( negate compose (isEven  compose length)) ("abcdefg")
-// res11: Boolean = true
 ```
 
 すべての計算の結果は等しく、確かに結合律は成り立っています。
@@ -228,7 +204,7 @@ id[B] . f = f
 
 Scala:
 
-```scala
+```scala mdoc
 import hamcat.data.identity
 
 def identityLaw1[A] = (f compose identity[A]) === f

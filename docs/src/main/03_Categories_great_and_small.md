@@ -40,11 +40,7 @@
 
 グラフを圏と解釈すると、頂点を対象として、辺を射として捉えることができます。
 
-<div align="center">
-
 ![有向グラフ](./images/03_direct_graph.png)
-
-</div>
 
 ## 3.3 順序集合
 
@@ -52,11 +48,7 @@
 
 例えば、自然数全体の集合 `N = { 0, 1, ..., n, ... }` と関係 `<=` (〇〇以下である) の順序集合 `(N, <=)` は、圏として以下のように図式化されます。
 
-<div align="center">
-
 ![圏としての順序集合の例](./images/natural_number_and_less_than_or_equals_to.png)
-
-</div>
 
 自然数全体の集合と関係 `<=` の順序集合では、自然数が対象、自然数間の関係、例えば `0 <= 1` `1 <= 3` などが射になります。
 
@@ -81,11 +73,7 @@
 
 が満たされることです。
 
-<div align="center">
-
 ![加算モノイド](./images/03_monoid.png)
-
-</div>
 
 結合律と単位元を備えた型クラス `Monoid` は、以下のように定義されます。
 
@@ -109,15 +97,12 @@ implicit val IntMonoid: Monoid[Int] = new Monoid[Int] {
 }
 ```
 
-```scala
+```scala mdoc
 import hamcat.Implicits._
 
 IntMonoid.combine(1, 3)
-// res0: Int = 4
 IntMonoid.empty
-// res1: Int = 0
 IntMonoid.combine(2, IntMonoid.empty)
-// res2: Int = 2
 ```
 
 ## 3.5 圏としてのモノイド 
@@ -164,11 +149,7 @@ add (c) (add (b) (a)) = add (a) (add (c) (b))
 
 以上のことから、モノイドは圏の公理における結合律と単位律を満たします。
 
-<div align="center">
-
 ![圏としてのモノイド](./images/03_monoid_as_category.png)
-
-</div>
 
 ## まとめ
 

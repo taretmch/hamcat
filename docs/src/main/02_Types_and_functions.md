@@ -3,11 +3,7 @@
 
 本章では、Scala を構成する型と関数の圏である Scala 圏について紹介します。まず、なぜ型が必要なのかについて述べ、型と関数を圏として考えていきます。
 
-<div align="center">
-
 ![型と関数からなる圏](./images/category_hask.png)
-
-</div>
 
 <!-- omit in toc -->
 # 目次
@@ -44,21 +40,13 @@ val x: Int
 
 と書きますが、型を集合として解釈すると、これは  `x` は整数集合の要素であると解釈できます。
 
-<div align="center">
-
 ![型を集合として解釈する](./images/02_type_as_set.png)
-
-</div>
 
 しかし、型を集合として解釈するには微妙な点が少々あります。一般に、集合全体の集合を定義することはできません (Tips 1 参照)。そのため、循環定義を含む多相関数 (polymorphic function) を集合で表すことは難しくなります。
 
 そこで、代わりに集合の圏 `Set` を用いて型を表現します。 `Set`  は、集合を対象とし、関数を射とする圏です。 `Set` を用いて型を表現すると、関数型プログラミングにおける関数は（数学的な）集合間の関数とみなせます。
 
-<div align="center">
-
 ![関数を数学的な関数として解釈する](./images/02_function_as_set.png)
-
-</div>
 
 とすると、またまた問題が生じます。集合間の関数は入力に対して値を出力するだけで、なんらかの処理を実行するわけではありません。一方で、プログラミングの関数は入力に対して出力値を計算するので、その内部で処理を実行します。出力を有限ステップで計算できるのであれば良いのですが、再帰を含む関数では実行が終了しない場合があります。したがって、関数の実行が終了しない場合の出力の型が未定義となってしまいます。
 
@@ -70,13 +58,10 @@ def f: Boolean => Boolean
 
 は `true`、 `false` を返すか、実行が終わらない場合は ⊥ を返します。
 
-```scala
+```scala mdoc
 val f: Boolean => Boolean = x => ???
-// f: Boolean => Boolean = <function1>
 val fTrue: Boolean => Boolean = x => true
-// fTrue: Boolean => Boolean = <function1>
 val fFalse: Boolean => Boolean = x => false
-// fFalse: Boolean => Boolean = <function1>
 ```
 
 ボトム型を返す関数は**部分関数** (partial function) と呼ばれます。scala だと [PartialFunction](https://github.com/scala/scala/blob/2.13.x/src/library/scala/PartialFunction.scala) として定義されています。
@@ -127,16 +112,12 @@ m は、入力 f に対して halt(f) == false であれば 0 を出力して終
 
 プログラミング言語において、副作用を持たず、同じ入力に対して同じ出力を返す関数を**純粋関数** (pure function) と言います。このように同じ入力に対して必ず同じ出力を返す性質は、**参照透過性** (referential transparency) と呼ばれます。
 
-<div align="center">
-
 ![純粋関数と参照透過性](./images/referential_transparency.png)
-</div>
 
 例えば、与えられた整数に +1 した値を返す関数
 
-```scala
+```scala mdoc
 val inc = (n: Int) => n + 1
-// inc: Int => Int = <function1>
 ```
 
 は、どんな整数 `n` に対しても `n+1` を返すので、純粋関数です。
@@ -157,48 +138,35 @@ Haskell の関数は全てが純粋関数です。そのため、Haskell は純�
 def g: Nothing => Int = _ => 1
 ```
 
-<div align="center">
-
 ![空集合とNothing型](./images/nothing_and_empty_set.png)
-</div>
 
 ### 2.4.2 シングルトン集合と Unit 型
 
 次に、シングルトン集合についてです。シングルトン集合は、値を1つだけ持った集合です。値を1つだけ持つような型は、Haskell では `()` 型、Scala では `Unit` 型にあたります。`()` 型や `Unit` 型を引数として持つ関数は、引数としてダミーの値を受け取ります。つまり、`Void`、`Nothing` と異なり引数なしでいつでも呼び出すことができます。そのような関数が純粋関数である場合は、常に同じ値を出力します。
 
-<div align="center">
-
 ![シングルトン集合とUnit型](./images/unit_and_singleton_set.png)
-</div>
 
 
 次のような関数 `f44` は、任意の入力に対して必ず `Int` 型の  `44` を返します。
-```scala
+```scala mdoc
 val f44: Unit => Int = _ => 44
-// f44: Unit => Int = <function1>
 
 f44(())
-// res0: Int = 44
 ```
 
-<div align="center">
-
 ![関数f44](./images/f44.png)
-</div>
 
 `Unit` 型を返り値の型に指定すると、その関数は `Unit` 値を返します。純粋関数である場合は出力値を得られないので、引数をただ廃棄する関数になります。例えば、以下の関数はいかなる `Int` 型の値を受け取っても `Unit` を返します。
 
-```scala
+```scala mdoc
 val fInt: Int => Unit = x => ()
 
 fInt(1)
 
 fInt(100)
-```
-<div align="center">
 
+```
 ![関数fInt](./images/fint.png)
-</div>
 
 任意の型に対して同じ式で実装できる関数は、パラメータ多相 (parametrically polymorphic) であるといいます。パラメータ多相な関数は、型変数をあらゆる具象型によって置換できるので、非常に便利です。
 

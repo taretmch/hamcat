@@ -1,0 +1,3 @@
+[submodule "honkit"]
+	path = honkit
+	url = git@github.com:taretmch/category-theory-with-scala.git

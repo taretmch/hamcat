@@ -52,7 +52,7 @@ def isOdd: Int => (String, Boolean) = n => {
 
 Writer 圏では、次のようなデータ型 `Writer` を導入します。
 
-```scala
+```scala mdoc
 type Writer[A] = (String, A)
 ```
 
@@ -64,30 +64,22 @@ type Writer[A] = (String, A)
 f: A => Writer[B]
 ```
 
-<div align="center">
-
 ![Writer圏における射](./images/morphism_in_writer_category.png)
-
-</div>
 
 2つの関数 `negate: Boolean => (String, Boolean)` と `isEven: Int => (String, Boolean)` は、以下のように書き換えれば Writer 圏における射とみなせます。
 
-```scala
+```scala mdoc
 def negate: Boolean => Writer[Boolean] = n => ("negate ", !n)
 def isEven: Int => Writer[Boolean] = n => ("isEven ", n % 2 == 0)
 ```
 
-<div align="center">
-
 ![Writer圏における射の例](./images/morphism_example_in_writer_category.png)
-
-</div>
 
 ### 4.2.2 Writer 圏における射の合成
 
 Writer 圏における射の合成は、 `isOdd` 関数の定義を抽象化したものと考えることができます。関数 `f: A => Writer[B]`、関数 `g: B => Writer[C]` を合成した関数 `f >=> g: A => Writer[C]` を定義してみましょう。
 
-```scala
+```scala mdoc
 implicit class WriterOps[A, B](f: A => Writer[B]) {
   def >=>[C](g: B => Writer[C]): A => Writer[C] =
     a => {
@@ -100,19 +92,13 @@ implicit class WriterOps[A, B](f: A => Writer[B]) {
 
 `>=>` 演算は fish 演算子と呼ばれるもので、引数で受け取った2つの関数を合成した関数を返します。
 
-```scala
+```scala mdoc
 val isOdd = isEven >=> negate
-// isOdd: Int => (String, Boolean) = <function1>
 
 isOdd(3)
-// res0: (String, Boolean) = ("isEven negate ", true)
 ```
 
-<div align="center">
-
 ![Writer圏における射の合成](./images/morphism_composition_example_in_writer_category.png)
-
-</div>
 
 これで、Writer 圏における関数合成は定義できました！
 
@@ -120,7 +106,7 @@ isOdd(3)
 
 そのような方法を、Scala プログラマにはおなじみの `flatMap` として定義することができます。
 
-```scala
+```scala mdoc
 implicit class WriterOps2[A](v: Writer[A]) {
   def flatMap[B](f: A => Writer[B]): Writer[B] = {
     val (log1, a) = v
@@ -132,11 +118,9 @@ implicit class WriterOps2[A](v: Writer[A]) {
 
 この `flatMap` メソッドを使うことによって、`isEven` メソッドを適用したあとに `negate` メソッドを適用する、のような書き方ができるようになります。これは `isOdd` メソッドと同じ結果を返します。
 
-```scala
+```scala mdoc
 isEven(3).flatMap(negate(_))
-// res1: (String, Boolean) = ("isEven negate ", true)
 isOdd(3)
-// res2: (String, Boolean) = ("isEven negate ", true)
 ```
 
 ### 4.2.3 Writer 圏は圏の公理を満たすか
@@ -164,7 +148,7 @@ h compose g compose f == (h compose g) compose f == h compose (g compose f)
 
 Writer 圏における恒等射の性質として、1つ目の要素であるログ文字列をそのまま返し、2つ目の要素である計算結果もそのまま返す必要があります。すなわち、1つ目の要素に空文字列を渡し、2つ目の要素には引数と同じ値を渡せば良いです。したがって、恒等射 `pure` は以下のように定義できます。
 
-```scala
+```scala mdoc
 def pure[A](a: A): Writer[A] = ("", a)
 ```
 
@@ -172,20 +156,15 @@ def pure[A](a: A): Writer[A] = ("", a)
 
 `Writer` 型の値に `pure` をそのまま適用することはできないので、`flatMap` メソッドを用います。
 
-```scala
+```scala mdoc
 ("apply ", 3).flatMap(pure(_))
-// res3: (String, Int) = ("apply ", 3)
 ```
 
 元の値が返ってくることを確認できました。`pure` は任意の型 `A` に対して存在するので、`pure` は恒等射です。したがって、Writer 圏は単位律を満たします。
 
 以上のことから、ここで定義した Writer 圏は圏であるといえます。Writer 圏についてまとめると、次の図のようになります。
 
-<div align="center">
-
 ![Writer圏についてのまとめ](./images/04_example_of_writer_category.png)
-
-</div>
 
 ### 4.2.4 Writer 圏のより一般的な定義
 

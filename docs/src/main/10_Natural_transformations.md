@@ -43,21 +43,17 @@
 
 List 関手から Option 関手への自然変換の例として、 `headOption`、`listToNone` などがあります。
 
-```scala
+```scala mdoc
 def headOption[A]: List[A] => Option[A] = _.headOption
 
 def listToNone[A](list: List[A]): Option[A] = None
 ```
 
-<div align="center">
-
 ![自然変換としての headOption](./images/10_natural_transformation_example.png)
-
-</div>
 
 Option 関手から List 関手への自然変換の例としては `toList`、`optionToNil` などがあります。
 
-```scala
+```scala mdoc
 def toList[A]: Option[A] => List[A] = {
   case Some(a) => List(a)
   case None    => Nil
@@ -68,14 +64,14 @@ def optionToNil[A](option: Option[A]): List[A] = Nil
 
 また、関手の合成もまた関手になるので、List[List] 関手や List[Option] 関手から List 関手への自然変換も考えることができます。
 
-```scala
+```scala mdoc
 def flattenListList[A]: List[List[A]] => List[A] = _.flatten
 def flattenListOption[A]: List[Option[A]] => List[A] = _.flatten
 ```
 
 List 関手から Const 関手 (定数を保持する関手) への関数 `length` もまた、自然変換です。
 
-```scala
+```scala mdoc
 import hamcat.data.Const
 
 def length[A]: List[A] => Const[Int, A] = list => Const(list.length)
@@ -106,11 +102,7 @@ implicit def ConstFunctor[C]: Functor[Const[C, ?]] = new Functor[Const[C, ?]] {
 
 圏 **C** から圏 **D** への関手を `F` と `G` とし、`F` から `G` への変換 `alpha` を考えます。
 
-<div align="center">
-
 ![自然変換](./images/10_natural_transformation.png)
-
-</div>
 
 関手の対象関数は、圏 **C** の対象 `A` を `F[A]` および `G[A]` に対応させるものでした。この2つの対象 `F[A]` と `G[A]` は圏 **D** の対象であるため、対象関数の変換は `D` の射 `alpha[A]` として定義されます：
 
@@ -128,11 +120,7 @@ fmapG(f) compose alpha[A]: F[A] => G[B]
 alpha[B] compose fmapF(f): F[A] => G[B]
 ```
 
-<div align="center">
-
 ![自然性](./images/10_naturality.png)
-
-</div>
 
 このように、射関数の変換には2通りの作り方があるため、整合性が保たれるようどちらの作り方でも結果が同じでなければいけません：
 
@@ -163,11 +151,7 @@ alpha[B] compose fmapF(f): F[A] => G[B]
 
 定義の2つ目の条件は、関手の射関数の変換に関する条件で、自然性と呼ばれるものです。
 
-<div align="center">
-
 ![自然変換の定義](./images/10_natural_transformation.png)
-
-</div>
 
 ### 10.1.4 自然変換を表す型クラス
 
@@ -193,7 +177,7 @@ def headOption[A]: List[A] => Option[A] = _.headOption
 
 これの FunctionK のインスタンスを実装すると、以下のようになります。
 
-```scala
+```scala mdoc
 import hamcat.arrow.FunctionK
 
 def headOptionK: FunctionK[List, Option] = new FunctionK[List, Option] {
@@ -211,21 +195,21 @@ object headOptionK extends FunctionK[List, Option] {
 
 なお、この定義は kind-projector の Lambda (λ) を使えば少し簡単に書くことができます。
 
-```scala
+```scala mdoc
 def lambdaHeadOption: FunctionK[List, Option] = Lambda[FunctionK[List, Option]](_.headOption)
 def λHeadOption: FunctionK[List, Option] = λ[FunctionK[List, Option]](_.headOption)
 ```
 
 また、FunctionK のエイリアスとして `~>` が使われることが多いです。
 
-```scala
+```scala mdoc
 /** Alias for FunctionK */
 type ~>[F[_], G[_]] = FunctionK[F, G]
 ```
 
 したがって、headOption は、以下のようにも書けます。
 
-```scala
+```scala mdoc
 def headOptionK2: (List ~> Option) = Lambda[List ~> Option](_.headOption)
 ```
 
@@ -239,27 +223,19 @@ headOption 関数は、List 関手から Option 関手への自然変換です�
 
 実際、`List(1, 2, 3, 4, 5)` と `isEven` 関数に対して、自然性を満たします：
 
-```scala
+```scala mdoc
 import hamcat.Implicits._
 
 def isEven: Int => Boolean = _ % 2 == 0
 val list = List(1, 2, 3, 4, 5)
-// list: List[Int] = List(1, 2, 3, 4, 5)
 
 // 自然性
 val listToOption1 = (OptionFunctor.fmap(isEven) compose headOptionK[Int])(list)
-// listToOption1: Option[Boolean] = Some(value = false)
 val listToOption2 = (headOptionK[Boolean] _ compose ListFunctor.fmap(isEven))(list)
-// listToOption2: Option[Boolean] = Some(value = false)
 listToOption1 == listToOption2
-// res0: Boolean = true
 ```
 
-<div align="center">
-
 ![headOption の可換図式](./images/10_headOption.png)
-
-</div>
 
 #### length: List => Const
 
@@ -269,27 +245,20 @@ length 関数は、List 関手から Const 関手への自然変換です：
 def length[A]: List[A] => Const[Int, A] = list => Const(list.length)
 ```
 
-```scala
+```scala mdoc
 def lengthK = Lambda[FunctionK[List, Const[Int, ?]]](fa => Const(fa.length))
 ```
 
 length もまた、`List(1, 2, 3, 4, 5)` と `isEven` 関数に対して、自然性を満たします：
 
-```scala
+```scala mdoc
 // 自然性
 val listToConst1 = (ConstFunctor.fmap(isEven) compose lengthK[Int])(list)
-// listToConst1: Const[Int, Boolean] = Const(v = 5)
 val listToConst2 = (lengthK[Boolean] _ compose ListFunctor.fmap(isEven))(list)
-// listToConst2: Const[Int, Boolean] = Const(v = 5)
 listToConst1 == listToConst2
-// res1: Boolean = true
 ```
 
-<div align="center">
-
 ![length の可換図式](./images/10_length.png)
-
-</div>
 
 #### flattenListOption: List[Option] => List
 
@@ -299,7 +268,7 @@ flattenListOption 関数は、List[Option] 関手から List 関手への自然�
 def flattenListOption[A]: List[Option[A]] => List[A] = _.flatten
 ```
 
-```scala
+```scala mdoc
 type ListOption[A] = List[Option[A]]
 def flattenListOptionK = new FunctionK[ListOption, List] {
   def apply[A](fa: List[Option[A]]): List[A] = fa.flatten
@@ -308,31 +277,18 @@ def flattenListOptionK = new FunctionK[ListOption, List] {
 
 `List(Some(1), Some(2), None, Some(3))` と `isEven` 関数に対して、自然性を満たします：
 
-```scala
+```scala mdoc
 val listOption = List(Some(1), Some(2), None, Some(3))
-// listOption: List[Option[Int]] = List(
-//   Some(value = 1),
-//   Some(value = 2),
-//   None,
-//   Some(value = 3)
-// )
 def fmapLO[A, B]: (A => B) => List[Option[A]] => List[Option[B]] = f => listA =>
   listA.fmap(_.fmap(f))
 
 // 自然性
 val listOptionToList1 = (ListFunctor.fmap(isEven) compose flattenListOptionK[Int])(listOption)
-// listOptionToList1: List[Boolean] = List(false, true, false)
 val listOptionToList2 = (flattenListOptionK[Boolean] _ compose fmapLO(isEven))(listOption)
-// listOptionToList2: List[Boolean] = List(false, true, false)
 listOptionToList1 == listOptionToList2
-// res2: Boolean = true
 ```
 
-<div align="center">
-
 ![flattenListOption の可換図式](./images/10_flatten.png)
-
-</div>
 
 ## 10.2 関手圏
 
@@ -365,11 +321,7 @@ alpha[A]: F[A] -> G[A]
 beta[A]: G[A] -> H[A]
 ```
 
-<div align="center">
-
 ![自然変換の合成](./images/10_natural_transformation_composition1.png)
-
-</div>
 
 これらは圏 **D** の射であるので、合成することができます。
 
@@ -383,11 +335,7 @@ beta[A] compose alpha[A]: F[A] -> H[A]
 (beta compose alpha)[A] := beta[A] compose alpha[A]
 ```
 
-<div align="center">
-
 ![自然変換の合成2](./images/10_natural_transformation_composition2.png)
-
-</div>
 
 この合成 `beta compose alpha` は自然性を満たすでしょうか？
 
@@ -399,11 +347,7 @@ fmapH compose (beta compose alpha)[A] == (beta compose alpha)[B] compose fmapF
 
 です。
 
-<div align="center">
-
 ![自然変換の合成が満たすべき自然性](./images/10_natural_transformation_composition3.png)
-
-</div>
 
 まず、`alpha` と `beta` は自然変換であるので、以下の2つが成り立ちます：
 
@@ -412,11 +356,7 @@ fmapH compose (beta compose alpha)[A] == (beta compose alpha)[B] compose fmapF
 2) fmapH compose beta[A] == beta[B] compose fmapG
 ```
 
-<div align="center">
-
 ![自然変換の合成: 前提条件](./images/10_natural_transformation_composition4.png)
-
-</div>
 
 射の合成により、1) の両辺に `beta[B]` を適用することができます：
 
@@ -424,11 +364,7 @@ fmapH compose (beta compose alpha)[A] == (beta compose alpha)[B] compose fmapF
 3) beta[B] compose fmapG compose alpha[A] == beta[B] compose alpha[B] compose fmapF
 ```
 
-<div align="center">
-
 ![自然変換の合成: 証明1](./images/10_natural_transformation_composition5.png)
-
-</div>
 
 2) と 3) より、以下が成り立ちます：
 
@@ -436,11 +372,7 @@ fmapH compose (beta compose alpha)[A] == (beta compose alpha)[B] compose fmapF
 4) fmapH compose beta[A] compose alpha[A] == beta[B] compose alpha[B] compose fmapF
 ```
 
-<div align="center">
-
 ![自然変換の合成: 証明2](./images/10_natural_transformation_composition6.png)
-
-</div>
 
 射の合成は結合律を満たすので、以下のように書け：
 
@@ -476,13 +408,12 @@ def compose[H[_]](v: FunctionK[H, F]): FunctionK[H, G] =
 
 例えば、`flattenK: ListList ~> List` と `headOptionK: List ~> Option` とを合成することができます。
 
-```scala
+```scala mdoc
 type ListList[A] = List[List[A]]
 
 def flattenK: ListList ~> List = Lambda[ListList ~> List](_.flatten)
 def flattenThenHeadOption = headOptionK compose flattenK
 flattenThenHeadOption(List(List(1, 2, 3), List(4, 5), Nil, List(6)))
-// res3: Option[Int] = Some(value = 1)
 ```
 
 ### 10.2.3 関手圏は単位律を満たすか
@@ -509,13 +440,11 @@ object FunctionK {
 
 `FunctionK.identityK` は、恒等射の性質 `f . idA = idB . f` を満たします。
 
-```scala
+```scala mdoc
 import hamcat.arrow.FunctionK.identityK
 
 (headOptionK compose identityK[List])(List(1, 2, 3)) == headOptionK(List(1, 2, 3))
-// res4: Boolean = true
 (identityK[Option] compose headOptionK)(List(1, 2, 3)) == headOptionK(List(1, 2, 3))
-// res5: Boolean = true
 ```
 
 ## おまけ: 先取り！モナド
@@ -546,7 +475,7 @@ import hamcat.arrow.FunctionK.identityK
 
 Scala 圏における Option モナドは、自己関手 `Option[_]`、自然変換 `eta: Id ~> Option`、`mu: Option[Option] ~> Option` の三つ組です。`eta` と `mu` はそれぞれ `Option.apply` メソッドおよび `flatten` メソッドとします。つまり、`eta` が `T` で型を包む操作で、`mu` が `T` のネストを平滑化する操作です。
 
-```scala
+```scala mdoc
 type Id[A] = A
 type OptionOption[A] = Option[Option[A]]
 
@@ -560,11 +489,10 @@ object mu extends (OptionOption ~> Option) { def apply[A](fa: Option[Option[A]])
 
 1. `mu[A] compose T[eta[A]] == identity[T[A]]`
 
-```scala
+```scala mdoc
 import hamcat.data.identity
 
 (mu[Int] _ compose OptionFunctor.fmap(eta[Int]))(Option(3)) == identity[Option[Int]](Option(3))
-// res6: Boolean = true
 ```
 
 T[A] を T[T[A]] にしたあと flatten すると T[A] になる、という条件みたいですね。
@@ -573,9 +501,8 @@ T[A] を T[T[A]] にしたあと flatten すると T[A] になる、という条
 
 2. `mu[A] compose eta[T[A]] == identity[T[A]]`
 
-```scala
+```scala mdoc
 (mu[Int] _ compose eta[Option[Int]])(Option(3)) == identity[Option[Int]](Option(3))
-// res7: Boolean = true
 ```
 
 これも T[A] ~> T[T[A]] ~> T[A] についての条件ですね。結合律みたいなもんでしょうか。
@@ -584,9 +511,8 @@ T[A] を T[T[A]] にしたあと flatten すると T[A] になる、という条
 
 3. `mu[A] compose mu[T[A]] == mu[A] compose T[mu[A]]`
 
-```scala
+```scala mdoc
 (mu[Int] _ compose mu[Option[Int]])(Option(Option(Option(3)))) == (mu[Int] _ compose OptionFunctor.fmap(mu[Int]))(Option(Option(Option(3))))
-// res8: Boolean = true
 ```
 
 これは、どれだけネストされても平滑化できるという条件ですね。
