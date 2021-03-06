@@ -1,3 +1,0 @@
-[submodule "docs/src/main/gitbook"]
-	path = docs/src/main/gitbook
-	url = git@github.com:taretmch/category-theory-with-scala.git
