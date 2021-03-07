@@ -1,3 +1,7 @@
+---
+description: "圏論の勉強記録です。本章では、関手についてさらに深掘ります。Writer 関手や双関手、Reader 関手、反変関手、Profunctor、Hom 関手について学びます。"
+---
+
 <!-- omit in toc -->
 # 8. 関手性
 
