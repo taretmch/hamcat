@@ -23,7 +23,7 @@ Hamcat は、圏論に関する概念を実装した勉強用ライブラリで�
 本プロジェクトをクローンして、ローカル環境にてお使いください。
 
 ```sh
-% git clone git@github.com:taretmch/hamcat.git --recursive
+% git clone git@github.com:taretmch/hamcat.git --init
 
 % sbt
 sbt:hamcat> core/console
