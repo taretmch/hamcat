@@ -23,7 +23,7 @@ Hamcat は、圏論に関する概念を実装した勉強用ライブラリで�
 本プロジェクトをクローンして、ローカル環境にてお使いください。
 
 ```sh
-% git clone git@github.com:taretmch/hamcat.git
+% git clone git@github.com:taretmch/hamcat.git --recursive
 
 % sbt
 sbt:hamcat> core/console
@@ -60,7 +60,15 @@ val res3: Boolean = false
 
 ドキュメントは [scalameta/mdoc](https://github.com/scalameta/mdoc) を使って書かれています。編集する場合、可能であれば mdoc を使っていただければと思います。
 
-ドキュメントは [HonKit](https://github.com/honkit/honkit) を使って静的サイトにしています。ローカルでの静的サイトは、以下のコマンドを実行したあと
+ドキュメントは [HonKit](https://github.com/honkit/honkit) を使って静的サイトにしています。ローカルでの静的サイトを確認するには、npm パッケージをインストールする必要があります。
+
+```sh
+% npm install
+# or
+% yarn install
+```
+
+以下のコマンドを実行したあと
 
 ```sh
 % sbt docs/textBuildHtml
