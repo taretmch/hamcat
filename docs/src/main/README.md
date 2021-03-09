@@ -23,7 +23,7 @@ Scala をやっていて、圏論について知りたい・学ぶ土台を作�
   * [10章 自然変換](10_Natural_transformations.md)
 * 第2部
   * （工事中）11章 宣言型プログラミング
-  * （工事中）12章 極限と余極限
+  * [12章 極限と余極限](12_Limits_and_Colimits.md)
 * 付録
   * [表記法](00_Notation.md)
   * [Writer 圏における射の合成と、恒等射と、関手について](tips/08_2_Writer_Functor.md)
