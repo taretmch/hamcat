@@ -6,8 +6,14 @@
   "repository": "git@github.com:taretmch/scala-category-training.git",
   "author": "taretmch <tomochuri25@gmail.com>",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "build": "./node_modules/.bin/honkit build ./ ./honkit",
+    "start": "./node_modules/.bin/honkit serve ./ ./honkit"
+  },
   "devDependencies": {
     "honkit": "3.6.17"
+  },
+  "dependencies": {
+    "gitbook-plugin-katex": "^1.1.4"
   }
 }
