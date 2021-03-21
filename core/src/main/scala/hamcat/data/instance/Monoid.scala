@@ -23,4 +23,11 @@ trait MonoidInstances {
       def combine(a: Option[A], b: Option[A]): Option[A] = sgOpt.combine(a, b)
       def empty: Option[A] = None
     }
+
+  /** List monoid */
+  implicit def ListMonoid[A](implicit sg: Semigroup[List[A]]): Monoid[List[A]] =
+    new Monoid[List[A]] {
+      def combine(a: List[A], b: List[A]): List[A] = sg.combine(a, b)
+      def empty: List[A] = Nil
+    }
 }
