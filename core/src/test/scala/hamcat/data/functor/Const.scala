@@ -18,6 +18,6 @@ class FunctorConstSpec extends AnyFlatSpec with Matchers {
 
   it should "恒等射を恒等射へ写す" in {
     // fmap(identity[A]) == identity[F[A]]
-    assert(ConstFunctor.fmap(identity[Int])(const) == identity[Const[String, Int]](const))
+    assert(constFunctor.fmap(identity[Int])(const) == identity[Const[String, Int]](const))
   }
 }

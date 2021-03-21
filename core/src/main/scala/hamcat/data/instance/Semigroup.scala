@@ -6,17 +6,17 @@ import hamcat.data.Semigroup
 trait SemigroupInstances {
 
   /** Int with sum instance */
-  implicit val IntSemigroup: Semigroup[Int] = new Semigroup[Int] {
+  implicit def intSemigroup: Semigroup[Int] = new Semigroup[Int] {
     def combine(a: Int, b: Int): Int = a + b
   }
 
   /** String with sum instance */
-  implicit val StringSemigroup: Semigroup[String] = new Semigroup[String] {
+  implicit def stringSemigroup: Semigroup[String] = new Semigroup[String] {
     def combine(a: String, b: String): String = a + b
   }
 
 /** Option with sum instance */
-  implicit def OptionSemigroup[A: Semigroup](implicit sg: Semigroup[A]): Semigroup[Option[A]] =
+  implicit def optionSemigroup[A: Semigroup](implicit sg: Semigroup[A]): Semigroup[Option[A]] =
     new Semigroup[Option[A]] {
       def combine(a: Option[A], b: Option[A]): Option[A] =
         (a, b) match {
@@ -28,7 +28,7 @@ trait SemigroupInstances {
     }
 
   /** List with concat instance */
-  implicit def ListSemigroup[A]: Semigroup[List[A]] =
+  implicit def listSemigroup[A]: Semigroup[List[A]] =
     new Semigroup[List[A]] {
       def combine(a: List[A], b: List[A]): List[A] =
         a ++ b

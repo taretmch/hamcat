@@ -3,7 +3,6 @@ package hamcat.arrow
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-import hamcat.Implicits._
 import hamcat.arrow.ProductFunction.productIdentity
 
 class ProductFunctionSpec extends AnyFlatSpec with Matchers {
@@ -21,7 +20,10 @@ class ProductFunctionSpec extends AnyFlatSpec with Matchers {
     ProductFunction(negate)(isEven)
 
   "ProductFunction" should "関数適用できる" in {
-    assert(func1(obj) == (strToInt(obj._1), increment(obj._2)))
+    val res1 = func1(obj)
+    val res2 = (strToInt(obj._1), increment(obj._2))
+    assert(res1._1 == res2._1)
+    assert(res1._2 == res2._2)
   }
 
   "ProductFunction" should "射の合成が結合律を満たす" in {

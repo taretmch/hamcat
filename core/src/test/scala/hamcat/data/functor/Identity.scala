@@ -16,23 +16,23 @@ class FunctorIdentitySpec extends AnyFlatSpec with Matchers {
   "Identity functor" should "射の合成を保存する" in {
     // fmap(g compose f) == fmap(g) compose fmap(f)
     assert(
-      IdentityFunctor.fmap(isEven compose increment)(oddId)
+      identityFunctor.fmap(isEven compose increment)(oddId)
         ==
-      (IdentityFunctor.fmap(isEven) compose IdentityFunctor.fmap(increment))(oddId)
+      (identityFunctor.fmap(isEven) compose identityFunctor.fmap(increment))(oddId)
     )
     assert(oddId.fmap(isEven compose increment) == oddId.fmap(increment).fmap(isEven))
 
     assert(
-      IdentityFunctor.fmap(isEven compose increment)(evenId)
+      identityFunctor.fmap(isEven compose increment)(evenId)
         ==
-      (IdentityFunctor.fmap(isEven) compose IdentityFunctor.fmap(increment))(evenId)
+      (identityFunctor.fmap(isEven) compose identityFunctor.fmap(increment))(evenId)
     )
     assert(evenId.fmap(isEven compose increment) == evenId.fmap(increment).fmap(isEven))
   }
 
   it should "恒等射を恒等射へ写す" in {
     // fmap(identity[A]) == identity[F[A]]
-    assert(IdentityFunctor.fmap(identity[Int])(oddId) == identity[Id[Int]](oddId))
-    assert(IdentityFunctor.fmap(identity[Int])(evenId) == identity[Id[Int]](evenId))
+    assert(identityFunctor.fmap(identity[Int])(oddId) == identity[Id[Int]](oddId))
+    assert(identityFunctor.fmap(identity[Int])(evenId) == identity[Id[Int]](evenId))
   }
 }

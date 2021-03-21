@@ -1,6 +1,6 @@
 package hamcat.data
 
-// Monoid
+/** Monoid */
 trait Monoid[M] extends Semigroup[M] {
 
   /** Unit element of binary operation */

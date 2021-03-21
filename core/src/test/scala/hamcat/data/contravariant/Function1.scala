@@ -18,15 +18,15 @@ class ContravariantFunction1Spec extends AnyFlatSpec with Matchers {
   "Function1 contravariant functor" should "射の合成を保存する" in {
     // contramap(g compose f) == contramap(f) compose contramap(g)
     assert(
-      Function1Contravariant.contramap(boolToInt compose isEven)(func)(3)
+      readerContravariant.contramap(boolToInt compose isEven)(func)(3)
         ==
-      (Function1Contravariant[Boolean].contramap(isEven) compose Function1Contravariant[Boolean].contramap(boolToInt))(func)(3)
+      (readerContravariant[Boolean].contramap(isEven) compose readerContravariant[Boolean].contramap(boolToInt))(func)(3)
     )
   }
 
   it should "恒等射を恒等射へ写す" in {
     // contramacontramap(identity[A]) == identity[F[A]]
-    assert(Function1Contravariant.contramap(identity[Int])(func)(3) == identity[Int => Boolean](func)(3))
-    assert(Function1Contravariant.contramap(identity[Int])(func)(4) == identity[Int => Boolean](func)(4))
+    assert(readerContravariant.contramap(identity[Int])(func)(3) == identity[Int => Boolean](func)(3))
+    assert(readerContravariant.contramap(identity[Int])(func)(4) == identity[Int => Boolean](func)(4))
   }
 }

@@ -16,23 +16,23 @@ class FunctorListSpec extends AnyFlatSpec with Matchers {
   "List functor" should "射の合成を保存する" in {
     // fmap(g compose f) == fmap(g) compose fmap(f)
     assert(
-      ListFunctor.fmap(isEven compose increment)(list)
+      listFunctor.fmap(isEven compose increment)(list)
         ==
-      (ListFunctor.fmap(isEven) compose ListFunctor.fmap(increment))(list)
+      (listFunctor.fmap(isEven) compose listFunctor.fmap(increment))(list)
     )
     assert(list.fmap(isEven compose increment) == list.fmap(increment).fmap(isEven))
 
     assert(
-      ListFunctor.fmap(isEven compose increment)(nil)
+      listFunctor.fmap(isEven compose increment)(nil)
         ==
-      (ListFunctor.fmap(isEven) compose ListFunctor.fmap(increment))(nil)
+      (listFunctor.fmap(isEven) compose listFunctor.fmap(increment))(nil)
     )
     assert(nil.fmap(isEven compose increment) == nil.fmap(increment).fmap(isEven))
   }
 
   it should "恒等射を恒等射へ写す" in {
     // fmap(identity[A]) == identity[F[A]]
-    assert(ListFunctor.fmap(identity[Int])(list) == identity[List[Int]](list))
-    assert(ListFunctor.fmap(identity[Int])(nil) == identity[List[Int]](nil))
+    assert(listFunctor.fmap(identity[Int])(list) == identity[List[Int]](list))
+    assert(listFunctor.fmap(identity[Int])(nil) == identity[List[Int]](nil))
   }
 }

@@ -15,17 +15,17 @@ class FunctorOptionSpec extends AnyFlatSpec with Matchers {
     // fmap(g compose f) == fmap(g) compose fmap(f)
     // Case: Some(1)
     assert(
-      OptionFunctor.fmap(isEven compose increment)(Option(1))
+      optionFunctor.fmap(isEven compose increment)(Option(1))
         ==
-      (OptionFunctor.fmap(isEven) compose OptionFunctor.fmap(increment))(Option(1))
+      (optionFunctor.fmap(isEven) compose optionFunctor.fmap(increment))(Option(1))
     )
     assert(Option(1).fmap(isEven compose increment) == Option(1).fmap(increment).fmap(isEven))
 
     // Case: None
     assert(
-      OptionFunctor.fmap(isEven compose increment)(none)
+      optionFunctor.fmap(isEven compose increment)(none)
         ==
-      (OptionFunctor.fmap(isEven) compose OptionFunctor.fmap(increment))(none)
+      (optionFunctor.fmap(isEven) compose optionFunctor.fmap(increment))(none)
     )
     assert(none.fmap(isEven compose increment) == none.fmap(increment).fmap(isEven))
   }
@@ -33,9 +33,9 @@ class FunctorOptionSpec extends AnyFlatSpec with Matchers {
   it should "恒等射を恒等射へ写す" in {
     // fmap(identity[A]) == identity[F[A]]
     // Case: Some(1)
-    assert(OptionFunctor.fmap(identity[Int])(Option(1)) == identity[Option[Int]](Option(1)))
+    assert(optionFunctor.fmap(identity[Int])(Option(1)) == identity[Option[Int]](Option(1)))
 
     // Case: None
-    assert(OptionFunctor.fmap(identity[Int])(none) == identity[Option[Int]](none))
+    assert(optionFunctor.fmap(identity[Int])(none) == identity[Option[Int]](none))
   }
 }

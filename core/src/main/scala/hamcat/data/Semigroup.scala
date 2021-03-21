@@ -1,6 +1,6 @@
 package hamcat.data
 
-// Semigroup
+/** Semigroup */
 trait Semigroup[M] {
 
   /** Binary operation which must be associative */

@@ -1,4 +1,4 @@
 package hamcat.data
 
-/** Const data type */
+/** Const functor */
 case class Const[C, +A](v: C)

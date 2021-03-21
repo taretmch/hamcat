@@ -15,9 +15,9 @@ class BifunctorTuple2Spec extends AnyFlatSpec with Matchers {
   "Tuple2 bifunctor" should "射の合成を保存する" in {
     // bimap(h compose f)(k compose g) == bimap(h)(k) compose bimap(f)(g)
     assert(
-      Tuple2Bifunctor.bimap(isEven compose increment)(isEven compose strToLength)(tuple)
+      tuple2Bifunctor.bimap(isEven compose increment)(isEven compose strToLength)(tuple)
         ==
-      (Tuple2Bifunctor.bimap(isEven)(isEven) compose Tuple2Bifunctor.bimap(increment)(strToLength))(tuple)
+      (tuple2Bifunctor.bimap(isEven)(isEven) compose tuple2Bifunctor.bimap(increment)(strToLength))(tuple)
     )
     assert(
       tuple.bimap(isEven compose increment)(isEven compose strToLength)
@@ -28,6 +28,6 @@ class BifunctorTuple2Spec extends AnyFlatSpec with Matchers {
 
   it should "恒等射を恒等射へ写す" in {
     // fmap(identity[A]) == identity[F[A]]
-    assert(Tuple2Bifunctor.bimap(identity[Int])(identity[String])(tuple) == identity[(Int, String)](tuple))
+    assert(tuple2Bifunctor.bimap(identity[Int])(identity[String])(tuple) == identity[(Int, String)](tuple))
   }
 }
