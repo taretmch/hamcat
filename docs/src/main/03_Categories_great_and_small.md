@@ -104,9 +104,9 @@ implicit val IntMonoid: Monoid[Int] = new Monoid[Int] {
 ```scala mdoc
 import hamcat.Implicits._
 
-IntMonoid.combine(1, 3)
-IntMonoid.empty
-IntMonoid.combine(2, IntMonoid.empty)
+intMonoid.combine(1, 3)
+intMonoid.empty
+intMonoid.combine(2, intMonoid.empty)
 ```
 
 ## 3.5 圏としてのモノイド 

@@ -84,10 +84,10 @@ def negate: Boolean => Boolean = b => !b
 
 ```scala
 // fmap(g compose f)
-def lifted1 = OptionFunctor.fmap(negate compose isEven)
+def lifted1 = optionFunctor.fmap(negate compose isEven)
 
 // fmap(g) compose fmap(f)
-def lifted2 = OptionFunctor.fmap(negate) compose OptionFunctor.fmap(isEven)
+def lifted2 = optionFunctor.fmap(negate) compose optionFunctor.fmap(isEven)
 
 lifted1 === lifted2
 ```
@@ -95,7 +95,7 @@ lifted1 === lifted2
 例えば、`Option(3)` に対して以下が成り立ちます。
 
 ```scala mdoc
-OptionFunctor.fmap(negate compose isEven)(Option(3)) == (OptionFunctor.fmap(negate) compose OptionFunctor.fmap(isEven))(Option(3))
+optionFunctor.fmap(negate compose isEven)(Option(3)) == (optionFunctor.fmap(negate) compose optionFunctor.fmap(isEven))(Option(3))
 ```
 
 ![合成の保存](./images/07_functor_composition.png)
@@ -108,7 +108,7 @@ import hamcat.data.identity
 
 ```scala
 // fmap(identity[A])
-def lifted3 = OptionFunctor.fmap(identity[Int])
+def lifted3 = optionFunctor.fmap(identity[Int])
 
 // identity[F[A]]
 def lifted4 = identity[Option[Int]]
@@ -119,7 +119,7 @@ lifted3 === lifted4
 例えば、`Option(3)` に対して以下が成り立ちます。
 
 ```scala mdoc
-OptionFunctor.fmap(identity[Int])(Option(3)) == identity[Option[Int]](Option(3))
+optionFunctor.fmap(identity[Int])(Option(3)) == identity[Option[Int]](Option(3))
 ```
 
 以上の性質は圏の構造を保存する対応を表す性質です。このような2つの性質を**関手性** (functor laws) と呼びます。
@@ -167,7 +167,7 @@ Option 関手のインスタンスは、以下のように実装できます。`
 
 ```scala
 /** Option functor */
-implicit val OptionFunctor: Functor[Option] = new Functor[Option] {
+implicit val optionFunctor: Functor[Option] = new Functor[Option] {
   def fmap[A, B](f: A => B): Option[A] => Option[B] = _.map(f)
 }
 ```
@@ -179,10 +179,10 @@ Option 関手の `fmap` メソッドは `Option#map` メソッドと同じです
 ```scala mdoc
 import hamcat.Implicits._
 
-OptionFunctor.fmap(isEven)(Option(3))
+optionFunctor.fmap(isEven)(Option(3))
 ```
 
-なお、毎回 `OptionFunctor.fmap(...)` と書くのは面倒ですし、不便です。この場合、以下のようにシンタックスを定義することによって `Option#fmap` メソッドとして呼び出せるようになります。
+なお、毎回 `optionFunctor.fmap(...)` と書くのは面倒ですし、不便です。この場合、以下のようにシンタックスを定義することによって `Option#fmap` メソッドとして呼び出せるようになります。
 
 ```scala
 implicit class FunctorOps[F[_], A](v: F[A])(implicit functor: Functor[F]) {
@@ -215,17 +215,17 @@ val none:        Option[Int]    = None
   // fmap(g compose f) == fmap(g) compose fmap(f)
   // Case: Some(1)
   assert(
-    OptionFunctor.fmap(isEven compose increment)(Option(1))
+    optionFunctor.fmap(isEven compose increment)(Option(1))
       ==
-    (OptionFunctor.fmap(isEven) compose OptionFunctor.fmap(increment))(Option(1))
+    (optionFunctor.fmap(isEven) compose optionFunctor.fmap(increment))(Option(1))
   )
   assert(Option(1).fmap(isEven compose increment) == Option(1).fmap(increment).fmap(isEven))
 
   // Case: None
   assert(
-    OptionFunctor.fmap(isEven compose increment)(none)
+    optionFunctor.fmap(isEven compose increment)(none)
       ==
-    (OptionFunctor.fmap(isEven) compose OptionFunctor.fmap(increment))(none)
+    (optionFunctor.fmap(isEven) compose optionFunctor.fmap(increment))(none)
   )
   assert(none.fmap(isEven compose increment) == none.fmap(increment).fmap(isEven))
 }
@@ -237,10 +237,10 @@ val none:        Option[Int]    = None
 it should "恒等射を恒等射へ写す" in {
   // fmap(identity[A]) == identity[F[A]]
   // Case: Some(1)
-  assert(OptionFunctor.fmap(identity[Int])(Option(1)) == identity[Option[Int]](Option(1)))
+  assert(optionFunctor.fmap(identity[Int])(Option(1)) == identity[Option[Int]](Option(1)))
 
   // Case: None
-  assert(OptionFunctor.fmap(identity[Int])(none) == identity[Option[Int]](none))
+  assert(optionFunctor.fmap(identity[Int])(none) == identity[Option[Int]](none))
 }
 ```
 
@@ -306,8 +306,8 @@ val intOptionList: List[Option[Int]] = List(Some(1), Some(3), None, Some(4))
 次に、射関数は、List 関手の `fmap` メソッドと Option 関手の `fmap` メソッドの合成 `fmapC` と定義します。
 
 ```scala mdoc
-def fmapL[A, B]: (A => B) => List[A] => List[B] = ListFunctor.fmap
-def fmapO[A, B]: (A => B) => Option[A] => Option[B] = OptionFunctor.fmap
+def fmapL[A, B]: (A => B) => List[A] => List[B] = listFunctor.fmap
+def fmapO[A, B]: (A => B) => Option[A] => Option[B] = optionFunctor.fmap
 
 def fmapC[A, B]: (A => B) => List[Option[A]] => List[Option[B]] = fmapL.compose(fmapO[A, B])
 ```
