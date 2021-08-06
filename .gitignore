@@ -6,5 +6,6 @@ target
 /.project
 /.settings
 .bloop
+.bsp
 mdocOutput/
 node_modules/
