@@ -9,3 +9,9 @@ trait Bifunctor[F[_, _]] {
   def first[A, B, C](f: A => C): F[A, B] => F[C, B] = bimap(f)(identity[B])
   def second[A, B, D](g: B => D): F[A, B] => F[A, D] = bimap(identity[A])(g)
 }
+
+object Bifunctor {
+
+  /** Access to implicit instance */
+  def apply[F[_, _]](implicit bf: Bifunctor[F]): Bifunctor[F] = bf
+}
