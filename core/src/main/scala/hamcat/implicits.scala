@@ -1,5 +1,5 @@
 package hamcat
 
-object Implicits
+object implicits
   extends hamcat.data.instance.InstanceImplicits
   with    hamcat.syntax.SyntaxImplicits

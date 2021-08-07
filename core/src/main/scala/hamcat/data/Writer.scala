@@ -1,6 +1,6 @@
 package hamcat.data
 
-import hamcat.Implicits._
+import hamcat.implicits._
 
 /** Writer monad */
 case class Writer[L, A](run: (L, A)) {
