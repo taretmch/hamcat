@@ -6,16 +6,16 @@ import hamcat.data.Semigroup
 trait SemigroupInstances {
 
   /** Int with sum instance */
-  implicit val IntSemigroup: Semigroup[Int] = new Semigroup[Int] {
+  implicit def semigroupForInt: Semigroup[Int] = new Semigroup[Int] {
     def combine(a: Int, b: Int): Int = a + b
   }
 
   /** String with sum instance */
-  implicit val StringSemigroup: Semigroup[String] = new Semigroup[String] {
+  implicit def semigroupForString: Semigroup[String] = new Semigroup[String] {
     def combine(a: String, b: String): String = a + b
   }
 
-  implicit def OptionSemigroup[A: Semigroup](implicit semigroup: Semigroup[A]): Semigroup[Option[A]] =
+  implicit def semigroupForOption[A: Semigroup](implicit semigroup: Semigroup[A]): Semigroup[Option[A]] =
     new Semigroup[Option[A]] {
       def combine(a: Option[A], b: Option[A]): Option[A] =
         (a, b) match {
