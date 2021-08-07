@@ -1,11 +1,20 @@
 import Dependencies._
 import TaskConf._
 
-ThisBuild / scalaVersion     := "3.0.1"
-ThisBuild / crossScalaVersions ++= Seq("2.13.3", "3.0.1")
-ThisBuild / version          := "1.0.0-SNAPSHOT"
-ThisBuild / organization     := "com.criceta"
-ThisBuild / organizationName := "taretmch"
+val isDotty = Def.setting(
+  CrossVersion.partialVersion(scalaVersion.value).exists(_._1 == 3)
+)
+val Scala213 = "2.13.3"
+val Scala3   = "3.0.1"
+
+ThisBuild / crossScalaVersions := Seq(Scala213, Scala3)
+ThisBuild / scalaVersion       := Scala213
+ThisBuild / version            := "1.0.0-SNAPSHOT"
+ThisBuild / organization       := "com.criceta"
+ThisBuild / organizationName   := "taretmch"
+
+val kindProjectorVersion = "0.11.1"
+val catsVersion          = "2.6.1"
 
 val commonSettings = Seq(
   scalacOptions ++= Seq(
@@ -13,20 +22,24 @@ val commonSettings = Seq(
     "UTF-8",
     "-feature",
     "-language:implicitConversions",
-  ) ++ (CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((3, _)) => Seq(
+  ) ++ (if (isDotty.value) {
+    Seq(
       "-unchecked",
       "-source:3.0-migration",
       "-Ykind-projector"
     )
-    case _ => Seq(
+  } else {
+    Seq(
       "-deprecation",
-      "-Xfatal-warnings",
+      "-Xfatal-warnings"
     )
   }),
-  libraryDependencies += "org.scalactic" %% "scalactic" % "3.2.9",
-  libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.9" % "test"
-  //addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.1" cross CrossVersion.full)
+  libraryDependencies ++= Seq(
+    "org.scalactic" %% "scalactic" % "3.2.9",
+    "org.scalatest" %% "scalatest" % "3.2.9" % "test"
+  ) ++ (if (isDotty.value) Nil else Seq(
+    compilerPlugin(("org.typelevel" %% "kind-projector" % kindProjectorVersion).cross(CrossVersion.full))
+  ))
 )
 
 lazy val core = project
@@ -42,8 +55,8 @@ lazy val docs = project
   .settings(mdocIn  := mdocInputDir)
   .settings(mdocOut := mdocOutputDir)
   .settings(libraryDependencies ++= Seq(
-    "org.typelevel" %% "cats-kernel" % "2.6.1",
-    "org.typelevel" %% "cats-core"   % "2.6.1"
+    "org.typelevel" %% "cats-kernel" % catsVersion,
+    "org.typelevel" %% "cats-core"   % catsVersion
   ))
   .enablePlugins(MdocPlugin)
   .settings(Honkit.settings)
