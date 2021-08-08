@@ -95,18 +95,20 @@ trait Monoid[A] {
 `Int` の加算に関するモノイドのインスタンス `IntMonoid` は、以下のように定義できます。
 
 ```scala
-implicit val IntMonoid: Monoid[Int] = new Monoid[Int] {
+implicit def monoidForInt: Monoid[Int] = new Monoid[Int] {
   def combine(a: Int, b: Int): Int = a + b
   def empty: Int = 0
 }
 ```
 
 ```scala mdoc
-import hamcat.Implicits._
+import hamcat.implicits._
+import hamcat.data.Monoid
+val intMonoid = Monoid[Int]
 
-IntMonoid.combine(1, 3)
-IntMonoid.empty
-IntMonoid.combine(2, IntMonoid.empty)
+intMonoid.combine(1, 3)
+intMonoid.empty
+intMonoid.combine(2, intMonoid.empty)
 ```
 
 ## 3.5 圏としてのモノイド 

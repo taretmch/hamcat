@@ -30,13 +30,13 @@
 自然変換の章では、List の長さを取得する関数 `length` が List 関手から Const 関手への自然変換であることを学びました:
 
 ```scala
-def length = Lambda[List ~> Const[Int, ?]](fa => Const(fa.length))
+def length = Lambda[List ~> Const[Int, *]](fa => Const(fa.length))
 ```
 
-`Const` というデータ構造そのものが関手になっているのではなく、`Const[Int, ?]` のように定数の型 `Int` を与えると関手になるのでした。例えば
+`Const` というデータ構造そのものが関手になっているのではなく、`Const[Int, *]` のように定数の型 `Int` を与えると関手になるのでした。例えば
 
 ```scala mdoc
-import hamcat.Implicits._
+import hamcat.implicits._
 import hamcat.data.Const
 
 val const1 = Const[Int, String](3)

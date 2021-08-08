@@ -258,7 +258,7 @@ Writer 圏における対象は任意の型 `A` で、`A` から `A` への射�
 
 ```scala
 /** Writer functor */
-implicit def WriterFunctor[L](implicit mn: Monoid[L]): Functor[Writer[L, ?]] = new Functor[Writer[L, ?]] {
+implicit def WriterFunctor[L](implicit mn: Monoid[L]): Functor[Writer[L, *]] = new Functor[Writer[L, *]] {
   def fmap[A, B](f: A => B)(fa: Writer[L, A]): Writer[L, B] =
     (identity[Writer[L, A]] >=> (a => Writer.pure[L, B](f(a))))(fa)
 }
@@ -272,7 +272,7 @@ implicit def WriterFunctor[L](implicit mn: Monoid[L]): Functor[Writer[L, ?]] = n
 
 ```scala
 /** Reader functor */
-implicit def Function1Functor[R]: Functor[Function1[R, ?]] = new Functor[Function1[R, ?]] {
+implicit def Function1Functor[R]: Functor[Function1[R, *]] = new Functor[Function1[R, *]] {
   def fmap[A, B](f: A => B)(fa: R => A): (R => B) =
     f compose fa
 }
@@ -355,7 +355,7 @@ trait Contravariant[F[_]] {
 
 ```scala
 /** Reader contravariant functor */
-implicit def Function1Contravariant[R]: Contravariant[Function1[?, R]] = new Contravariant[Function1[?, R]] {
+implicit def Function1Contravariant[R]: Contravariant[Function1[*, R]] = new Contravariant[Function1[*, R]] {
   def contramap[A, B](f: B => A)(fa: A => R): (B => R) =
     fa compose f
 }
