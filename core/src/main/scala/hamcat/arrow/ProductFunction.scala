@@ -1,7 +1,5 @@
 package hamcat.arrow
 
-import hamcat.data.identity
-
 /** ProductFunction: Wrapper class of morphism in product category
  *
  * Product Category

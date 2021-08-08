@@ -1,15 +1,15 @@
 package hamcat.data
 
-import hamcat.Implicits._
+import hamcat.implicits._
 
 /** Writer monad */
 case class Writer[L, A](run: (L, A)) {
 
   def flatMap[B](m2: A => Writer[L, B])(implicit sg: Semigroup[L]): Writer[L, B] =
-    (identity[Writer[L, A]] >=> m2)(this)
+    (identity[Writer[L, A]] _ >=> m2)(this)
 
   def fmap[B](f: A => B)(implicit mn: Monoid[L]): Writer[L, B] =
-    (identity[Writer[L, A]] >=> (a => Writer.pure[L, B](f(a))))(this)
+    (identity[Writer[L, A]] _ >=> (a => Writer.pure[L, B](f(a))))(this)
 }
 
 /** Companion Object */

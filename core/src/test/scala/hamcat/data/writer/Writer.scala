@@ -3,7 +3,7 @@ package hamcat.data
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-import hamcat.Implicits._
+import hamcat.implicits._
 import hamcat.data.Writer
 import hamcat.data.Writer._
 

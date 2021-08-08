@@ -13,3 +13,9 @@ trait Profunctor[F[_, _]] {
   def fmap[A, B, D](g: B => D): F[A, B] => F[A, D] =
     bimap(identity[A])(g)
 }
+
+object Profunctor {
+
+  /** Access to implicit instance */
+  def apply[F[_, _]](implicit p: Profunctor[F]): Profunctor[F] = p
+}

@@ -3,9 +3,10 @@ package hamcat.data
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-import hamcat.Implicits._
+import hamcat.implicits._
 
 class FunctorConstSpec extends AnyFlatSpec with Matchers {
+  val functor = Functor[Const[String, *]]
   val increment:   Int => Int     = n => n + 1
   val isEven:      Int => Boolean = n => n % 2 == 0
 
@@ -18,6 +19,6 @@ class FunctorConstSpec extends AnyFlatSpec with Matchers {
 
   it should "恒等射を恒等射へ写す" in {
     // fmap(identity[A]) == identity[F[A]]
-    assert(ConstFunctor.fmap(identity[Int])(const) == identity[Const[String, Int]](const))
+    assert(functor.fmap(identity[Int])(const) == identity[Const[String, Int]](const))
   }
 }

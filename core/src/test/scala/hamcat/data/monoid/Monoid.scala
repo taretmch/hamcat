@@ -3,24 +3,31 @@ package hamcat.data
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-import hamcat.Implicits._
+import hamcat.implicits._
 
 class MonoidSpec extends AnyFlatSpec with Matchers {
 
+  object instances {
+    val int       = Monoid[Int]
+    val string    = Monoid[String]
+    val optInt    = Monoid[Option[Int]]
+    val optString = Monoid[Option[String]]
+  }
+
   "IntMonoid" should "単位元を持つ" in {
-    assert((3 |+| IntMonoid.empty) == 3)
-    assert((IntMonoid.empty |+| 3) == 3)
+    assert((3 |+| instances.int.empty) == 3)
+    assert((instances.int.empty |+| 3) == 3)
   }
 
   "StringMonoid" should "単位元を持つ" in {
-    assert(("Hoge" |+| StringMonoid.empty) == "Hoge")
-    assert((StringMonoid.empty |+| "Hoge") == "Hoge")
+    assert(("Hoge" |+| instances.string.empty) == "Hoge")
+    assert((instances.string.empty |+| "Hoge") == "Hoge")
   }
 
   "OptionMonoid" should "単位元を持つ" in {
-    assert((Option(3) |+| OptionMonoid[Int].empty) == Option(3))
-    assert((OptionMonoid[Int].empty |+| Option(3)) == Option(3))
-    assert((Option("Hoge") |+| OptionMonoid[String].empty) == Option("Hoge"))
-    assert((OptionMonoid[String].empty |+| Option("Hoge")) == Option("Hoge"))
+    assert((Option(3) |+| instances.optInt.empty) == Option(3))
+    assert((instances.optInt.empty |+| Option(3)) == Option(3))
+    assert((Option("Hoge") |+| instances.optString.empty) == Option("Hoge"))
+    assert((instances.optString.empty |+| Option("Hoge")) == Option("Hoge"))
   }
 }

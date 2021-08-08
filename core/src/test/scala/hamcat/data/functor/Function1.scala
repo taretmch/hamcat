@@ -1,11 +1,12 @@
-package category.data
+package hamcat.data
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-import hamcat.Implicits._
+import hamcat.implicits._
 
 class FunctorFunction1Spec extends AnyFlatSpec with Matchers {
+  val instance = Functor[Function1[String, *]]
   val increment:   Int => Int     = n => n + 1
   val isEven:      Int => Boolean = n => n % 2 == 0
   def identity[A]: A   => A       = a => a
@@ -20,6 +21,6 @@ class FunctorFunction1Spec extends AnyFlatSpec with Matchers {
 
   it should "恒等射を恒等射へ写す" in {
     // fmap(identity[A]) == identity[F[A]]
-    assert(Function1Functor.fmap(identity[Int])(func)(str) == identity[Function1[String, Int]](func)(str))
+    assert(instance.fmap(identity[Int])(func)(str) == identity[Function1[String, Int]](func)(str))
   }
 }

@@ -209,10 +209,8 @@ id[B] . f = f
 Scala:
 
 ```scala mdoc
-import hamcat.data.identity
-
 def identityLaw1[A] = (f compose identity[A]) === f
-def identityLaw2[B] = (identity[B] compose f) === f
+def identityLaw2[B] = (identity[B] _ compose f) === f
 ```
 
 要は、入力と出力が等しい関数です。かなり噛み砕いて言うと、何もしない操作とも捉えることができるかもしれません。

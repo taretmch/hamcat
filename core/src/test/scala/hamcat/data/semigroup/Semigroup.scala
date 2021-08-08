@@ -3,7 +3,7 @@ package hamcat.data
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-import hamcat.Implicits._
+import hamcat.implicits._
 
 class SemigroupSpec extends AnyFlatSpec with Matchers {
 

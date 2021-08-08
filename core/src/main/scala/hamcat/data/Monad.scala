@@ -9,3 +9,9 @@ trait Monad[M[_]] {
 
   def pure[A](a: A): M[A]
 }
+
+object Monad {
+
+  /** Access to implicit instance */
+  def apply[F[_]](implicit m: Monad[F]): Monad[F] = m
+}

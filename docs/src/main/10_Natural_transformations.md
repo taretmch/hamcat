@@ -90,7 +90,7 @@ Const 関手は以下のように実装されています。
 case class Const[C, +A](v: C)
 
 /** Const functor */
-implicit def ConstFunctor[C]: Functor[Const[C, ?]] = new Functor[Const[C, ?]] {
+implicit def ConstFunctor[C]: Functor[Const[C, *]] = new Functor[Const[C, *]] {
   def fmap[A, B](f: A => B): Const[C, A] => Const[C, B] = fa =>
     Const(fa.v)
 }
@@ -228,14 +228,15 @@ headOption 関数は、List 関手から Option 関手への自然変換です�
 実際、`List(1, 2, 3, 4, 5)` と `isEven` 関数に対して、自然性を満たします：
 
 ```scala mdoc
-import hamcat.Implicits._
+import hamcat.implicits._
+import hamcat.data.Functor
 
 def isEven: Int => Boolean = _ % 2 == 0
 val list = List(1, 2, 3, 4, 5)
 
 // 自然性
-val listToOption1 = (OptionFunctor.fmap(isEven) compose headOptionK[Int])(list)
-val listToOption2 = (headOptionK[Boolean] _ compose ListFunctor.fmap(isEven))(list)
+val listToOption1 = (Functor[Option].fmap(isEven) compose headOptionK[Int])(list)
+val listToOption2 = (headOptionK[Boolean] _ compose Functor[List].fmap(isEven))(list)
 listToOption1 == listToOption2
 ```
 
@@ -250,15 +251,15 @@ def length[A]: List[A] => Const[Int, A] = list => Const(list.length)
 ```
 
 ```scala mdoc
-def lengthK = Lambda[FunctionK[List, Const[Int, ?]]](fa => Const(fa.length))
+def lengthK = Lambda[FunctionK[List, Const[Int, *]]](fa => Const(fa.length))
 ```
 
 length もまた、`List(1, 2, 3, 4, 5)` と `isEven` 関数に対して、自然性を満たします：
 
 ```scala mdoc
 // 自然性
-val listToConst1 = (ConstFunctor.fmap(isEven) compose lengthK[Int])(list)
-val listToConst2 = (lengthK[Boolean] _ compose ListFunctor.fmap(isEven))(list)
+val listToConst1 = (Functor[Const[Int, *]].fmap(isEven) compose lengthK[Int])(list)
+val listToConst2 = (lengthK[Boolean] _ compose Functor[List].fmap(isEven))(list)
 listToConst1 == listToConst2
 ```
 
@@ -287,7 +288,7 @@ def fmapLO[A, B]: (A => B) => List[Option[A]] => List[Option[B]] = f => listA =>
   listA.fmap(_.fmap(f))
 
 // 自然性
-val listOptionToList1 = (ListFunctor.fmap(isEven) compose flattenListOptionK[Int])(listOption)
+val listOptionToList1 = (Functor[List].fmap(isEven) compose flattenListOptionK[Int])(listOption)
 val listOptionToList2 = (flattenListOptionK[Boolean] _ compose fmapLO(isEven))(listOption)
 listOptionToList1 == listOptionToList2
 ```
@@ -494,9 +495,7 @@ object mu extends (OptionOption ~> Option) { def apply[A](fa: Option[Option[A]])
 1. `mu[A] compose T[eta[A]] == identity[T[A]]`
 
 ```scala mdoc
-import hamcat.data.identity
-
-(mu[Int] _ compose OptionFunctor.fmap(eta[Int]))(Option(3)) == identity[Option[Int]](Option(3))
+(mu[Int] _ compose Functor[Option].fmap(eta[Int]))(Option(3)) == identity[Option[Int]](Option(3))
 ```
 
 T[A] を T[T[A]] にしたあと flatten すると T[A] になる、という条件みたいですね。
@@ -516,7 +515,7 @@ T[A] を T[T[A]] にしたあと flatten すると T[A] になる、という条
 3. `mu[A] compose mu[T[A]] == mu[A] compose T[mu[A]]`
 
 ```scala mdoc
-(mu[Int] _ compose mu[Option[Int]])(Option(Option(Option(3)))) == (mu[Int] _ compose OptionFunctor.fmap(mu[Int]))(Option(Option(Option(3))))
+(mu[Int] _ compose mu[Option[Int]])(Option(Option(Option(3)))) == (mu[Int] _ compose Functor[Option].fmap(mu[Int]))(Option(Option(Option(3))))
 ```
 
 これは、どれだけネストされても平滑化できるという条件ですね。

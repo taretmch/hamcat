@@ -74,7 +74,7 @@ Option(3).map(isEven)
 1つ目の性質は、関手が射の合成を保存することを意味します。
 
 ```scala mdoc
-import hamcat.Implicits._
+import hamcat.implicits._
 import hamcat.util._
 
 // f: isEven
@@ -95,20 +95,19 @@ lifted1 === lifted2
 例えば、`Option(3)` に対して以下が成り立ちます。
 
 ```scala mdoc
-OptionFunctor.fmap(negate compose isEven)(Option(3)) == (OptionFunctor.fmap(negate) compose OptionFunctor.fmap(isEven))(Option(3))
+import hamcat.data.Functor
+
+val optionFunctor = Functor[Option]
+optionFunctor.fmap(negate compose isEven)(Option(3)) == (optionFunctor.fmap(negate) compose optionFunctor.fmap(isEven))(Option(3))
 ```
 
 ![合成の保存](./images/07_functor_composition.png)
 
 2つ目の性質は、関手が恒等射を保存することを意味します。
 
-```scala mdoc
-import hamcat.data.identity
-```
-
 ```scala
 // fmap(identity[A])
-def lifted3 = OptionFunctor.fmap(identity[Int])
+def lifted3 = optionFunctor.fmap(identity[Int])
 
 // identity[F[A]]
 def lifted4 = identity[Option[Int]]
@@ -119,7 +118,7 @@ lifted3 === lifted4
 例えば、`Option(3)` に対して以下が成り立ちます。
 
 ```scala mdoc
-OptionFunctor.fmap(identity[Int])(Option(3)) == identity[Option[Int]](Option(3))
+optionFunctor.fmap(identity[Int])(Option(3)) == identity[Option[Int]](Option(3))
 ```
 
 以上の性質は圏の構造を保存する対応を表す性質です。このような2つの性質を**関手性** (functor laws) と呼びます。
@@ -174,12 +173,12 @@ implicit val OptionFunctor: Functor[Option] = new Functor[Option] {
 
 Option 関手の `fmap` メソッドは `Option#map` メソッドと同じです。実装を見てわかる通り、`fmap` メソッドが関手性を満たすかどうか、つまり圏の構造を維持する対応かどうかは実装によります。定義だけでは `fmap` メソッドが必ず関手性を満たすとは言えませんが、関手性を満たすように `fmap` メソッドを実装しなければいけません。
 
-実際にこのインスタンスを使ってみましょう。本リポジトリでは、型クラスのインスタンスは `hamcat.Implicits` パッケージ内においてあります。コンソールにおいて `hamcat.Implicits._` をインポートすれば、インスタンスが使えるようになります。`fmap` に `Option(3)` と `isEven` (偶数かどうかを判定する関数) を与えると、`Option(3)` の中の値に `isEven` を適用した結果 (すなわち `Some(false)`) が出力されます。
+実際にこのインスタンスを使ってみましょう。本リポジトリでは、型クラスのインスタンスは `hamcat.implicits` パッケージ内においてあります。コンソールにおいて `hamcat.implicits._` をインポートすれば、インスタンスが使えるようになります。`fmap` に `Option(3)` と `isEven` (偶数かどうかを判定する関数) を与えると、`Option(3)` の中の値に `isEven` を適用した結果 (すなわち `Some(false)`) が出力されます。
 
 ```scala mdoc
-import hamcat.Implicits._
+import hamcat.implicits._
 
-OptionFunctor.fmap(isEven)(Option(3))
+Functor[Option].fmap(isEven)(Option(3))
 ```
 
 なお、毎回 `OptionFunctor.fmap(...)` と書くのは面倒ですし、不便です。この場合、以下のようにシンタックスを定義することによって `Option#fmap` メソッドとして呼び出せるようになります。
@@ -262,21 +261,21 @@ sbt:hamcat> core/testOnly hamcat.data.FunctorOptionSpec
 
 ### 7.2.3 Reader 関手
 
-次の例として、型 `A` を、`A` を返すような任意の関数 `? => A` に変換するような関手を考えます。この関手は Reader 関手と呼ばれます。
+次の例として、型 `A` を、`A` を返すような任意の関数 `* => A` に変換するような関手を考えます。この関手は Reader 関手と呼ばれます。
 
 Reader 関手で重要なことは、関数も関手であるということです。関数が関手であれば、型 `R` を受け取って `A` を返すような関数 `R => A` があったとき、`A` を `B` に変換する関数 `f: A => B` を与えれば `R` から `B` の関数を取得することができます。
 
-Reader 関手のインスタンスは、以下のように実装できます。対象関数として型構築子 `Function1[R, ?]` を渡し、射関数 `fmap` を実装します。ここで、`Function1` は1変数関数を表す Scala 標準ライブラリの型です。`Function1[R, ?]` は `R => ?` を表します。
+Reader 関手のインスタンスは、以下のように実装できます。対象関数として型構築子 `Function1[R, *]` を渡し、射関数 `fmap` を実装します。ここで、`Function1` は1変数関数を表す Scala 標準ライブラリの型です。`Function1[R, *]` は `R => *` を表します。
 
 ```scala
 /** Reader functor */
-implicit def Function1Functor[R]: Functor[Function1[R, ?]] = new Functor[Function1[R, ?]] {
+implicit def Function1Functor[R]: Functor[Function1[R, *]] = new Functor[Function1[R, *]] {
   def fmap[A, B](f: A => B): (R => A) => (R => B) = fa =>
     f compose fa
 }
 ```
 
-(なお、`Function1[R, ?]` という記法は通常だとコンパイルエラーになります。本リポジトリではエラーを回避するため、typelevel 社の [kind-projector](https://github.com/typelevel/kind-projector) というコンパイラプラグインをインストールしています)
+(なお、`Function1[R, *]` という記法は通常だとコンパイルエラーになります。本リポジトリではエラーを回避するため、typelevel 社の [kind-projector](https://github.com/typelevel/kind-projector) というコンパイラプラグインをインストールしています)
 
 `fmap` メソッドは、ただ2つの関数を合成しているだけです。関数 `R => A` があったとき、引数として関数 `A => B` を受け取ると関数 `R => B` が返されます。
 
@@ -306,8 +305,9 @@ val intOptionList: List[Option[Int]] = List(Some(1), Some(3), None, Some(4))
 次に、射関数は、List 関手の `fmap` メソッドと Option 関手の `fmap` メソッドの合成 `fmapC` と定義します。
 
 ```scala mdoc
-def fmapL[A, B]: (A => B) => List[A] => List[B] = ListFunctor.fmap
-def fmapO[A, B]: (A => B) => Option[A] => Option[B] = OptionFunctor.fmap
+val listFunctor = Functor[List]
+def fmapL[A, B]: (A => B) => List[A] => List[B] = listFunctor.fmap
+def fmapO[A, B]: (A => B) => Option[A] => Option[B] = optionFunctor.fmap
 
 def fmapC[A, B]: (A => B) => List[Option[A]] => List[Option[B]] = fmapL.compose(fmapO[A, B])
 ```
@@ -355,4 +355,4 @@ fmapC(identity[Int])(intOptionList) == identity[List[Option[Int]]](intOptionList
 - 関手が満たす以下の性質のことを、関手性と呼ぶ。
   - 射 f, g の合成 g . f について `fmap(g compose f) == fmap(g) compose fmap(f)` が成り立つこと。
   - 恒等射 `identity[A]` について `fmap(identity[A]) == identity[F[A]]` が成り立つこと。
-- Reader 関手は、ある型 `A` に対して、`A` を返す任意の関数 `Function1[?, A]` を対応させる関手である。
+- Reader 関手は、ある型 `A` に対して、`A` を返す任意の関数 `Function1[*, A]` を対応させる関手である。

@@ -3,9 +3,10 @@ package hamcat.data
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-import hamcat.Implicits._
+import hamcat.implicits._
 
 class ProfunctorFunction1Spec extends AnyFlatSpec with Matchers {
+  val instance = Profunctor[Function1]
   val strToLength: String => Int  = _.length
   val isEven:      Int => Boolean = _ % 2 == 0
   val increment:   Int => Int     = _ + 1
@@ -24,9 +25,9 @@ class ProfunctorFunction1Spec extends AnyFlatSpec with Matchers {
   "Function1 profunctor" should "射の合成を保存する" in {
     // bimap(g compose f) == bimap(g) compose bimap(f)
     assert(
-      Function1Profunctor.bimap(boolToInt compose isEven)(isEven compose strToLength)(func)(44)
+      instance.bimap(boolToInt compose isEven)(isEven compose strToLength)(func)(44)
         ==
-      (Function1Profunctor.bimap(isEven)(isEven) compose Function1Profunctor.bimap(boolToInt)(strToLength))(func)(44)
+      (instance.bimap(isEven)(isEven) compose instance.bimap(boolToInt)(strToLength))(func)(44)
     )
     assert(
       func.bimap(boolToInt compose isEven)(isEven compose strToLength)(44)
@@ -37,6 +38,6 @@ class ProfunctorFunction1Spec extends AnyFlatSpec with Matchers {
 
   it should "恒等射を恒等射へ写す" in {
     // bimap(identity[A]) == identity[F[A]]
-    assert(Function1Profunctor.bimap(identity[Int])(identity[String])(func)(44) == identity[Function1[Int, String]](func)(44))
+    assert(instance.bimap(identity[Int])(identity[String])(func)(44) == identity[Function1[Int, String]](func)(44))
   }
 }
