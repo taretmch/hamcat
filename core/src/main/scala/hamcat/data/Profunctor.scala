@@ -1,7 +1,7 @@
 package hamcat.data
 
 // Profunctor
-trait Profunctor[F[_, _]] {
+trait Profunctor[F[_, _]]:
 
   def bimap[A, B, C, D](f: C => A)(g: B => D): F[A, B] => F[C, D]
 
@@ -12,10 +12,3 @@ trait Profunctor[F[_, _]] {
   /** Covariant mapping */
   def fmap[A, B, D](g: B => D): F[A, B] => F[A, D] =
     bimap(identity[A])(g)
-}
-
-object Profunctor {
-
-  /** Access to implicit instance */
-  def apply[F[_, _]](implicit p: Profunctor[F]): Profunctor[F] = p
-}

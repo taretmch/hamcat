@@ -3,22 +3,15 @@ package hamcat.data.instance
 import hamcat.data.Bifunctor
 
 /** Instances of bifunctor */
-trait BifunctorInstances {
+trait BifunctorInstances:
 
   /** Product bifunctor */
-  implicit def bifunctorForTuple2: Bifunctor[Tuple2] =
-    new Bifunctor[Tuple2] {
-      def bimap[A, B, C, D](f: A => C)(g: B => D): ((A, B)) => ((C, D)) = {
-        case (a, b) => (f(a), g(b))
-      }
-    }
+  given Bifunctor[Tuple2] with
+    def bimap[A, B, C, D](f: A => C)(g: B => D): ((A, B)) => ((C, D)) =
+      case (a, b) => (f(a), g(b))
 
   /** Coproduct bifunctor */
-  implicit def bifunctorForEither: Bifunctor[Either] =
-    new Bifunctor[Either] {
-      def bimap[A, B, C, D](f: A => C)(g: B => D): Either[A, B] => Either[C, D] = {
-        case Left(a)  => Left(f(a))
-        case Right(b) => Right(g(b))
-      }
-    }
-}
+  given Bifunctor[Either] with
+    def bimap[A, B, C, D](f: A => C)(g: B => D): Either[A, B] => Either[C, D] =
+      case Left(a)  => Left(f(a))
+      case Right(b) => Right(g(b))

@@ -2,8 +2,8 @@ package hamcat
 
 import data.Identity
 
-object implicitConversions {
+object implicitConversions:
 
   /** Conversion between `A` and `Identity[A]` */
-  implicit def toIdentity[A](value: A): Identity[A] = Identity(value)
-}
+  given [A]: Conversion[A, Identity[A]] with
+    def apply(value: A) = Identity(value)

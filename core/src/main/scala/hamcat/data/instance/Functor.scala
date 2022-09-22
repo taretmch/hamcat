@@ -1,39 +1,40 @@
 package hamcat.data.instance
 
-import hamcat.data.{ Functor, Identity, Const }
+import hamcat.data.*
 
 /** Instances of functor */
-trait FunctorInstances {
+trait FunctorInstances:
 
   /** Option functor */
-  implicit def functorForOption: Functor[Option] =
-    new Functor[Option] {
-      def fmap[A, B](f: A => B): Option[A] => Option[B] = _.map(f)
-    }
+  given Functor[Option] with
+    def fmap[A, B](f: A => B): Option[A] => Option[B] =
+      _.map(f)
 
   /** List functor */
-  implicit def functorForList: Functor[List] =
-    new Functor[List] {
-      def fmap[A, B](f: A => B): List[A] => List[B] = _.map(f)
-    }
+  given Functor[List] with
+    def fmap[A, B](f: A => B): List[A] => List[B] =
+      _.map(f)
 
   /** Reader functor */
-  implicit def functorForFunction1[R]: Functor[Function1[R, *]] =
-    new Functor[Function1[R, *]] {
-      def fmap[A, B](f: A => B): (R => A) => (R => B) = fa =>
-        f compose fa
-    }
+  given [R]: Functor[Function1[R, *]] with
+    def fmap[A, B](f: A => B): (R => A) => (R => B) =
+      f compose _
 
   /** Identity functor */
-  implicit def functorForIdentity: Functor[Identity] =
-    new Functor[Identity] {
-      def fmap[A, B](f: A => B): Identity[A] => Identity[B] = _.map(f)
-    }
+  given Functor[Identity] with
+    def fmap[A, B](f: A => B): Identity[A] => Identity[B] =
+      _.map(f)
 
   /** Const functor */
-  implicit def functorForConst[C]: Functor[Const[C, *]] =
-    new Functor[Const[C, *]] {
-      def fmap[A, B](f: A => B): Const[C, A] => Const[C, B] = fa =>
-        Const(fa.v)
-    }
-}
+  given [C]: Functor[Const[C, *]] with
+    def fmap[A, B](f: A => B): Const[C, A] => Const[C, B] =
+      _.fmap(f)
+
+  /** Writer functor */
+  given [L](using Monoid[L]): Functor[Writer[L, *]] with
+    def fmap[A, B](f: A => B): Writer[L, A] => Writer[L, B] =
+      _.fmap(f)
+
+  given [F[_], G[_]](using functorF: Functor[F], functorG: Functor[G]): Functor[[X] =>> F[G[X]]] with
+    def fmap[A, B](f: A => B): F[G[A]] => F[G[B]] =
+      functorF.fmap(ga => functorG.fmap(f)(ga))

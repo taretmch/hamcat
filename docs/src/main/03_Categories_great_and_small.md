@@ -102,9 +102,9 @@ implicit def monoidForInt: Monoid[Int] = new Monoid[Int] {
 ```
 
 ```scala mdoc
-import hamcat.implicits._
 import hamcat.data.Monoid
-val intMonoid = Monoid[Int]
+import hamcat.data.instance.Implicits.given
+val intMonoid = summon[Monoid[Int]]
 
 intMonoid.combine(1, 3)
 intMonoid.empty

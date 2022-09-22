@@ -22,7 +22,7 @@ description: "圏論の勉強記録です。本章では、関手から関手へ
   - [10.1.2 自然性](#1012-自然性)
   - [10.1.3 自然変換の定義](#1013-自然変換の定義)
   - [10.1.4 自然変換を表す型クラス](#1014-自然変換を表す型クラス)
-  - [10.1.4 自然変換の例は、自然性を満たすか](#1014-自然変換の例は自然性を満たすか)
+  - [10.1.5 自然変換の例は、自然性を満たすか](#1015-自然変換の例は自然性を満たすか)
     - [headOption: List => Option](#headoption-list--option)
     - [length: List => Const](#length-list--const)
     - [flattenListOption: List[Option] => List](#flattenlistoption-listoption--list)
@@ -189,35 +189,14 @@ def headOptionK: FunctionK[List, Option] = new FunctionK[List, Option] {
 }
 ```
 
-あるいは、以下のようにも実装できます。
-
-```scala
-object headOptionK extends FunctionK[List, Option] {
-  def apply[A](fa: List[A]): Option[A] = fa.headOption
-}
-```
-
-なお、この定義は kind-projector の Lambda (λ) を使えば少し簡単に書くことができます。
-
-```scala mdoc
-def lambdaHeadOption: FunctionK[List, Option] = Lambda[FunctionK[List, Option]](_.headOption)
-def λHeadOption: FunctionK[List, Option] = λ[FunctionK[List, Option]](_.headOption)
-```
-
-また、FunctionK のエイリアスとして `~>` が使われることが多いです。
+また、FunctionK のエイリアスとして ~> が使われることが多いです。
 
 ```scala mdoc
 /** Alias for FunctionK */
 type ~>[F[_], G[_]] = FunctionK[F, G]
 ```
 
-したがって、headOption は、以下のようにも書けます。
-
-```scala mdoc
-def headOptionK2: (List ~> Option) = Lambda[List ~> Option](_.headOption)
-```
-
-### 10.1.4 自然変換の例は、自然性を満たすか
+### 10.1.5 自然変換の例は、自然性を満たすか
 
 自然変換の具体例と定義を見ましたので、具体例が実際に自然変換の定義を満たすかどうかについて考えていきます。
 
@@ -228,15 +207,16 @@ headOption 関数は、List 関手から Option 関手への自然変換です�
 実際、`List(1, 2, 3, 4, 5)` と `isEven` 関数に対して、自然性を満たします：
 
 ```scala mdoc
-import hamcat.implicits._
+import hamcat.data.instance.Implicits.given
+import hamcat.syntax.Implicits.*
 import hamcat.data.Functor
 
 def isEven: Int => Boolean = _ % 2 == 0
 val list = List(1, 2, 3, 4, 5)
 
 // 自然性
-val listToOption1 = (Functor[Option].fmap(isEven) compose headOptionK[Int])(list)
-val listToOption2 = (headOptionK[Boolean] _ compose Functor[List].fmap(isEven))(list)
+val listToOption1 = (summon[Functor[Option]].fmap(isEven) compose headOptionK[Int])(list)
+val listToOption2 = (headOptionK[Boolean] _ compose summon[Functor[List]].fmap(isEven))(list)
 listToOption1 == listToOption2
 ```
 
@@ -251,15 +231,17 @@ def length[A]: List[A] => Const[Int, A] = list => Const(list.length)
 ```
 
 ```scala mdoc
-def lengthK = Lambda[FunctionK[List, Const[Int, *]]](fa => Const(fa.length))
+def lengthK: FunctionK[List, Const[Int, *]] = new FunctionK[List, Const[Int, *]] {
+  def apply[A](fa: List[A]): Const[Int, A] = Const(fa.length)
+}
 ```
 
 length もまた、`List(1, 2, 3, 4, 5)` と `isEven` 関数に対して、自然性を満たします：
 
 ```scala mdoc
 // 自然性
-val listToConst1 = (Functor[Const[Int, *]].fmap(isEven) compose lengthK[Int])(list)
-val listToConst2 = (lengthK[Boolean] _ compose Functor[List].fmap(isEven))(list)
+val listToConst1 = (summon[Functor[Const[Int, *]]].fmap(isEven) compose lengthK[Int])(list)
+val listToConst2 = (lengthK[Boolean] _ compose summon[Functor[List]].fmap(isEven))(list)
 listToConst1 == listToConst2
 ```
 
@@ -282,13 +264,14 @@ def flattenListOptionK = new FunctionK[ListOption, List] {
 
 `List(Some(1), Some(2), None, Some(3))` と `isEven` 関数に対して、自然性を満たします：
 
-```scala mdoc
+```scala
+// TODO: Fix syntax instance of fmap
 val listOption = List(Some(1), Some(2), None, Some(3))
 def fmapLO[A, B]: (A => B) => List[Option[A]] => List[Option[B]] = f => listA =>
   listA.fmap(_.fmap(f))
 
 // 自然性
-val listOptionToList1 = (Functor[List].fmap(isEven) compose flattenListOptionK[Int])(listOption)
+val listOptionToList1 = (summon[Functor[List]].fmap(isEven) compose flattenListOptionK[Int])(listOption)
 val listOptionToList2 = (flattenListOptionK[Boolean] _ compose fmapLO(isEven))(listOption)
 listOptionToList1 == listOptionToList2
 ```
@@ -416,7 +399,9 @@ def compose[H[_]](v: FunctionK[H, F]): FunctionK[H, G] =
 ```scala mdoc
 type ListList[A] = List[List[A]]
 
-def flattenK: ListList ~> List = Lambda[ListList ~> List](_.flatten)
+def flattenK: ListList ~> List = new FunctionK[ListList, List] {
+  def apply[A](fa: ListList[A]): List[A] = fa.flatten
+}
 def flattenThenHeadOption = headOptionK compose flattenK
 flattenThenHeadOption(List(List(1, 2, 3), List(4, 5), Nil, List(6)))
 ```
@@ -495,7 +480,7 @@ object mu extends (OptionOption ~> Option) { def apply[A](fa: Option[Option[A]])
 1. `mu[A] compose T[eta[A]] == identity[T[A]]`
 
 ```scala mdoc
-(mu[Int] _ compose Functor[Option].fmap(eta[Int]))(Option(3)) == identity[Option[Int]](Option(3))
+(mu[Int] _ compose summon[Functor[Option]].fmap(eta[Int]))(Option(3)) == identity[Option[Int]](Option(3))
 ```
 
 T[A] を T[T[A]] にしたあと flatten すると T[A] になる、という条件みたいですね。
@@ -515,7 +500,7 @@ T[A] を T[T[A]] にしたあと flatten すると T[A] になる、という条
 3. `mu[A] compose mu[T[A]] == mu[A] compose T[mu[A]]`
 
 ```scala mdoc
-(mu[Int] _ compose mu[Option[Int]])(Option(Option(Option(3)))) == (mu[Int] _ compose Functor[Option].fmap(mu[Int]))(Option(Option(Option(3))))
+(mu[Int] _ compose mu[Option[Int]])(Option(Option(Option(3)))) == (mu[Int] _ compose summon[Functor[Option]].fmap(mu[Int]))(Option(Option(Option(3))))
 ```
 
 これは、どれだけネストされても平滑化できるという条件ですね。

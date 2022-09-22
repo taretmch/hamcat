@@ -15,32 +15,27 @@ package hamcat.arrow
  * 3. Identity morphism
  * Let `productIdentity: ProductFunction[A, B]` be the identity morphism
  */
-case class ProductFunction[A, B, C, D](run: (A => C, B => D)) {
+case class ProductFunction[A, B, C, D](run: (A => C, B => D)):
 
   /** Apply method */
-  def apply(obj: (A, B)): (C, D) = run match {
-    case (f, g) => (f(obj._1), g(obj._2))
-  }
+  def apply(obj: (A, B)): (C, D) =
+    run match
+      case (f, g) => (f(obj._1), g(obj._2))
 
   /** Composition of morphism in product category */
   def andThen[E, H](v: ProductFunction[C, D, E, H]): ProductFunction[A, B, E, H] =
-    run match {
-      case (f, g) => v.run match {
+    run match
+      case (f, g) => v.run match
         case (h, k) => ProductFunction((f andThen h, g andThen k))
-      }
-    }
 
   /** Composition of morphism in product category */
   def compose[E, H](v: ProductFunction[E, H, A, B]): ProductFunction[E, H, C, D] =
-    run match {
-      case (f, g) => v.run match {
+    run match
+      case (f, g) => v.run match
         case (h, k) => ProductFunction((f compose h, g compose k))
-      }
-    }
-}
 
 /** Companion object */
-object ProductFunction {
+object ProductFunction:
 
   def apply[A, B, C, D](f: A => C)(g: B => D): ProductFunction[A, B, C, D] =
     ProductFunction((f, g))
@@ -48,4 +43,3 @@ object ProductFunction {
   /** Identity morphism */
   def productIdentity[A, B]: ProductFunction[A, B, A, B] =
     ProductFunction((identity[A], identity[B]))
-}

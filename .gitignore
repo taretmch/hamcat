@@ -9,3 +9,6 @@ target
 .bsp
 mdocOutput/
 node_modules/
+metals.sbt
+.metals
+package-lock.json

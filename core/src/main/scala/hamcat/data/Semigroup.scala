@@ -1,14 +1,7 @@
 package hamcat.data
 
 // Semigroup
-trait Semigroup[M] {
+trait Semigroup[M]:
 
   /** Binary operation which must be associative */
   def combine(m1: M, m2: M): M
-}
-
-object Semigroup {
-
-  /** Access to implicit instance */
-  def apply[M](implicit sg: Semigroup[M]): Semigroup[M] = sg
-}

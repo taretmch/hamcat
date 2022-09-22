@@ -292,7 +292,7 @@ f = { (1, (7, a)), (2, (8, b)), (3, (9, c)), (4, (7, c)) }
 ```scala mdoc
 def factorize[X, A, B](xA: X => A)(xB: X => B)(x: X): (A, B) = (xA(x), xB(x))
 
-factorize{ s: String => s.length }{ s: String => s.startsWith("a") }("abcdefg")
+factorize{ (s: String) => s.length }{ (s: String) => s.startsWith("a") }("abcdefg")
 ```
 
 

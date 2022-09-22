@@ -7,3 +7,5 @@ trait InstanceImplicits
   with    BifunctorInstances
   with    ContravariantInstances
   with    ProfunctorInstances
+
+object Implicits extends InstanceImplicits

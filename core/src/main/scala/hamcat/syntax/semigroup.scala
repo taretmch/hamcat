@@ -3,8 +3,8 @@ package hamcat.syntax
 import hamcat.data.Semigroup
 
 /** Syntax for semigroup */
-trait SemigroupSyntax {
-  implicit class SemigroupOps[A: Semigroup](lhs: A)(implicit semigroup: Semigroup[A]) {
+trait SemigroupSyntax:
+  extension [A: Semigroup](lhs: A)(using semigroup: Semigroup[A])
 
     /** Alias of combine method
      *
@@ -16,7 +16,8 @@ trait SemigroupSyntax {
      * val res0: Int = 4
      * ```
      */
-    def |+|(rhs: A): A = semigroup.combine(lhs, rhs)
-    def combine(rhs: A): A = semigroup.combine(lhs, rhs)
-  }
-}
+    def |+|(rhs: A): A =
+      semigroup.combine(lhs, rhs)
+
+    def combine(rhs: A): A =
+      semigroup.combine(lhs, rhs)

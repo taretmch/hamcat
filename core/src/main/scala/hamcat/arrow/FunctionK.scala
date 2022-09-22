@@ -20,9 +20,8 @@ trait FunctionK[F[_], G[_]] { self =>
 
   /** Composition of natural transformation */
   def andThen[H[_]](v: FunctionK[G, H]): FunctionK[F, H] =
-    new FunctionK[F, H] {
+    new FunctionK[F, H]:
       def apply[A](fa: F[A]): H[A] = v(self(fa))
-    }
 
   /** Composition of natural transformation */
   def compose[H[_]](v: FunctionK[H, F]): FunctionK[H, G] =
@@ -30,10 +29,8 @@ trait FunctionK[F[_], G[_]] { self =>
 }
 
 /** Companion object */
-object FunctionK {
+object FunctionK:
 
   /** Identity */
-  def identityK[F[_]]: FunctionK[F, F] = new FunctionK[F, F] {
+  def identityK[F[_]]: FunctionK[F, F] = new FunctionK[F, F]:
     def apply[A](fa: F[A]): F[A] = fa
-  }
-}
