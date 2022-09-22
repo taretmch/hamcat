@@ -6,3 +6,5 @@ trait SyntaxImplicits
   with    BifunctorSyntax
   with    ContravariantSyntax
   with    ProfunctorSyntax
+
+object Implicits extends SyntaxImplicits

@@ -36,7 +36,7 @@ def length = Lambda[List ~> Const[Int, *]](fa => Const(fa.length))
 `Const` というデータ構造そのものが関手になっているのではなく、`Const[Int, *]` のように定数の型 `Int` を与えると関手になるのでした。例えば
 
 ```scala mdoc
-import hamcat.implicits._
+import hamcat.data.instance.Implicits.given
 import hamcat.data.Const
 
 val const1 = Const[Int, String](3)

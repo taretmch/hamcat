@@ -167,7 +167,7 @@ def f[A, B]: A => B = ???
 def g[B, C]: B => C = ???
 def h[C, D]: C => D = ???
 
-import hamcat.util._
+import hamcat.util.Eq.===
 def associativeLaw1 = ( h compose (g compose  f)) === ((h compose g) compose f)
 def associativeLaw2 = ( h compose (g compose  f)) === ( h compose g  compose f)
 def associativeLaw3 = ((h compose  g) compose f)  === ( h compose g  compose f)

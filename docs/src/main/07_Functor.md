@@ -74,8 +74,8 @@ Option(3).map(isEven)
 1つ目の性質は、関手が射の合成を保存することを意味します。
 
 ```scala mdoc
-import hamcat.implicits._
-import hamcat.util._
+import hamcat.data.instance.Implicits.given
+import hamcat.util.Eq.===
 
 // f: isEven
 // g: negate
@@ -97,7 +97,7 @@ lifted1 === lifted2
 ```scala mdoc
 import hamcat.data.Functor
 
-val optionFunctor = Functor[Option]
+val optionFunctor = summon[Functor[Option]]
 optionFunctor.fmap(negate compose isEven)(Option(3)) == (optionFunctor.fmap(negate) compose optionFunctor.fmap(isEven))(Option(3))
 ```
 
@@ -176,9 +176,7 @@ Option 関手の `fmap` メソッドは `Option#map` メソッドと同じです
 実際にこのインスタンスを使ってみましょう。本リポジトリでは、型クラスのインスタンスは `hamcat.implicits` パッケージ内においてあります。コンソールにおいて `hamcat.implicits._` をインポートすれば、インスタンスが使えるようになります。`fmap` に `Option(3)` と `isEven` (偶数かどうかを判定する関数) を与えると、`Option(3)` の中の値に `isEven` を適用した結果 (すなわち `Some(false)`) が出力されます。
 
 ```scala mdoc
-import hamcat.implicits._
-
-Functor[Option].fmap(isEven)(Option(3))
+summon[Functor[Option]].fmap(isEven)(Option(3))
 ```
 
 なお、毎回 `OptionFunctor.fmap(...)` と書くのは面倒ですし、不便です。この場合、以下のようにシンタックスを定義することによって `Option#fmap` メソッドとして呼び出せるようになります。
@@ -190,6 +188,8 @@ implicit class FunctorOps[F[_], A](v: F[A])(implicit functor: Functor[F]) {
 ```
 
 ```scala mdoc
+import hamcat.syntax.Implicits.*
+
 Option(3).fmap(isEven)
 ```
 
@@ -305,7 +305,7 @@ val intOptionList: List[Option[Int]] = List(Some(1), Some(3), None, Some(4))
 次に、射関数は、List 関手の `fmap` メソッドと Option 関手の `fmap` メソッドの合成 `fmapC` と定義します。
 
 ```scala mdoc
-val listFunctor = Functor[List]
+val listFunctor = summon[Functor[List]]
 def fmapL[A, B]: (A => B) => List[A] => List[B] = listFunctor.fmap
 def fmapO[A, B]: (A => B) => Option[A] => Option[B] = optionFunctor.fmap
 
