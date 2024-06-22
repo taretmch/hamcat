@@ -62,7 +62,7 @@ jobs:
           cd honkit
           git add .
           git diff --quiet || git commit -m "Update documentation"
-          git push origin HEAD:${GITHUB_REF#refs/heads/}
+          git push origin HEAD:${{ github.ref }}
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
 
@@ -70,6 +70,6 @@ jobs:
         run: |
           git add honkit
           git diff --quiet || git commit -m "Update submodule"
-          git push origin HEAD:${GITHUB_REF#refs/heads/}
+          git push origin HEAD:${{ github.ref }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
