@@ -60,8 +60,10 @@ Option 関手は、例で言うと、射 `f: A => B` を `fmap(f): Option[A] => 
 
 ```scala mdoc
 def isEven: Int => Boolean = n => n % 2 == 0
+def negate: Boolean => Boolean = b => !b
 
 Option(3).map(isEven)
+Option(true).map(negate)
 ```
 
 ![Option 関手](./images/07_option_functor.png)
@@ -74,30 +76,26 @@ Option(3).map(isEven)
 1つ目の性質は、関手が射の合成を保存することを意味します。
 
 ```scala mdoc
-import hamcat.data.instance.Implicits.given
+// hamcat における関手のデータ型、インスタンスをインポート
 import hamcat.util.Eq.===
 
-// f: isEven
-// g: negate
-def negate: Boolean => Boolean = b => !b
-```
+// Option 型に対する Functor のインスタンス
+val optionFunctor = summon[Functor[Option]]
 
-```scala
+// f: isEven, g: negate とします
 // fmap(g compose f)
-def lifted1 = OptionFunctor.fmap(negate compose isEven)
+def lifted1 = optionFunctor.fmap(negate.compose(isEven))
 
 // fmap(g) compose fmap(f)
-def lifted2 = OptionFunctor.fmap(negate) compose OptionFunctor.fmap(isEven)
+def lifted2 = optionFunctor.fmap(negate).compose(optionFunctor.fmap(isEven))
 
+// 射の合成が保存されることの確認
 lifted1 === lifted2
 ```
 
 例えば、`Option(3)` に対して以下が成り立ちます。
 
 ```scala mdoc
-import hamcat.data.Functor
-
-val optionFunctor = summon[Functor[Option]]
 optionFunctor.fmap(negate compose isEven)(Option(3)) == (optionFunctor.fmap(negate) compose optionFunctor.fmap(isEven))(Option(3))
 ```
 
@@ -105,7 +103,7 @@ optionFunctor.fmap(negate compose isEven)(Option(3)) == (optionFunctor.fmap(nega
 
 2つ目の性質は、関手が恒等射を保存することを意味します。
 
-```scala
+```scala mdoc
 // fmap(identity[A])
 def lifted3 = optionFunctor.fmap(identity[Int])
 
@@ -149,51 +147,44 @@ optionFunctor.fmap(identity[Int])(Option(3)) == identity[Option[Int]](Option(3))
 
 関手は Scala において、以下のような型クラス [Functor](https://github.com/taretmch/hamcat/blob/master/src/main/scala/data/Functor.scala) として実装できます。`Functor` 型クラスは、対象関数として型構築子 `F[_]` をもち、射関数として `fmap` メソッドを持ちます。
 
-```scala
-// Functor
-trait Functor[F[_]] {
+```scala mdoc
+trait Functor[F[_]]:
   def fmap[A, B](f: A => B): F[A] => F[B]
-}
 ```
 
 `fmap` メソッドは関数を**引き上げる** (lift)、とも言われます。関数 `A => B` は `fmap` によって `F[_]` 上の関数 `F[A] => F[B]` に引き上げられます。
 
 ### 7.2.2 Option 関手
 
-`Functor` のインスタンスは、implicit value によって実装することができます。ここでは、`Option` についての `Functor` のインスタンスを定義してみましょう。
+ある型 `F[_]` に対する `Functor` のインスタンスを実装してみましょう。ここでは、`Option` についての `Functor` のインスタンスを定義します。
 
-Option 関手のインスタンスは、以下のように実装できます。`Functor` に必要なパラメータは型構築子としての `Option` です。また、抽象メソッドである射関数 `fmap` を実装する必要があります。
+Option 型に対する `Functor` のインスタンスは、以下のように実装できます。`Functor` に必要なパラメータは型構築子としての `Option` です。また、抽象メソッドである射関数 `fmap` を実装する必要があります。
 
-```scala
-/** Option functor */
-implicit val OptionFunctor: Functor[Option] = new Functor[Option] {
+```scala mdoc
+given Functor[Option] = new Functor[Option]:
   def fmap[A, B](f: A => B): Option[A] => Option[B] = _.map(f)
-}
 ```
 
 Option 関手の `fmap` メソッドは `Option#map` メソッドと同じです。実装を見てわかる通り、`fmap` メソッドが関手性を満たすかどうか、つまり圏の構造を維持する対応かどうかは実装によります。定義だけでは `fmap` メソッドが必ず関手性を満たすとは言えませんが、関手性を満たすように `fmap` メソッドを実装しなければいけません。
 
-実際にこのインスタンスを使ってみましょう。本リポジトリでは、型クラスのインスタンスは `hamcat.implicits` パッケージ内においてあります。コンソールにおいて `hamcat.implicits._` をインポートすれば、インスタンスが使えるようになります。`fmap` に `Option(3)` と `isEven` (偶数かどうかを判定する関数) を与えると、`Option(3)` の中の値に `isEven` を適用した結果 (すなわち `Some(false)`) が出力されます。
+実際にこのインスタンスを使ってみましょう。本リポジトリでは、型クラスのインスタンスは `hamcat.data.instance` パッケージ内においてあります。コンソールにおいて `hamcat.data.instance.Implicits.given` をインポートすれば、全てのインスタンスが使えるようになります。`fmap` に `Option(3)` と `isEven` (偶数かどうかを判定する関数) を与えると、`Option(3)` の中の値に `isEven` を適用した結果 (すなわち `Some(false)`) が出力されます。
 
 ```scala mdoc
+// import hamcat.data.instance.Implicits.given 実行後
 summon[Functor[Option]].fmap(isEven)(Option(3))
 ```
 
-なお、毎回 `OptionFunctor.fmap(...)` と書くのは面倒ですし、不便です。この場合、以下のようにシンタックスを定義することによって `Option#fmap` メソッドとして呼び出せるようになります。
+なお、毎回 `summon[Functor[Option]].fmap(...)` と書くのは面倒ですし、不便です。この場合、以下のように拡張メソッドを定義することによって `Option#fmap` メソッドとして呼び出せるようになります。
 
-```scala
-implicit class FunctorOps[F[_], A](v: F[A])(implicit functor: Functor[F]) {
-  def fmap[B](f: A => B): F[B] = functor.fmap[A, B](f)(v)
-}
+```scala mdoc
+extension [F[_], A](fa: F[A])
+  def fmap[B](f: A => B)(using functor: Functor[F]): F[B] =
+    functor.fmap[A, B](f)(fa)
 ```
 
 ```scala mdoc
-import hamcat.syntax.Implicits.*
-
 Option(3).fmap(isEven)
 ```
-
-これは Enrich my library パターンと言われるものです。
 
 では、この Option 関手の `fmap` メソッドが関手性を満たすかどうかについて調べてみましょう。
 
@@ -202,80 +193,21 @@ Option(3).fmap(isEven)
 - **C** の射 f, g の合成 `g compose f` について `fmap(g compose f) == fmap(g) compose fmap(f)` が成り立つこと。
 - **C** の任意の対象 A の恒等射 `identity[A]` について `fmap(identity[A]) == identity[F[A]]` が成り立つこと。
 
-1つ目について、以下のテストコードで検証します。
-
-```scala
-val increment:   Int => Int     = n => n + 1
-val isEven:      Int => Boolean = n => n % 2 == 0
-def identity[A]: A   => A       = a => a
-val none:        Option[Int]    = None
-
-"Option functor" should "射の合成を保存する" in {
-  // fmap(g compose f) == fmap(g) compose fmap(f)
-  // Case: Some(1)
-  assert(
-    OptionFunctor.fmap(isEven compose increment)(Option(1))
-      ==
-    (OptionFunctor.fmap(isEven) compose OptionFunctor.fmap(increment))(Option(1))
-  )
-  assert(Option(1).fmap(isEven compose increment) == Option(1).fmap(increment).fmap(isEven))
-
-  // Case: None
-  assert(
-    OptionFunctor.fmap(isEven compose increment)(none)
-      ==
-    (OptionFunctor.fmap(isEven) compose OptionFunctor.fmap(increment))(none)
-  )
-  assert(none.fmap(isEven compose increment) == none.fmap(increment).fmap(isEven))
-}
-```
-
-2つ目については、以下のテストコードで検証します。
-
-```scala
-it should "恒等射を恒等射へ写す" in {
-  // fmap(identity[A]) == identity[F[A]]
-  // Case: Some(1)
-  assert(OptionFunctor.fmap(identity[Int])(Option(1)) == identity[Option[Int]](Option(1)))
-
-  // Case: None
-  assert(OptionFunctor.fmap(identity[Int])(none) == identity[Option[Int]](none))
-}
-```
-
-テストを実行してみると、成功しました！ここで実装した `fmap` は関手性を満たしてそうです。
-
-```sh
-sbt:hamcat> core/testOnly hamcat.data.FunctorOptionSpec
-[info] FunctorOptionSpec:
-[info] Option functor
-[info] - should 射の合成を保存する
-[info] - should 恒等射を恒等射へ写す
-[info] Run completed in 452 milliseconds.
-[info] Total number of tests run: 2
-[info] Suites: completed 1, aborted 0
-[info] Tests: succeeded 2, failed 0, canceled 0, ignored 0, pending 0
-[info] All tests passed.
-[success] Total time: 6 s, completed 2020/12/13 10:36:27
-```
-
 ### 7.2.3 Reader 関手
 
-次の例として、型 `A` を、`A` を返すような任意の関数 `* => A` に変換するような関手を考えます。この関手は Reader 関手と呼ばれます。
+次の例として、型 `A` を受け取ったとき、任意の型 `X` を受け取って `A` を返すような関数 `X => A` に変換するような関手を考えます。この関手は Reader 関手と呼ばれます。
 
 Reader 関手で重要なことは、関数も関手であるということです。関数が関手であれば、型 `R` を受け取って `A` を返すような関数 `R => A` があったとき、`A` を `B` に変換する関数 `f: A => B` を与えれば `R` から `B` の関数を取得することができます。
 
-Reader 関手のインスタンスは、以下のように実装できます。対象関数として型構築子 `Function1[R, *]` を渡し、射関数 `fmap` を実装します。ここで、`Function1` は1変数関数を表す Scala 標準ライブラリの型です。`Function1[R, *]` は `R => *` を表します。
+Reader 関手のインスタンスは、以下のように実装できます。対象関数として型構築子 `[X] =>> Function1[R, X]` を渡し、射関数 `fmap` を実装します。ここで、`Function1` は1変数関数を表す Scala 標準ライブラリの型です。`[X] =>> Function1[R, X]` は `R => X` を表します。
 
-```scala
-/** Reader functor */
-implicit def Function1Functor[R]: Functor[Function1[R, *]] = new Functor[Function1[R, *]] {
+```scala mdoc
+given [R]: Functor[[X] =>> Function1[R, X]] = new Functor[[X] =>> Function1[R, X]]:
   def fmap[A, B](f: A => B): (R => A) => (R => B) = fa =>
-    f compose fa
-}
+    f.compose(fa)
 ```
 
-(なお、`Function1[R, *]` という記法は通常だとコンパイルエラーになります。本リポジトリではエラーを回避するため、typelevel 社の [kind-projector](https://github.com/typelevel/kind-projector) というコンパイラプラグインをインストールしています)
+なお、`[X] =>> Function1[R, X]` という記法は Scala 3 の Type Lambda というものです。
 
 `fmap` メソッドは、ただ2つの関数を合成しているだけです。関数 `R => A` があったとき、引数として関数 `A => B` を受け取ると関数 `R => B` が返されます。
 
@@ -292,12 +224,17 @@ isEven.fmap(negate) (3)
 
 圏を対象として関手を射とするような圏を考えるとき、射の合成、すなわち関手の合成を定義する必要があります。
 
-Scala 圏における関手は全て自己関手なので、自己関手どうしを合成することができるのかどうかについて考えてみましょう。
+Scala 圏における関手は全て自己関手なので、自己関手同士を合成することができるのかどうかについて考えてみましょう。
 
-例えば、2つの関手 Option と List を合成してみるとどうなるでしょうか。
+例えば、2つの関手 Option と List を合成してみるとどうなるでしょうか。まず、List 型の関手としての実装は以下のようになります。
+
+```scala mdoc
+given Functor[List] = new Functor[List]:
+  def fmap[A, B](f: A => B): List[A] => List[B] = _.map(f)
+```
 
 対象関数は、型 `Int` を Option 関手によって `Option[Int]` に変換し、List 関手によって `List[Option[Int]]` に変換するものとします。
-
+`«§ﬂ
 ```scala mdoc
 val intOptionList: List[Option[Int]] = List(Some(1), Some(3), None, Some(4))
 ```
