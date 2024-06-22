@@ -2,11 +2,16 @@
 description: "圏論の勉強記録です。本章では、圏とは何かについて学んでいきます。圏の構成要素 - 対象、射 - と、圏が満たすべき性質 - 射の合成、合成の結合律、恒等射 - について見ていきます。"
 ---
 
+本章では、hamcat ライブラリの以下の import を利用します。
+
+```scala mdoc
+import hamcat.util.Eq.===
+```
+
 <!-- omit in toc -->
 # 1. 圏とは
 
-
-圏は**対象** (object) の集まりと、対象から対象へのなんらかの操作を表す**射** (arrow, morphism) の集まりからなります。
+圏は、**対象** (object) の集まりと、対象から対象へのなんらかの操作を表す**射** (arrow, morphism) の集まりからなります。
 
 ![圏のイメージ](./images/category.png)
 
@@ -14,7 +19,7 @@ description: "圏論の勉強記録です。本章では、圏とは何かにつ
 
 他にも、対象を自然数の集まり `{0, 1, 2, ..., n, ...}` のみと考えてみると、射は自然数の間の操作を表します。射の例として加算、乗算、減算、除算や、自然数を+1した値を返すインクリメンタなどがあります。
 
-圏の例は[3章](./03_Categories_great_and_small.md)で紹介します。本章では、圏とは何かについて学んでいきます。圏の構成要素 - 対象、射 - と、圏が満たすべき性質 - 射の合成、合成の結合律、恒等射 - について見ていきます。
+圏の例は[3章](./03_Categories_great_and_small.md)で紹介します。本章では、圏とは何かについて学んでいきます。圏の構成要素 (対象、射) と、圏が満たすべき性質 (射の合成、合成の結合律、恒等射) について見ていきます。
 
 <!-- omit in toc -->
 # 目次
@@ -50,7 +55,7 @@ div2:   2 -> 1
 
 Scala の関数も射とみなせます。
 
-数をインクリメントする（つまり1を足す）関数 `increment: Int => Int` は、型 `Int` から型 `Int` への関数です。圏論の言葉にすると、`Int` 型という対象から `Int` 型という対象への射です。
+数をインクリメントする (つまり1を足す) 関数 `increment: Int => Int` は、型 `Int` から型 `Int` への関数です。圏論の言葉にすると、`Int` 型という対象から `Int` 型という対象への射です。
 
 ```scala mdoc
 def increment: Int => Int = _ + 1
@@ -60,23 +65,26 @@ def increment: Int => Int = _ + 1
 increment(1)
 increment(3)
 ```
+
 ### 1.1.3 始域と終域
 
-射を議論する際によく使われる概念を定義しておきます。
+次に、射を議論する際によく使われる概念を定義しておきます。
 
-射はある対象からある対象への操作を表しますが、それは対象から対象への矢印のようなものと考えられます。
+射はある対象からある対象への操作を表します。それは、対象から対象への矢印のようなものと考えられます。
 
 ```
 f: a -> b
 ```
+
 ![射は対象から対象への矢印](./images/01_morphism.png)
 
-このとき、矢印が出ている方の対象のことを**始域**あるいは**域** (domain) と呼び、矢印の先の対象のことを**終域**あるいは**余域** (codomain) と呼びます。個人的には始集合・終集合との関連で始域と終域の方が好きです。
+このとき、矢印が出ている方の対象のことを**始域**あるいは**域** (domain) と呼び、矢印の先の対象のことを**終域**あるいは**余域** (codomain) と呼びます。個人的には、始集合・終集合との関連で始域と終域の方が好きです。
 
 しばしば、射 `f` の始域のことを `dom(f)` 、終域のことを `cod(f)` と表します。
 
 ```
-dom(f) = a, cod(f) = b
+dom(f) は a
+cod(f) は b
 ```
 
 ## 1.2 射の合成
@@ -84,40 +92,59 @@ dom(f) = a, cod(f) = b
 圏に関する最も重要な性質は、**射の合成**です。圏の本質は合成であり、合成の本質は圏であると言われたりします。射の合成について考えてみましょう。
 
 
-入力に対して出力を返す関数は、射の例です。型  `A` の値を受け取って `B` の値を返す関数 `f` と、型 `B` の値を受け取って `C` の値を返す関数 `g` があるとしましょう。`f` の返り値を `g` に渡すことによって、関数を合成できますね。そうすると、型 `A` から `C` への新しい関数を定義できます。
-
-例えば、以下のような `String` から `Int` への関数 `length` と、`Int` から `Boolean` への関数 `isEven` を合成してみます。
+入力に対して出力を返す「関数」は、射の例です。型  `A` の値を受け取って `B` の値を返す関数 `f` と、型 `B` の値を受け取って `C` の値を返す関数 `g` があるとしましょう。
 
 ```scala mdoc
-def length: String => Int = _.length
-def isEven: Int => Boolean = _ % 2 == 0
+def f[A, B]: A => B = ???
+def g[B, C]: B => C = ???
+```
 
+`f` の返り値を `g` に渡すことによって、関数を合成できますね。そうすると、型 `A` から `C` への新しい関数 `fg` を定義できます。
+
+```scala mdoc
+def fg[A, C]: A => C = a => g(f(a))
+```
+
+また、Scala において、関数の合成は `compose` や `andThen` メソッドで書くことができます。
+
+```scala mdoc
+def fg2[A, C]: A => C = g.compose(f)
+def fg3[A, C]: A => C = f.andThen(g)
+```
+
+実際に関数を合成してみましょう。例として、以下のような `String` から `Int` への関数 `length` と、`Int` から `Boolean` への関数 `isEven` を考えてみます。
+
+```scala mdoc
+// 文字列の長さを求める関数
+def length: String => Int = _.length
 length("abcdefg")
+
+// 数が偶数かどうかを判定する関数
+def isEven: Int => Boolean = _ % 2 == 0
 isEven(3)
 isEven(8)
 ```
 
-`length` は文字列の長さを返す関数で、 `isEven` は数が偶数かどうかを判定する関数です。Scala において、関数の合成は `compose` や `andThen` メソッドで行われます。
+`length` は文字列の長さを返す関数で、 `isEven` は数が偶数かどうかを判定する関数です。この2つの関数を合成してみると、以下のようになります。
 
 ```scala mdoc
-def isLengthEven1: String => Boolean = isEven compose length
-// or
-def isLengthEven2: String => Boolean = length andThen isEven 
-// or
-def isLengthEven3: String => Boolean = str => isEven(length(str))
-
+// 関数合成によって新しい関数を定義する
+def isLengthEven1: String => Boolean = isEven.compose(length)
 isLengthEven1("abcdefg")
+
+def isLengthEven2: String => Boolean = length.andThen(isEven)
 isLengthEven2("abcdefg")
+
+def isLengthEven3: String => Boolean = str => isEven(length(str))
 isLengthEven3("abcdefg")
-val len = length("abcdefg")
-isEven(len)
 ```
 
-この `isLengthEven*` 関数は、文字列に `length` 関数を適用したあと、その返り値に `isEven` 関数を適用するような新しい関数です。合成によって作られた関数は、しばしば合成関数と呼ばれます。
+これら `isLengthEven` 関数は、文字列に `length` 関数を適用したあと、その返り値に `isEven` 関数を適用するような新しい関数です。合成によって作られた関数は、しばしば**合成関数**と呼ばれます。
 
 このように、射の例である関数は合成することができます。一般に、圏における射も合成することができます。ただし、2つの射の合成の結果は一意でなければなりません。すなわち、射の合成は以下のように定義されます。
 
 ---
+
 2つの射 `f` と `g` について、`cod(f) = dom(g)` であれば `dom(f)` から `cod(g)` への一意の射が存在します。そのような射を `f` と `g` の**合成** (composition) と呼び、`g . f` と書きます。
 
 ![射の合成](./images/01_composition.png)
@@ -128,9 +155,9 @@ isEven(len)
 
 圏は対象の集まりと射の集まりからなるものと説明しましたが、圏にはもう少し厳密な定義があります。それは
 
-1. 射が合成できること
-2. 射が結合律を満たすこと
-3. 恒等射が定義されていること
+1. **射が合成できること**
+2. **射が結合律を満たすこと**
+3. **恒等射が定義されていること**
 
 です。合成については 1.2 節で見ましたので、ここでは 2 と 3 について説明していきます。
 
@@ -163,34 +190,35 @@ h . (g . f) = (h . g) . f = h . g. f
 結合律は、Scala で書くと以下のようになります（`===` は Hamcat で用意している「等しくあるべきものを主張するための文法」です）。
 
 ```scala mdoc
-def f[A, B]: A => B = ???
-def g[B, C]: B => C = ???
+// f, g は先ほど定義したものを使います
 def h[C, D]: C => D = ???
 
-import hamcat.util.Eq.===
-def associativeLaw1 = ( h compose (g compose  f)) === ((h compose g) compose f)
-def associativeLaw2 = ( h compose (g compose  f)) === ( h compose g  compose f)
-def associativeLaw3 = ((h compose  g) compose f)  === ( h compose g  compose f)
+// h . (g . f) = (h . g) . f
+def associativeLaw1 = h.compose(g.compose(f)) === (h.compose(g)).compose(f)
+
+// h . (g . f) = h . g . f
+def associativeLaw2 = h.compose(g.compose(f)) === h.compose(g).compose(f)
+
+// (h . g) . f = h . g. f
+def associativeLaw3 = (h.compose(g)).compose(f) === h.compose(g).compose(f)
 ```
 具体的な関数で確かめてみましょう。
 
-以下の3つの関数を考えます。
+`length` 関数, `isEven` 関数に加えて、次の関数を使います。
 
 ```scala mdoc
 def negate: Boolean => Boolean = b => !b
 ```
 
-```scala
-def length: String => Int = _.length
-def isEven: Int => Boolean = _ % 2 == 0
-```
-
-これらの関数を合成して、"abcdefg" という文字列を入力してみます。
+3つの関数を合成して、"abcdefg" という文字列を入力してみます。
 
 ```scala mdoc
-( negate compose  isEven  compose length)  ("abcdefg")
-((negate compose  isEven) compose length)  ("abcdefg")
-( negate compose (isEven  compose length)) ("abcdefg")
+// h . (g . f)
+(negate.compose((isEven.compose(length))))("abcdefg")
+// (h . g) . f
+((negate.compose(isEven)).compose(length))("abcdefg")
+// h . g . f
+(negate.compose(isEven).compose(length))("abcdefg")
 ```
 
 すべての計算の結果は等しく、確かに結合律は成り立っています。
@@ -209,18 +237,16 @@ id[B] . f = f
 Scala:
 
 ```scala mdoc
-def identityLaw1[A] = (f compose identity[A]) === f
-def identityLaw2[B] = (identity[B] _ compose f) === f
+def identityLaw1[A] = (f.compose(identity[A])) === f
+def identityLaw2[B] = (identity[B].compose(f)) === f
 ```
 
 要は、入力と出力が等しい関数です。かなり噛み砕いて言うと、何もしない操作とも捉えることができるかもしれません。
-Hamcat において、恒等射を表す identity は以下のように定義されています。
+Scala において、恒等射を表す identity 関数は以下のように定義されています。
 
-```scala
-/** Identity morphism for scala category */
+```scala mdoc
 def identity[A]: A => A = a => a
 ```
-
 
 何もしない操作が何に使えるのか、わかりづらいですよね。何もしないのなら使う場面もわからないし、定義になんて組み込む必要ないじゃん、と思うかもしれません。
 
