@@ -2,6 +2,8 @@ import sbt._
 
 object Dependencies {
 
+  val scalaVersion = "3.4.2"
+
   val catsVersion = "2.6.1"
 
   val scalatest = Seq(
