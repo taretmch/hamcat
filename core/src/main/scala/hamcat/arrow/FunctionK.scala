@@ -25,7 +25,7 @@ trait FunctionK[F[_], G[_]] { self =>
 
   /** Composition of natural transformation */
   def compose[H[_]](v: FunctionK[H, F]): FunctionK[H, G] =
-    v andThen self
+    v.andThen(self)
 }
 
 /** Companion object */

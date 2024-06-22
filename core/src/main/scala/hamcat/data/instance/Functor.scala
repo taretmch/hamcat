@@ -16,7 +16,7 @@ trait FunctorInstances:
       _.map(f)
 
   /** Reader functor */
-  given [R]: Functor[Function1[R, *]] with
+  given [R]: Functor[[T] =>> Function1[R, T]] with
     def fmap[A, B](f: A => B): (R => A) => (R => B) =
       f compose _
 
@@ -26,12 +26,12 @@ trait FunctorInstances:
       _.map(f)
 
   /** Const functor */
-  given [C]: Functor[Const[C, *]] with
+  given [C]: Functor[[T] =>> Const[C, T]] with
     def fmap[A, B](f: A => B): Const[C, A] => Const[C, B] =
       _.fmap(f)
 
   /** Writer functor */
-  given [L](using Monoid[L]): Functor[Writer[L, *]] with
+  given [L](using Monoid[L]): Functor[[T] =>> Writer[L, T]] with
     def fmap[A, B](f: A => B): Writer[L, A] => Writer[L, B] =
       _.fmap(f)
 
