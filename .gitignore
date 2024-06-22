@@ -1,14 +1,16 @@
-logs
-target
-/.idea
-/.idea_modules
-/.classpath
-/.project
-/.settings
+# ide
+.idea
+.idea_modules
 .bloop
 .bsp
-mdocOutput/
-node_modules/
-metals.sbt
 .metals
-package-lock.json
+metals.sbt
+
+# scala
+target
+
+# node
+node_modules/
+
+# project custom files
+mdoc-output/

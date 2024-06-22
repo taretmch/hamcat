@@ -1,5 +1,4 @@
-import Dependencies._
-import TaskConf._
+import Dependencies.*
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
@@ -11,11 +10,10 @@ lazy val core = project
 lazy val docs = project
   .settings(name := "hamcat-docs")
   .settings(BuildSettings.settings: _*)
-  .settings(mdocIn  := mdocInputDir)
-  .settings(mdocOut := mdocOutputDir)
+  .settings(mdocIn  := file("docs"))
+  .settings(mdocOut := file("mdoc-output"))
   .settings(libraryDependencies ++= cats)
   .enablePlugins(MdocPlugin)
-  .settings(Honkit.settings)
   .dependsOn(core)
 
 lazy val root = (project in file("."))
