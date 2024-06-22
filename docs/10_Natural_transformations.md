@@ -23,9 +23,9 @@ description: "圏論の勉強記録です。本章では、関手から関手へ
   - [10.1.3 自然変換の定義](#1013-自然変換の定義)
   - [10.1.4 自然変換を表す型クラス](#1014-自然変換を表す型クラス)
   - [10.1.5 自然変換の例は、自然性を満たすか](#1015-自然変換の例は自然性を満たすか)
-    - [headOption: List => Option](#headoption-list--option)
-    - [length: List => Const](#length-list--const)
-    - [flattenListOption: List[Option] => List](#flattenlistoption-listoption--list)
+    - [headOption: List =\> Option](#headoption-list--option)
+    - [length: List =\> Const](#length-list--const)
+    - [flattenListOption: List\[Option\] =\> List](#flattenlistoption-listoption--list)
 - [10.2 関手圏](#102-関手圏)
   - [10.2.1 自然変換の合成](#1021-自然変換の合成)
   - [10.2.2 FunctionK の合成](#1022-functionk-の合成)
@@ -216,7 +216,7 @@ val list = List(1, 2, 3, 4, 5)
 
 // 自然性
 val listToOption1 = (summon[Functor[Option]].fmap(isEven) compose headOptionK[Int])(list)
-val listToOption2 = (headOptionK[Boolean] _ compose summon[Functor[List]].fmap(isEven))(list)
+val listToOption2 = (headOptionK[Boolean] compose summon[Functor[List]].fmap(isEven))(list)
 listToOption1 == listToOption2
 ```
 
@@ -240,7 +240,7 @@ length もまた、`List(1, 2, 3, 4, 5)` と `isEven` 関数に対して、自�
 ```scala mdoc
 // 自然性
 val listToConst1 = (summon[Functor[[X] =>> Const[Int, X]]].fmap(isEven) compose lengthK[Int])(list)
-val listToConst2 = (lengthK[Boolean] _ compose summon[Functor[List]].fmap(isEven))(list)
+val listToConst2 = (lengthK[Boolean] compose summon[Functor[List]].fmap(isEven))(list)
 listToConst1 == listToConst2
 ```
 
@@ -401,7 +401,7 @@ type ListList[A] = List[List[A]]
 def flattenK: ListList ~> List = new FunctionK[ListList, List] {
   def apply[A](fa: ListList[A]): List[A] = fa.flatten
 }
-def flattenThenHeadOption = headOptionK compose flattenK
+def flattenThenHeadOption = headOptionK.compose(flattenK)
 flattenThenHeadOption(List(List(1, 2, 3), List(4, 5), Nil, List(6)))
 ```
 
@@ -432,8 +432,8 @@ object FunctionK {
 ```scala mdoc
 import hamcat.arrow.FunctionK.identityK
 
-(headOptionK compose identityK[List])(List(1, 2, 3)) == headOptionK(List(1, 2, 3))
-(identityK[Option] compose headOptionK)(List(1, 2, 3)) == headOptionK(List(1, 2, 3))
+(headOptionK.compose(identityK[List]))(List(1, 2, 3)) == headOptionK(List(1, 2, 3))
+(identityK[Option].compose(headOptionK))(List(1, 2, 3)) == headOptionK(List(1, 2, 3))
 ```
 
 ## おまけ: 先取り！モナド
@@ -479,7 +479,7 @@ object mu extends (OptionOption ~> Option) { def apply[A](fa: Option[Option[A]])
 1. `mu[A] compose T[eta[A]] == identity[T[A]]`
 
 ```scala mdoc
-(mu[Int] _ compose summon[Functor[Option]].fmap(eta[Int]))(Option(3)) == identity[Option[Int]](Option(3))
+(mu[Int] compose summon[Functor[Option]].fmap(eta[Int]))(Option(3)) == identity[Option[Int]](Option(3))
 ```
 
 T[A] を T[T[A]] にしたあと flatten すると T[A] になる、という条件みたいですね。
@@ -489,7 +489,7 @@ T[A] を T[T[A]] にしたあと flatten すると T[A] になる、という条
 2. `mu[A] compose eta[T[A]] == identity[T[A]]`
 
 ```scala mdoc
-(mu[Int] _ compose eta[Option[Int]])(Option(3)) == identity[Option[Int]](Option(3))
+(mu[Int] compose eta[Option[Int]])(Option(3)) == identity[Option[Int]](Option(3))
 ```
 
 これも T[A] ~> T[T[A]] ~> T[A] についての条件ですね。結合律みたいなもんでしょうか。
@@ -499,7 +499,7 @@ T[A] を T[T[A]] にしたあと flatten すると T[A] になる、という条
 3. `mu[A] compose mu[T[A]] == mu[A] compose T[mu[A]]`
 
 ```scala mdoc
-(mu[Int] _ compose mu[Option[Int]])(Option(Option(Option(3)))) == (mu[Int] _ compose summon[Functor[Option]].fmap(mu[Int]))(Option(Option(Option(3))))
+(mu[Int] compose mu[Option[Int]])(Option(Option(Option(3)))) == (mu[Int] compose summon[Functor[Option]].fmap(mu[Int]))(Option(Option(Option(3))))
 ```
 
 これは、どれだけネストされても平滑化できるという条件ですね。

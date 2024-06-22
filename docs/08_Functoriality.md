@@ -153,8 +153,8 @@ val func2Apply: (Boolean, Boolean) = func2(obj)
 
 ```scala mdoc
 /** Compose morphism */
-def func2ComposeFunc1 = func2 compose func1
-def func1AndThenFunc2 = func1 andThen func2
+def func2ComposeFunc1 = func2.compose(func1)
+def func1AndThenFunc2 = func1.andThen(func2)
 ```
 
 これらの関数に `(3, 4L)` を適用すると以下の結果が返ります。
