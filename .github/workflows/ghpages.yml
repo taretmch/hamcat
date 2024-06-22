@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - renew/v0.2.0
 
 jobs:
   deploy:
