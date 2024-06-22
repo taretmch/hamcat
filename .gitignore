@@ -4,6 +4,7 @@
 .bloop
 .bsp
 .metals
+.vscode/
 metals.sbt
 
 # scala
