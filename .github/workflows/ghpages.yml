@@ -60,16 +60,19 @@ jobs:
       - name: Deploy to github pages
         run: |
           cd honkit
+          git status
           git add .
-          git diff --quiet || git commit -m "Update documentation"
+          git commit -m "Update documentation"
           git push origin HEAD:master
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
 
       - name: Update submodule
         run: |
+          git submodule update --remote
+          git status
           git add honkit
-          git diff --quiet || git commit -m "Update submodule"
+          git commit -m "Update submodule"
           git push origin HEAD:${{ github.ref }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
