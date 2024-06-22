@@ -7,8 +7,8 @@
   "author": "taretmch <tomoki.mizogami@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "serve": "honkit serve ./ honkit",
-    "build": "honkit build ./ honkit"
+    "serve": "honkit serve ./ honkit/docs",
+    "build": "honkit build ./ honkit/docs"
   },
   "devDependencies": {
     "honkit": "5.1.4"
