@@ -231,16 +231,15 @@ def length[A]: List[A] => Const[Int, A] = list => Const(list.length)
 ```
 
 ```scala mdoc
-def lengthK: FunctionK[List, Const[Int, *]] = new FunctionK[List, Const[Int, *]] {
+def lengthK: FunctionK[List, [X] =>> Const[Int, X]] = new FunctionK[List, [X] =>> Const[Int, X]]:
   def apply[A](fa: List[A]): Const[Int, A] = Const(fa.length)
-}
 ```
 
 length もまた、`List(1, 2, 3, 4, 5)` と `isEven` 関数に対して、自然性を満たします：
 
 ```scala mdoc
 // 自然性
-val listToConst1 = (summon[Functor[Const[Int, *]]].fmap(isEven) compose lengthK[Int])(list)
+val listToConst1 = (summon[Functor[[X] =>> Const[Int, X]]].fmap(isEven) compose lengthK[Int])(list)
 val listToConst2 = (lengthK[Boolean] _ compose summon[Functor[List]].fmap(isEven))(list)
 listToConst1 == listToConst2
 ```
