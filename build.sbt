@@ -12,7 +12,6 @@ lazy val docs = project
   .settings(BuildSettings.settings: _*)
   .settings(mdocIn  := file("docs"))
   .settings(mdocOut := file("mdoc-output"))
-  .settings(libraryDependencies ++= cats)
   .enablePlugins(MdocPlugin)
   .dependsOn(core)
 
