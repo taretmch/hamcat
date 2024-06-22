@@ -26,6 +26,7 @@ jobs:
         with:
           submodules: recursive
           token: ${{ steps.app-token.outputs.token }}
+          persist-credentials: false
 
       - name: Setup git
         run: |
