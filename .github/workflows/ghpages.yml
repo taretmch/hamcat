@@ -62,7 +62,7 @@ jobs:
           cd honkit
           git add .
           git diff --quiet || git commit -m "Update documentation"
-          git push origin HEAD:${{ github.ref }}
+          git push origin HEAD:master
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
 
