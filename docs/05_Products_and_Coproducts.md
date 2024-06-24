@@ -5,15 +5,19 @@ description: "圏論の勉強記録です。本章では、圏に関するいく
 <!-- omit in toc -->
 # 5. 積と余積
 
-本章では、圏に関するいくつかの普遍的な構造について学んでいきます。
+本章では、圏に関するいくつかの普遍的な構造について学んでいきます。圏論には**普遍的構成** (universal construction) と呼ばれる構成がよく現れ、対象をその関係の観点から定義することがあります。
 
-普遍的な構造として、順序集合における最小値に対応する始対象、最大値に対応する終対象、始対象と終対象との関連性である双対性、直積集合に対応する積、そして積と対をなす余積について定式化します。
+普遍的構成として、順序集合における最小値に対応する始対象、最大値に対応する終対象、始対象と終対象との関連性である双対性、直積集合に対応する積、そして積と対をなす余積について定式化します。
 
-始対象・終対象や積は、モナドなどのプログラミングにおいて重要な構造を定義するために必要な概念を、定義するために必要です。
+始対象・終対象や積は、プログラミングにおいて重要な構造を定義するために必要な概念です。
 
 積や余積は特に、代数的データ型と呼ばれるタプル、ケースクラス、トレイトの一般化です。
 
 具体的な例を通して学んでいきましょう！
+
+```scala mdoc
+import hamcat.util.Eq.===
+```
 
 <!-- omit in toc -->
 # 目次
@@ -37,7 +41,7 @@ description: "圏論の勉強記録です。本章では、圏に関するいく
 
 ## 5.1 始対象
 
-始対象は、順序集合における最小値に対応する構造です。例えば、自然数の集合 `{ 0, 1, 2, ..., n, ... }` に対して、順序 `<=` における最小値は 0 です。自然数の集合の圏において、この 0 を始対象と言えるように始対象を定式化していきます。
+始対象は、順序集合における最小値に対応する構造です。例えば、自然数の集合 `{ 0, 1, 2, ..., n, ... }` に対して、順序 `<=` における最小値は 0 です。自然数の集合を対象として、順序 `<=` を射とする圏において、この 0 を始対象と言えるように始対象を定式化していきます。
 
 ### 5.1.1 始対象の定義
 
@@ -66,58 +70,90 @@ description: "圏論の勉強記録です。本章では、圏に関するいく
 
 ### 5.1.2 始対象の例
 
-自然数の集合において、0 から任意の自然数 n への射 `(0, n)` はただ1つ存在します。0 から 0 への射は恒等射 `(0, 0)` ですし、0 以外の任意の自然数 `n` についても `(0, n)` が一意に存在します。
+集合と関数の圏 `Set` における始対象は、空集合 `φ` です。すなわち、任意の集合 `A` と空集合 `φ` に対して、 `φ` から `A` への射、すなわち関数がただ1つ存在します。
 
-集合の圏 `Set` における始対象は、空集合です。任意の集合 `A` と空集合 `φ` に対して、 `φ` から `A` への射がただ1つ存在します。一般に、集合 `A` から `B` への関数は、`A` の任意の要素 `a` に対して、その出力 `b` (`B` の要素) が一意に定まるような関係の集合として定義されます。例えば、集合 `A = { 1, 3 }` から集合 `B = { 2, 4, 6 }` への関数の例として「入力の値に +1 したものを出力する」ような関数 `f: A => B` を考えます。この関数は、Scala では
-
-```scala
-f: A => B = a => a + 1
-```
-
-と書くことができますが、集合として書くと
+一般に、集合 `A` から `B` への関数は、`A` の任意の要素 `a` に対して、その出力 `b ∈ B` が一意に定まるような関係の集合として定義されます。例えば、集合 `A = { 1, 3 }` から集合 `B = { 2, 4, 6 }` への関数の例として「入力の値に +1 したものを出力する」ような関数 `f: A => B` を考えます。この関数は、以下のような集合として表現されます。
 
 ```
 { (1, 2), (3, 4) }
 ```
 
-と書くことができます。このように考えれば、空集合から任意の集合への関数は空集合であると言うことができ、これは明らかにただ1つだけ存在します。
+空集合 `φ` から集合 `A`、`B` への射はどうなるでしょうか。`φ` には要素がないので、`φ` から `A` への関数は、空集合になるはずです。
 
-では、Scala 圏 (前回までは Hask 圏と言っていました) における始対象は何でしょうか。Scala 圏とは、型を対象とし、型間の関数を射とするような圏です。`Set` の空集合に対応する型は、`Nothing` でした。ある1つの型から任意の型 `A` への射で一意なものは、`Nothing` から `A` への関数 `absurd` です。
+```
+{ }
+```
 
-```scala
+また、`φ` から `B` への関数も空集合になります。
+
+```
+{ }
+```
+
+これは、 `φ` から任意の集合への関数 (空集合) がただ1つ存在することを意味します。Scala においては、Nothing 型を引数にとる以下のような関数です。
+
+```scala mdoc
 def absurd[A]: Nothing => A = { case _ => ??? }
 ```
 
 ![始対象](./images/05_initial_object.png)
 
-ちなみに、 `Set` 圏においてシングルトン集合は始対象ではありません。というのも、`{ a }` (a は任意の値) から空集合への射は存在しないからです。空集合は、(入力 a に対しての出力が定義されないので) シングルトン集合から空集合への関数ではありません。また、`{ a }` から `{ true, false }` への射は1つには限りません。
-
-```scala mdoc
-def f: Unit => Boolean = _ => true
-def g: Unit => Boolean = _ => false
-```
-
 ### 5.1.3 始対象の一意性
 
-そして、始対象には、存在するなら**同型を除いて一意である** (unique up to isomorphism) という性質があります。これは、ただ始対象が一意に存在するというわけではなく、始対象と同型の対象を除いて一意に存在するという性質です。
+始対象には、存在するなら**同型を除いて一意である** (unique up to isomorphism) という性質があります。これは、ただ始対象が一意に存在するというわけではなく、始対象と同型の対象を除いて一意に存在するという性質です。
 
-同型については1章で少し話しましたが、一度思い出してみましょう。対象 `A` から対象 `B` への射 `f` に逆射 `fInv` が存在するとき、またそのときに限って `A` と `B` は同型であると言われます。つまり、同型な対象の間は相互に変換可能であることを意味します。
+同型については1章で少し話しましたが、一度思い出してみましょう。対象 `A` から対象 `B` への射 `f` に逆射 `fInv` が存在するとき、またそのときに限って `A` と `B` は同型であると言われます。つまり、同型な対象の間は相互に変換可能であることを意味します。射 `f` の逆射 `fInv` とは、恒等射 `I` に対して以下が成り立つような射のことでした。
 
-始対象が同型を除いて一意であるとは、任意の2つの始対象が同型であることを意味します。具体的に、2つの始対象を I1 と I2 として考えてみましょう。I1 は始対象なので、定義より任意の対象への射をただ1つ持っていて、I1 から I2 への一意の射 `f` が存在します。一方で、I2 は始対象なので、定義より I2 から I1 への一意の射 `g` が存在します。この2つの射を合成して `g compose f` を考えます。`g compose f` は I1 から I1 への射です。しかし、I1 から I1 への射はただ1つであり、圏の公理よりそれは恒等射です。すなわち
+```scala mdoc
+def f[A, B]: A => B = ???
+def fInv[A, B]: B => A = ???
 
-```
-g compose f = id[I1]
-```
-
-が成り立ちます。同様に `f compose g` を考えると、これは I2 から I2 への射です。I2 から I2 への射もただ1つであって、圏の公理よりそれは恒等射になります。
-
-```
-f compose g = id[I2]
+// 射 f の逆射 f について、以下が成り立つ
+def assert1[A, B] = fInv[A, B].compose(f[A, B]) === identity[A]
+def assert2[A, B] = f[A, B].compose(fInv[A, B]) === identity[B]
 ```
 
-したがって、2つの始対象 I1 と I2 は同型です。このような性質を同型を除いて一意であると言います。
+始対象が同型を除いて一意であるとは、任意の2つの始対象が同型であることを意味します。
 
-始対象が複数存在するような圏をパッと思いつきませんが、始対象が複数存在するのであれば、それらは同型であると示せます。
+具体的に、2つの始対象を `I1` と `I2` として考えてみましょう。
+
+```scala mdoc
+object InitialObject:
+  opaque type I1 = Nothing
+  opaque type I2 = Nothing
+
+import InitialObject.{ I1, I2 }
+```
+
+`I1` は始対象なので、定義より任意の対象への射をただ1つ持っていて、`I1` から `I2` への一意の射 `f12` が存在します。
+
+```scala mdoc
+// 一意の関数
+def f12: I1 => I2 = ???
+```
+
+一方で、`I2` は始対象なので、定義より `I2` から `I1` への一意の射 `f21` が存在します。
+
+```scala mdoc
+// 一意の関数
+def f21: I2 => I1 = ???
+```
+
+この2つの射を合成して `f21 compose f12` を考えます。`f21 compose f12` は `I1` から `I1` への射です。しかし、`I1` から `I1` への射はただ1つであり、圏の公理よりそれは恒等射です。すなわち
+
+```scala mdoc
+def assert3 = f21.compose(f12) === identity[I1]
+```
+
+が成り立ちます。同様に `f12 compose f21` を考えると、これは `I2` から `I2` への射です。`I2` から `I2` への射もただ1つであって、圏の公理よりそれは恒等射になります。
+
+```scala mdoc
+def assert4 = f12.compose(f21) === identity[I2]
+```
+
+`f21` は `f12` の逆射であるため、2つの始対象 `I1` と `I2` は同型です。このような性質を、同型を除いて一意であると言います。
+
+始対象が複数存在するのであれば、それらは同型であると示せます。
 
 ## 5.2 終対象
 
@@ -131,31 +167,65 @@ f compose g = id[I2]
 
 ---
 
-集合の圏 `Set` における終対象は、シングルトン集合です。任意の集合 `A` とシングルトン集合 `{ a }` に対して、`A` から `{ a }` への射がただ1つ存在します。
+集合の圏 `Set` における終対象は、シングルトン集合です。任意の集合 `A` とシングルトン集合 `{ a }` に対して、`A` から `{ a }` への射がただ1つ存在します。例えば、`A = { 1, 2, 3}` のとき、`A` から `{ a }` への関数は以下1つだけです。
+
+```
+{ (1, a), (2, a), (3, a) }
+```
 
 シングルトン集合は `Unit` 型に対応するので、Scala 圏における終対象は `Unit` 型です。任意の型 `A` から `Unit` への関数 `unit` がただ1つ存在します。
 
 ```scala mdoc
 def unit[A]: A => Unit = _ => ()
+
+unit[Int](1)
+unit[Int](100)
+unit[String]("hoge")
 ```
 
 ![終対象](./images/05_terminal_object.png)
 
-終対象も始対象同様、同型を除いて一意です。
+終対象も始対象同様、同型を除いて一意です。2つの終対象を `T1` と `T2` として見てみましょう。
 
-2つの終対象を T1 と T2 とします。T1 は終対象なので、定義より任意の対象からの射がただ1つ存在して、T2 から T1 への一意の射 `f` が一意に存在します。一方で、T2 は終対象なので、定義より T1 から T2 への一意の射 `g` が存在します。この2つの射を合成して `g compose f` を考えます。`g compose f` は T2 から T2 への射です。しかし、T2 から T2 への射はただ1つであり、圏の公理よりそれは恒等射です。すなわち
+```scala mdoc
+object TerminalObject:
+  opaque type T1 = Unit
+  object T1:
+    def apply(): T1 = ()
+  opaque type T2 = Unit
+  object T2:
+    def apply(): T2 = ()
 
-```scala
-g compose f === identity[T2]
+import TerminalObject.{ T1, T2 }
 ```
 
-が成り立ちます。同様に `f compose g` を考えると、これは T1 から T1 への射です。T1 から T1 への射もただ1つであって、圏の公理よりそれは恒等射になります。
+`T1` は終対象なので、定義より任意の対象からの射がただ1つ存在して、`T2` から `T1` への一意の射 `g21` が一意に存在します。
 
-```scala
-f compose g === identity[T1]
+```scala mdoc
+// 一意の関数
+def g21: T2 => T1 = { case t2 => T1() }
 ```
 
-したがって、2つの終対象 T1 と T2 は同型です。
+一方で、`T2` は終対象なので、定義より `T1` から `T2` への一意の射 `g12` が存在します。
+
+```scala mdoc
+// 一意の関数
+def g12: T1 => T2 = { case t1 => T2() }
+```
+
+この2つの射を合成して `g12.compose(g21)` を考えます。`g12.compose(g21)` は `T2` から `T2` への射です。しかし、`T2` から `T2` への射はただ1つであり、圏の公理よりそれは恒等射です。すなわち
+
+```scala mdoc
+def assert5 = g12.compose(g21) === identity[T2]
+```
+
+が成り立ちます。同様に `g21.compose(g12)` を考えると、これは `T1` から `T1` への射です。`T1` から `T1` への射もただ1つであって、圏の公理よりそれは恒等射になります。
+
+```scala mdoc
+def assert6 = g21.compose(g12) === identity[T1]
+```
+
+したがって、2つの終対象 `T1` と `T2` の間には同型射が存在して、同型と言えます。
 
 ## 5.3 双対性
 
@@ -165,15 +235,15 @@ f compose g === identity[T1]
 
 一般に、任意の圏 `C` に対して、対象はそのままで、全ての射の矢印を反転させ射の合成を再定義することによって**双対圏** (opposite category) `Cop` を定義することができます。
 
-例として、自然数の順序集合を考えます。自然数間の射 `<=` は a が b 以下であるとき `a -> b` であるとします。この順序集合の双対圏を考えてみると、全ての矢印が反転するので、射 `<=op` は a が b 以下であるとき `a <- b` となります。言い換えると、a が b 以上であるとき `a -> b` となりますね。
+例として、自然数の順序集合を考えます。自然数間の射 `<=` は、a が b 以下であるとき `a -> b` であるとします。この順序集合の双対圏を考えてみると、全ての矢印が反転するので、射 `<=op` は a が b 以下であるとき `a <- b` となります。言い換えると、a が b 以上であるとき `a -> b` となりますね。
 
-ある圏の双対圏を考えることによって、圏の普遍的な構造を1つ構成したときその双対の構造も構成することができます。例えば、ある圏における始対象はその双対圏における終対象です。これから見る積の双対は余積です。
+ある圏の双対圏を考えることによって、圏の普遍的な構造を1つ構成したときその双対の構造も構成することができます。例えば、**ある圏における始対象はその双対圏における終対象**です。これから見る積の双対は余積です。
 
 双対圏における構成には接頭辞 "余" ("co") がつけられることが多いです。積 (product) には余積 (coproduct) があり、モナド (monad) には余モナド (comonad) があり、極限 (limit) には余極限 (colimit) があります。ただし、矢印を2回反転させると元に戻るので、余余モナドなるものはありません。
 
 ## 5.4 積
 
-さて、もう1つの普遍的な構造として、積 (product) について見ていきましょう。
+さて、もう1つの普遍的構成として、**積** (product) について見ていきましょう。積は、直積とも呼ばれます。
 
 簡単に言えば、積は2つの対象のタプルを表します。Scala において、積はタプルやケースクラスとして組み込まれています。
 
@@ -187,14 +257,27 @@ case class Pair(a: Int, b: Boolean)
 val intBoolPair = Pair(44, true)
 ```
 
-Scala には [Product](https://github.com/scala/scala/blob/v2.13.3/src/library/scala/Product.scala) というトレイトがあり、これが積を表します。タプルやケースクラスはすべて `Product` を継承しています。
+Scala には [Product](https://github.com/scala/scala/blob/v2.13.14/src/library/scala/Product.scala) というトレイトがあり、これが積を表します。[Tuple](https://github.com/scala/scala3/blob/3.4.2/library/src/scala/Tuple.scala#L8) やケースクラスはすべて `Product` を継承しています。
 
 ```scala
-final case class Tuple2[@specialized(Int, Long, Double, Char, Boolean/*, AnyRef*/) +T1, @specialized(Int, Long, Double, Char, Boolean/*, AnyRef*/) +T2](_1: T1, _2: T2)
-  extends Product2[T1, T2]
+// github.com/scala/scala より
+
+/** Base trait for all products, which in the standard library include at
+ *  least [[scala.Product1]] through [[scala.Product22]] and therefore also
+ *  their subclasses [[scala.Tuple1]] through [[scala.Tuple22]].  In addition,
+ *  all case classes implement `Product` with synthetically generated methods.
+ */
+trait Product extends Any with Equals
 ```
 
-ケースクラスは、コンパイル時に自動的に `Product` をミックスインします [1]。
+```scala
+// github.com/scala/scala3 より
+
+/** Tuple of arbitrary arity */
+sealed trait Tuple extends Product
+```
+
+ケースクラスは、コンパイル時に自動的に `Product` をミックスインします。
 
 ### 5.4.1 積の定義
 
@@ -202,35 +285,58 @@ final case class Tuple2[@specialized(Int, Long, Double, Char, Boolean/*, AnyRef*
 
 ---
 
-圏の2つの対象 `A` と `B` に対して、対象 `C` とその射 `projA: C => A`、`projB: C => B` の三つ組 `<C, projA, projB>` が `A` と `B` の**積** (product) であるとは、任意の対象 `X` とその射 `xA: X => A`、`xB: X => B` の三つ組 `<X, xA, xB>` に対して `X` から `C` への一意の射 `m` が存在して
-
-```
-projA compose m == xA
-projB compose m == xB
-```
-
-が成り立つことを言います。このとき対象 `C` を `A x B` と書きます。
+圏の2つの対象 `A` と `B` に対して、対象 `C` とその射 `projA: C => A`、`projB: C => B` の三つ組 `<C, projA, projB>` が `A` と `B` の**積** (product) であるとは、任意の対象 `X` とその射 `xA: X => A`、`xB: X => B` の三つ組 `<X, xA, xB>` に対して `X` から `C` への一意の射 `m` が存在して `projA compose m == xA` `projB compose m == xB` が成り立つことを言います。このとき対象 `C` を `A x B` と書きます。
 
 ![積の定義](./images/05_product.png)
+
+Scala で書くと以下のように表現できます。
+
+```scala mdoc
+// C with projA, projB: A x B
+// 型 A, B, C, X に対して以下のような射が存在して
+def projA[A, C]: C => A = ???
+def projB[B, C]: C => B = ???
+def xA[X, A]: X => A = ???
+def xB[X, B]: X => B = ???
+def m[X, C]: X => C = ???
+
+// 以下が成り立つ
+def assertProductA = projA.compose(m) === xA
+def assertProductB = projB.compose(m) === xB
+```
+
+また、射 `projA` と `projB` は各構成要素への**射影** (projection) と呼ばれます。
 
 ---
 
 なお、積は存在するなら、同型を除いて一意です。
 
-型 `A` と `B` の積 `(A, B)` について、射影 `fst` と `snd` は以下のように定義されます。
+`Product2` を例に見ていきましょう。型 `A` と `B` のタプル `(A, B)` について、射影 `projA` と `projB` は以下のように定義されます。
 
-```scala mdoc
-def fst[A, B]: ((A, B)) => A = _._1
+```scala mdoc:reset
+def projA[A, B, C <: Product2[A, B]](c: C): A = c._1
+def projB[A, B, C <: Product2[A, B]](c: C): B = c._2
 
-def snd[A, B]: ((A, B)) => B = _._2
+projA(("tuple", 1))
+projB(("tuple", 2))
 ```
 
-すなわち、積の射影は `Tuple2#_1` メソッドと `Tuple2#_2` メソッドです。
+すなわち、Scala における `Product` の射影は `Tuple2#_1` メソッドと `Tuple2#_2` メソッドです。
 
-そして、ある型 `X` に対して、`X` から `(A, B)` への一意の関数 `productFactorizer` が存在します。
+そして、ある型 `X` とその射 `xA: X => A` `xB: X => B` に対して、`X` から `(A, B)` への一意の関数 `m` が存在します。
 
 ```scala mdoc
-def productFactorizer[X, A, B](xA: X => A)(xB: X => B): X => ((A, B)) = x => (xA(x), xB(x))
+// C: (A, B)
+def m1[X, A, B](xA: X => A)(xB: X => B)(x: X): (A, B) = (xA(x), xB(x))
+// C: Pair(A, B)
+case class Pair[A, B](a: A, b: B)
+def m2[X, A, B](xA: X => A)(xB: X => B)(x: X): Pair[A, B] = Pair(xA(x), xB(x))
+
+// C: (Int, String), X: Int
+m1[Int, Int, String](identity[Int])(n => s"The number is $n")(3)
+
+// C: Pair[Long, Boolean], X: String
+m2[String, Long, Boolean](_.toLongOption.getOrElse(0))(_.toLongOption.nonEmpty)("12345")
 ```
 
 ### 5.4.2 積の例
@@ -240,15 +346,15 @@ def productFactorizer[X, A, B](xA: X => A)(xB: X => B): X => ((A, B)) = x => (xA
 そして、`List[Int]` の `String` への射影と、`Int` への射影をそれぞれ以下のように定義します：
 
 ```scala mdoc
-val listToString: List[Int] => String = _.toString
+def listToString: List[Int] => String = _.toString
 
-val listToInt: List[Int] => Int = _.length
+def listToInt: List[Int] => Int = _.length
 ```
 
 このとき、`List[Int]` から積 `(A, B)` への一意の関数 `listToTuple` を構成できます：
 
 ```scala mdoc
-val listToTuple: List[Int] => ((String, Int)) = productFactorizer(listToString)(listToInt)
+def listToTuple: List[Int] => ((String, Int)) = m1(listToString)(listToInt)
 ```
 
 この関数に対して `List(1, 2, 3, 4, 5)` を与えると、`String` への射影 `listToString` と `Int` への射影 `listToInt` をそれぞれ適用したタプルが得られます。
@@ -264,13 +370,13 @@ listToTuple(List(1, 2, 3, 4, 5))
 ```scala mdoc
 val list = List(1, 2, 3, 4, 5)
 
-(fst compose listToTuple)(list) == listToString(list)
-(snd compose listToTuple)(list) == listToInt(list)
+projA.compose(listToTuple)(list) == listToString(list)
+projB.compose(listToTuple)(list) == listToInt(list)
 ```
 
 ![積の例](./images/05_product_example.png)
 
-もう一つ、集合圏における積の例を見てみます [2]。集合 `A = { 7, 8, 9 }`、`B = { a, b, c }`、`X = { 1, 2, 3, 4 }` として、`X` から `A` および `B` への射影 `xA` と `xB` を以下のようにします。
+もう一つ、集合圏における積の例を見てみます [1]。集合 `A = { 7, 8, 9 }`、`B = { a, b, c }`、`X = { 1, 2, 3, 4 }` として、`X` から `A` および `B` への射影 `xA` と `xB` を以下のようにします。
 
 ```
 xA = { (1, 7), (2, 8), (3, 9), (4, 7) }
@@ -286,15 +392,6 @@ f = { (1, (7, a)), (2, (8, b)), (3, (9, c)), (4, (7, c)) }
 この例について、以下の図式は可換になります。
 
 ![集合圏における積の例](./images/05_product_example2.png)
-
-積の定義において対象から `X` から `AxB` への射 `m` は、以下のように定義することができます。
-
-```scala mdoc
-def factorize[X, A, B](xA: X => A)(xB: X => B)(x: X): (A, B) = (xA(x), xB(x))
-
-factorize{ (s: String) => s.length }{ (s: String) => s.startsWith("a") }("abcdefg")
-```
-
 
 ### 5.4.4 モノイダル圏としての Scala 圏
 
@@ -368,20 +465,30 @@ def isomorProduct4[A]: ((A, Unit)) => A = {
 
 ### 5.5.1 余積の定義
 
-余積は、積の定義において射を反転させたものです。すなわち、以下のように定義されます。
+余積は、積の定義において射の向きを反転させたものです。すなわち、以下のように定義されます。
 
 ---
 
-圏の2つの対象 `A` と `B` に対して、対象 `C` と射 `injA: A => C`、`injB: B => C` の三つ組 `<C, injA, injB>` が `A` と `B` の**余積** (coproduct) であるとは、他の同様の三つ組、すなわち任意の対象 `X` と射 `xA: A => X`、`xB: B => X` の三つ組 `<X, xA, xB>` に対して `C` から `X` への一意の射 `x` が存在して
-
-```
-x compose injA == xA
-x compose injB == xB
-```
-
-が成り立つことを言います。このとき対象 `C` を `A+B` と書きます。また、`injA: A => C` および `injB: B => C` を入射 (injection) と呼びます。
+圏の2つの対象 `A` と `B` に対して、対象 `C` と射 `injA: A => C`、`injB: B => C` の三つ組 `<C, injA, injB>` が `A` と `B` の**余積** (coproduct) であるとは、任意の対象 `X` と射 `xA: A => X`、`xB: B => X` の三つ組 `<X, xA, xB>` に対して `C` から `X` への一意の射 `m` が存在して `m compose injA == xA` `m compose injB == xB` が成り立つことを言います。このとき対象 `C` を `A + B` と書きます。また、`injA: A => C` および `injB: B => C` を入射 (injection) と呼びます。
 
 ![余積](./images/05_coproduct.png)
+
+Scala で書くと以下のように表現できます。
+
+```scala mdoc
+// C with injA, injB: A + B
+// 型 A, B, C, X に対して以下のような射が存在して
+def injA[A, C]: A => C = ???
+def injB[B, C]: B => C = ???
+def xA[X, A]: A => X = ???
+def xB[X, B]: B => X = ???
+def m[X, C]: C => X = ???
+
+// 以下が成り立つ
+import hamcat.util.Eq.===
+def assertCoproductA[X, A, C] = m[X, C].compose(injA[A, C]) === xA[X, A]
+def assertCoproductB[X, B, C] = m[X, C].compose(injB[B, C]) === xB[X, B]
+```
 
 ---
 
@@ -389,18 +496,21 @@ x compose injB == xB
 
 型 `A` と `B` の余積 `Either[A, B]` について、射 `injA` と `injB` は以下のように定義されます。
 
-```scala mdoc
+```scala mdoc:reset
 def injA[A, B](a: A): Either[A, B] = Left(a)
 def injB[A, B](b: B): Either[A, B] = Right(b)
 ```
 
-すなわち、余積の入射は `Left.apply` メソッドと `Right.apply` メソッドです。そして、ある型 `X` に対して、`Either[A, B]` から `X` への一意の関数 `coproductFactorizer` が存在します。
+すなわち、余積の入射は `Left.apply` メソッドと `Right.apply` メソッドです。そして、ある型 `X` に対して、`Either[A, B]` から `X` への一意の関数 `m` が存在します。
 
 ```scala mdoc
-def coproductFactorizer[X, A, B](xA: A => X)(xB: B => X): Either[A, B] => X = {
+def m[X, A, B](xA: A => X)(xB: B => X): Either[A, B] => X = {
   case Left(a) => xA(a)
   case Right(b) => xB(b)
 }
+
+m[Long, String, Int](_.toLongOption.getOrElse(0))(_.toLong)(Right(3))
+m[Long, String, Int](_.toLongOption.getOrElse(0))(_.toLong)(Left("abcdefg"))
 ```
 
 ### 5.5.2 余積の例
@@ -410,14 +520,14 @@ def coproductFactorizer[X, A, B](xA: A => X)(xB: B => X): Either[A, B] => X = {
 そして、`String` から `Boolean` への入射と、`Int` からの入射をそれぞれ以下のように定義します：
 
 ```scala mdoc
-val strToBool: String => Boolean = _.contains("a")
-val isEven: Int => Boolean = _ % 2 == 0
+def strToBool: String => Boolean = _.contains("a")
+def isEven: Int => Boolean = _ % 2 == 0
 ```
 
 このとき、余積 `Either[String, Int]` から型 `Boolean` への一意の関数 `eitherToBool` を構成できます。この関数は、`String` については文字列 `"a"` を含むかどうか判定し、`Int` が偶数かどうかを判定する関数です。
 
 ```scala mdoc
-val eitherToBool: Either[String, Int] => Boolean = coproductFactorizer(strToBool)(isEven)
+def eitherToBool: Either[String, Int] => Boolean = m(strToBool)(isEven)
 ```
 
 この関数に対して `String` および `Int` を与えると、それぞれに対して関数が適用されます：
@@ -479,6 +589,4 @@ isomorCoproductRightInv(Right("Good"))
 
 ## 参考文献
 
-[1] Scalaクラスメモ, http://www.ne.jp/asahi/hishidama/home/tech/scala/class.html , 2020年11月13日閲覧.
-
-[2] 雪田修一, 圏論入門 Haskell で計算する具体例から, 日本評論社, 2020.
+[1] 雪田修一, 圏論入門 Haskell で計算する具体例から, 日本評論社, 2020.
