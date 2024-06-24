@@ -60,7 +60,7 @@ jobs:
 
       - name: Deploy to github pages
         run: |
-          git submodule set-url docs https://github-actions:${GITHUB_TOKEN}@github.com/taretmch/category-theory-with-scala
+          git submodule set-url honkit https://github-actions:${GITHUB_TOKEN}@github.com/taretmch/category-theory-with-scala
           cd honkit
           git status
           git add .
