@@ -125,17 +125,17 @@ object InitialObject:
 import InitialObject.{ I1, I2 }
 ```
 
-`I1` は始対象なので、定義より任意の対象への射をただ1つ持っていて、`I1` から `I2` への一意の射 `f_12` が存在します。
+`I1` は始対象なので、定義より任意の対象への射をただ1つ持っていて、`I1` から `I2` への一意の射 `f12` が存在します。
 
 ```scala mdoc
-// 一意の射
+// 一意の関数
 def f12: I1 => I2 = ???
 ```
 
-一方で、`I2` は始対象なので、定義より `I2` から `I1` への一意の射 `f_21` が存在します。
+一方で、`I2` は始対象なので、定義より `I2` から `I1` への一意の射 `f21` が存在します。
 
 ```scala mdoc
-// 一意の射
+// 一意の関数
 def f21: I2 => I1 = ???
 ```
 
@@ -202,25 +202,27 @@ import TerminalObject.{ T1, T2 }
 `T1` は終対象なので、定義より任意の対象からの射がただ1つ存在して、`T2` から `T1` への一意の射 `g21` が一意に存在します。
 
 ```scala mdoc
+// 一意の関数
 def g21: T2 => T1 = { case t2 => T1() }
 ```
 
 一方で、`T2` は終対象なので、定義より `T1` から `T2` への一意の射 `g12` が存在します。
 
 ```scala mdoc
+// 一意の関数
 def g12: T1 => T2 = { case t1 => T2() }
 ```
 
 この2つの射を合成して `g12.compose(g21)` を考えます。`g12.compose(g21)` は `T2` から `T2` への射です。しかし、`T2` から `T2` への射はただ1つであり、圏の公理よりそれは恒等射です。すなわち
 
 ```scala mdoc
-g12.compose(g21) == identity[T2]
+def assert5 = g12.compose(g21) === identity[T2]
 ```
 
 が成り立ちます。同様に `g21.compose(g12)` を考えると、これは `T1` から `T1` への射です。`T1` から `T1` への射もただ1つであって、圏の公理よりそれは恒等射になります。
 
 ```scala mdoc
-g21.compose(g12) == identity[T1]
+def assert6 = g21.compose(g12) === identity[T1]
 ```
 
 したがって、2つの終対象 `T1` と `T2` の間には同型射が存在して、同型と言えます。
@@ -303,6 +305,8 @@ def assertProductA = projA.compose(m) === xA
 def assertProductB = projB.compose(m) === xB
 ```
 
+また、射 `projA` と `projB` は各構成要素への**射影** (projection) と呼ばれます。
+
 ---
 
 なお、積は存在するなら、同型を除いて一意です。
@@ -342,15 +346,15 @@ m2[String, Long, Boolean](_.toLongOption.getOrElse(0))(_.toLongOption.nonEmpty)(
 そして、`List[Int]` の `String` への射影と、`Int` への射影をそれぞれ以下のように定義します：
 
 ```scala mdoc
-val listToString: List[Int] => String = _.toString
+def listToString: List[Int] => String = _.toString
 
-val listToInt: List[Int] => Int = _.length
+def listToInt: List[Int] => Int = _.length
 ```
 
 このとき、`List[Int]` から積 `(A, B)` への一意の関数 `listToTuple` を構成できます：
 
 ```scala mdoc
-val listToTuple: List[Int] => ((String, Int)) = m1(listToString)(listToInt)
+def listToTuple: List[Int] => ((String, Int)) = m1(listToString)(listToInt)
 ```
 
 この関数に対して `List(1, 2, 3, 4, 5)` を与えると、`String` への射影 `listToString` と `Int` への射影 `listToInt` をそれぞれ適用したタプルが得られます。
@@ -461,20 +465,30 @@ def isomorProduct4[A]: ((A, Unit)) => A = {
 
 ### 5.5.1 余積の定義
 
-余積は、積の定義において射を反転させたものです。すなわち、以下のように定義されます。
+余積は、積の定義において射の向きを反転させたものです。すなわち、以下のように定義されます。
 
 ---
 
-圏の2つの対象 `A` と `B` に対して、対象 `C` と射 `injA: A => C`、`injB: B => C` の三つ組 `<C, injA, injB>` が `A` と `B` の**余積** (coproduct) であるとは、他の同様の三つ組、すなわち任意の対象 `X` と射 `xA: A => X`、`xB: B => X` の三つ組 `<X, xA, xB>` に対して `C` から `X` への一意の射 `x` が存在して
-
-```
-x compose injA == xA
-x compose injB == xB
-```
-
-が成り立つことを言います。このとき対象 `C` を `A+B` と書きます。また、`injA: A => C` および `injB: B => C` を入射 (injection) と呼びます。
+圏の2つの対象 `A` と `B` に対して、対象 `C` と射 `injA: A => C`、`injB: B => C` の三つ組 `<C, injA, injB>` が `A` と `B` の**余積** (coproduct) であるとは、任意の対象 `X` と射 `xA: A => X`、`xB: B => X` の三つ組 `<X, xA, xB>` に対して `C` から `X` への一意の射 `m` が存在して `m compose injA == xA` `m compose injB == xB` が成り立つことを言います。このとき対象 `C` を `A + B` と書きます。また、`injA: A => C` および `injB: B => C` を入射 (injection) と呼びます。
 
 ![余積](./images/05_coproduct.png)
+
+Scala で書くと以下のように表現できます。
+
+```scala mdoc
+// C with injA, injB: A + B
+// 型 A, B, C, X に対して以下のような射が存在して
+def injA[A, C]: A => C = ???
+def injB[B, C]: B => C = ???
+def xA[X, A]: A => X = ???
+def xB[X, B]: B => X = ???
+def m[X, C]: C => X = ???
+
+// 以下が成り立つ
+import hamcat.util.Eq.===
+def assertCoproductA[X, A, C] = m[X, C].compose(injA[A, C]) === xA[X, A]
+def assertCoproductB[X, B, C] = m[X, C].compose(injB[B, C]) === xB[X, B]
+```
 
 ---
 
@@ -482,18 +496,21 @@ x compose injB == xB
 
 型 `A` と `B` の余積 `Either[A, B]` について、射 `injA` と `injB` は以下のように定義されます。
 
-```scala mdoc
+```scala mdoc:reset
 def injA[A, B](a: A): Either[A, B] = Left(a)
 def injB[A, B](b: B): Either[A, B] = Right(b)
 ```
 
-すなわち、余積の入射は `Left.apply` メソッドと `Right.apply` メソッドです。そして、ある型 `X` に対して、`Either[A, B]` から `X` への一意の関数 `coproductFactorizer` が存在します。
+すなわち、余積の入射は `Left.apply` メソッドと `Right.apply` メソッドです。そして、ある型 `X` に対して、`Either[A, B]` から `X` への一意の関数 `m` が存在します。
 
 ```scala mdoc
-def coproductFactorizer[X, A, B](xA: A => X)(xB: B => X): Either[A, B] => X = {
+def m[X, A, B](xA: A => X)(xB: B => X): Either[A, B] => X = {
   case Left(a) => xA(a)
   case Right(b) => xB(b)
 }
+
+m[Long, String, Int](_.toLongOption.getOrElse(0))(_.toLong)(Right(3))
+m[Long, String, Int](_.toLongOption.getOrElse(0))(_.toLong)(Left("abcdefg"))
 ```
 
 ### 5.5.2 余積の例
@@ -503,14 +520,14 @@ def coproductFactorizer[X, A, B](xA: A => X)(xB: B => X): Either[A, B] => X = {
 そして、`String` から `Boolean` への入射と、`Int` からの入射をそれぞれ以下のように定義します：
 
 ```scala mdoc
-val strToBool: String => Boolean = _.contains("a")
-val isEven: Int => Boolean = _ % 2 == 0
+def strToBool: String => Boolean = _.contains("a")
+def isEven: Int => Boolean = _ % 2 == 0
 ```
 
 このとき、余積 `Either[String, Int]` から型 `Boolean` への一意の関数 `eitherToBool` を構成できます。この関数は、`String` については文字列 `"a"` を含むかどうか判定し、`Int` が偶数かどうかを判定する関数です。
 
 ```scala mdoc
-val eitherToBool: Either[String, Int] => Boolean = coproductFactorizer(strToBool)(isEven)
+def eitherToBool: Either[String, Int] => Boolean = m(strToBool)(isEven)
 ```
 
 この関数に対して `String` および `Int` を与えると、それぞれに対して関数が適用されます：
