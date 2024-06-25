@@ -43,9 +43,14 @@ Option 関手は、型 `A` の値を `Option` で包んで型 `Option[A]` に変
 
 関手において、ある圏の対象を別のある圏の対象に変換するような対応を対象関数といいます。一般に、圏 **C** から **D** への関手 F は、圏 **C** の対象 a を **D** の対象 F(a) に対応させます。
 
+```scala mdoc
+// 対象関数
+def obj[F[_], A]: A => F[A] = ???
+```
+
 Option 関手の例で言うと、Option 関手は型 `A` を型 `Option[A]` に対応させています。
 
-```scala mdoc
+```scala mdoc:reset
 def objOptFunc[A]: A =>  Option[A] = Option(_)
 
 objOptFunc(3)
@@ -54,16 +59,24 @@ objOptFunc("Hoge")
 
 ### 7.1.2 射関数
 
-関手において、ある圏の射を別のある圏の射に変換するような対応を射関数といいます。一般に、圏 **C** から **D** への関手 F の射関数は、圏 **C** の射 f: a -> b を **D** の射 F(f): F(a) -> F(b) に対応させます。Hamcat において、射関数は `fmap` メソッドとして定義しています。
-
-Option 関手は、例で言うと、射 `f: A => B` を `fmap(f): Option[A] => Option[B]` に対応させる必要があります。この対応は、標準ライブラリにある `Option#map` メソッドによって実現されます：
+関手において、ある圏の射を別のある圏の射に変換するような対応を射関数といいます。一般に、圏 **C** から **D** への関手 F の射関数は、圏 **C** の射 f: a -> b を **D** の射 F(f): F(a) -> F(b) 
 
 ```scala mdoc
+// 射関数
+def fmap[F[_], A, B]: (A => B) => (F[A] => F[B]) = ???
+```
+
+例えば、Option 関手においては、射 `f: A => B` を `fmap(f): Option[A] => Option[B]` に対応させる必要があります。この対応は、標準ライブラリにある `Option#map` メソッドによって実現されます：
+
+```scala mdoc
+def fmapOptFunc[A, B]: (A => B) => (Option[A] => Option[B]) =
+  f => optA => optA.map(f)
+
 def isEven: Int => Boolean = n => n % 2 == 0
 def negate: Boolean => Boolean = b => !b
 
-Option(3).map(isEven)
-Option(true).map(negate)
+fmapOptFunc(isEven)(Option(3))
+fmapOptFunc(negate)(Option(true))
 ```
 
 ![Option 関手](./images/07_option_functor.png)
@@ -76,50 +89,42 @@ Option(true).map(negate)
 1つ目の性質は、関手が射の合成を保存することを意味します。
 
 ```scala mdoc
-// hamcat における関手のデータ型、インスタンスをインポート
 import hamcat.util.Eq.===
 
-// Option 型に対する Functor のインスタンス
-val optionFunctor = summon[Functor[Option]]
-
-// f: isEven, g: negate とします
-// fmap(g compose f)
-def lifted1 = optionFunctor.fmap(negate.compose(isEven))
-
-// fmap(g) compose fmap(f)
-def lifted2 = optionFunctor.fmap(negate).compose(optionFunctor.fmap(isEven))
-
-// 射の合成が保存されることの確認
-lifted1 === lifted2
+def f[A, B]: A => B = ???
+def g[B, C]: B => C = ???
+def assert1[F[_], A, B, C] =
+  fmap[F, A, C](g[B, C].compose(f[A, B])) === fmap[F, B, C](g[B, C]).compose(fmap[F, A, B](f[A, B]))
 ```
 
-例えば、`Option(3)` に対して以下が成り立ちます。
+Option 関手の場合、満たされることが確認できます。
 
 ```scala mdoc
-optionFunctor.fmap(negate compose isEven)(Option(3)) == (optionFunctor.fmap(negate) compose optionFunctor.fmap(isEven))(Option(3))
+// fmap(g compose f) = fmap(g) compose fmap(f)
+fmapOptFunc(negate.compose(isEven)) === fmapOptFunc(negate).compose(fmapOptFunc(isEven))
+
+// Option (3) の場合
+fmapOptFunc(negate.compose(isEven))(Option(3))
+(fmapOptFunc(negate).compose(fmapOptFunc(isEven)))(Option(3))
 ```
 
 ![合成の保存](./images/07_functor_composition.png)
 
-2つ目の性質は、関手が恒等射を保存することを意味します。
+射関数の2つ目の性質は、関手が恒等射を保存することを意味します。
 
 ```scala mdoc
-// fmap(identity[A])
-def lifted3 = optionFunctor.fmap(identity[Int])
-
-// identity[F[A]]
-def lifted4 = identity[Option[Int]]
-
-lifted3 === lifted4
+def assert2[F[_], A] =
+  fmap[F, A, A](identity[A]) === identity[F[A]]
 ```
 
-例えば、`Option(3)` に対して以下が成り立ちます。
+Option 関手の場合、満たされることが確認できます。
 
 ```scala mdoc
-optionFunctor.fmap(identity[Int])(Option(3)) == identity[Option[Int]](Option(3))
+fmapOptFunc(identity[Int])(Option(3))
+identity[Option[Int]](Option(3))
 ```
 
-以上の性質は圏の構造を保存する対応を表す性質です。このような2つの性質を**関手性** (functor laws) と呼びます。
+以上の性質は、圏の構造を保存する対応を表す性質です。このような2つの性質を**関手性** (functor laws) と呼びます。
 
 ### 7.1.3 関手の定義
 
