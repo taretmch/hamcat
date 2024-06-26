@@ -24,10 +24,9 @@ Writer 関手を見たあとは、Reader 関手について説明します。Rea
 
 - [8.1 双関手](#81-双関手)
   - [8.1.1 直積圏を定義する](#811-直積圏を定義する)
-  - [8.1.2 直積圏における射の合成の例](#812-直積圏における射の合成の例)
-  - [8.1.3 双関手の一般的な定義](#813-双関手の一般的な定義)
-  - [8.1.4 Tuple2 は双関手](#814-tuple2-は双関手)
-  - [8.1.5 Either もまた双関手](#815-either-もまた双関手)
+  - [8.1.2 双関手の一般的な定義](#812-双関手の一般的な定義)
+  - [8.1.3 Tuple2 は双関手](#813-tuple2-は双関手)
+  - [8.1.4 Either もまた双関手](#814-either-もまた双関手)
 - [8.2 Writer 関手の再登場](#82-writer-関手の再登場)
 - [8.3 Reader 関手](#83-reader-関手)
   - [8.3.1 Function1 は双関手か？](#831-function1-は双関手か)
@@ -47,20 +46,22 @@ Writer 関手を見たあとは、Reader 関手について説明します。Rea
 
 双関手の型クラスを定義すると、以下のようになります。
 
-```scala
-trait Bifunctor[F[_, _]] {
+```scala mdoc
+trait Bifunctor[F[_, _]]:
 
-  /** Morphism mappings for Bifunctor */
   def bimap[A, B, C, D](f: A => C)(g: B => D): F[A, B] => F[C, D]
-
-  def first[A, B, C](f: A => C): F[A, B] => F[C, B] = bimap(f)(identity[B])
-  def second[A, B, D](g: B => D): F[A, B] => F[A, D] = bimap(identity[A])(g)
-}
 ```
 
-`Bifunctor` 型クラスは、対象関数として型構築子 `F[_, _]` をもち、射関数として `bimap` メソッドをもちます。`first` および `second` は、双関手の型パラメータの1つ目と2つ目の値に対してそれぞれ変換を施すものです。
+`Bifunctor` 型クラスは、対象関数として型構築子 `F[_, _]` をもち、射関数として `bimap` メソッドをもちます。`bimap` メソッドがあれば、一方の関数のみを変換する `first` メソッドおよび `second` メソッドを定義できます。
 
-`bimap` メソッドを定義すれば `first` メソッドと `second` メソッドを実装できますし、`first` メソッドと `second` メソッドを実装すれば `bimap` メソッドを実装することができます。
+```scala mdoc
+extension [F[_, _]](bifunctor: Bifunctor[F])
+  def first[A, B, C](f: A => C): F[A, B] => F[C, B] =
+    bifunctor.bimap(f)(identity[B])
+  
+  def second[A, B, D](g: B => D): F[A, B] => F[A, D] =
+    bifunctor.bimap(identity[A])(g)
+```
 
 ![双関手](./images/08_bifunctor.png)
 
@@ -72,100 +73,53 @@ trait Bifunctor[F[_, _]] {
 
 直積圏 **C1 x C2** は、対象を **C1** の対象 a と **C2** の対象 b のペア (a, b) とします。
 
-そして、射を **C1** の射 f: a -> c と **C2** の射 g: b -> d のペア (f, g) とします。Hamcat では、関数のペアをラッパークラスとして実装してみました：
+そして、射を **C1** の射 f: a -> c と **C2** の射 g: b -> d のペア (f, g) とします。
 
-```scala
-case class ProductFunction[A, B, C, D](run: (A => C, B => D))
+```scala mdoc
+// 直積圏における射
+def fTuple[A, B, C, D](f: A => C, g: B => D): Tuple2[A, B] => Tuple2[C, D] = { case (a, b) => (f(a), g(b)) }
+
+val lengthAndIsEven = fTuple[String, Int, Int, Boolean](_.length, _ % 2 == 0)
+
+lengthAndIsEven("hogehoge" -> 3)
+
+lengthAndIsEven("" -> 4)
 ```
 
-どちらも対象と射のペアをとっているだけですね。
+対象と射のペアをとっているだけですね。
 
 射の合成についてもペアをとるだけです。**C1** における射の合成 h . f と **C2** における射の合成 k . g に対して、(h . f, k . g) は直積圏 **C1 x C2** における射の合成になります：
 
-```scala
-/** Composition of morphism in product category */
-def andThen[E, H](v: ProductFunction[C, D, E, H]): ProductFunction[A, B, E, H] =
-  run match {
-    case (f, g) => v.run match {
-      case (h, k) => ProductFunction((f andThen h, g andThen k))
-    }
-  }
+```scala mdoc
+// 直積圏における射の合成
+def composeTuple[A, B, C, D, E, F](fg: Tuple2[A, B] => Tuple2[C, D], hk: Tuple2[C, D] => Tuple2[E, F]): Tuple2[A, B] => Tuple2[E, F] =
+  hk.compose(fg)
 
-/** Composition of morphism in product category */
-def compose[E, H](v: ProductFunction[E, H, A, B]): ProductFunction[E, H, C, D] =
-  run match {
-    case (f, g) => v.run match {
-      case (h, k) => ProductFunction((f compose h, g compose k))
-    }
-  }
+val nonEmptyAndIsOdd = composeTuple(
+  lengthAndIsEven,
+  fTuple[Int, Boolean, Boolean, Boolean](_ > 0, b => !b)
+)
+
+nonEmptyAndIsOdd("hogehoge" -> 3)
+
+nonEmptyAndIsOdd("" -> 4)
 ```
-
-上記のように射の合成 `andThen` メソッドと `compose` メソッドを定義すると、Scala の直積圏における2つの射 `(A => C, B => D)` と `(C => E, D => H)` を合成して `(A => E, B => H)` を構成できます。
 
 恒等射も同様に、**C1** の恒等射 identityC1 と **C2** の恒等射 identityC2 に対して (identityC1, identityC2) が直積圏の恒等射になります。
 
-```scala
-/** Identity morphism */
-def productIdentity[A, B]: ProductFunction[A, B, A, B] =
-  ProductFunction((identity[A], identity[B]))
-```
-
-### 8.1.2 直積圏における射の合成の例
-
-`ProductFunction` クラスは、Scala 圏と Scala 圏の直積圏の実装です。
-
-対象は、2つの Scala 圏の対象、すなわち型 `A` と型 `B` のタプルです。例として、`A` を `Int` とし、`B` を `Long` としておきます。
-
 ```scala mdoc
-/** Object declaration */
-val obj = (3, 4L)
+// 直積圏における恒等射
+def identityTuple[A, B]: Tuple2[A, B] => Tuple2[A, B] = { case (a, b) => (identity[A](a), identity[B](b)) }
+
+// または単に
+def identityTuple2[A, B]: Tuple2[A, B] => Tuple2[A, B] = identity[Tuple2[A, B]]
+
+identityTuple("hogehoge" -> 3)
+
+identityTuple("" -> 4)
 ```
 
-直積圏における射 `func1` と `func2` は、Scala 圏の2つの射、すなわち関数 `A => C` 関数 `B => D` のタプルです。`func1` は第1引数として `Int` 型のインクリメント関数 `increment` を持ち、第2引数として `Long` 型の数を2倍する関数 `doubleL` を持ちます。`func2` は第1引数として `Int` 型の数が偶数かどうか判定する関数 `isEven` を持ち、第2引数として `Long` 型の数が奇数かどうか判定する関数 `isOddL` を持ちます。
-
-
-```scala mdoc
-def increment: Int => Int = _ + 1
-def doubleL: Long => Long = _ * 2
-def isEven: Int => Boolean = _ % 2 == 0
-def isOddL: Long => Boolean = _ % 2 == 1
-```
-
-```scala mdoc
-import hamcat.arrow.ProductFunction
-
-/** Morphism declaration */
-val func1 = ProductFunction((increment, doubleL))
-val func2 = ProductFunction((isEven, isOddL))
-```
-
-それぞれの関数の定義は以下のようになっています。
-
-`ProductFunction` クラスには関数適用のために `apply` メソッドをはやしているので、以下のように関数適用の結果を出力できます。
-
-```scala mdoc
-/** Apply morphism to object */
-val func1Apply: (Int, Long)        = func1(obj)
-val func2Apply: (Boolean, Boolean) = func2(obj)
-```
-
-この直積圏における射の合成は、先ほど定義した `andThen` メソッドおよび `compose` メソッドを使って構築できます。この合成関数は、第1引数として `Int` 型の数が奇数かどうか判定する（インクリメントして偶数かどうか判定するので）関数を持ち、第2引数として常に `false` を返す（数を2倍したあと奇数かどうかを判定するので）関数を持ちます。
-
-```scala mdoc
-/** Compose morphism */
-def func2ComposeFunc1 = func2.compose(func1)
-def func1AndThenFunc2 = func1.andThen(func2)
-```
-
-これらの関数に `(3, 4L)` を適用すると以下の結果が返ります。
-
-```scala mdoc
-/** Apply composition of morphism */
-val result1 = func2ComposeFunc1(obj)
-val result2 = func1AndThenFunc2(obj)
-```
-
-### 8.1.3 双関手の一般的な定義
+### 8.1.2 双関手の一般的な定義
 
 さて、2つの圏の対象と射、射の合成をそれぞれペアにすることによって、直積圏を定義しました。双関手の話に戻りましょう。
 
@@ -194,7 +148,7 @@ def isomorpFuncToTuple[A, B, C, D]: (A => C) => (B => D) => ((A => C, B => D)) =
 
 では、双関手のいくつかの例をみていきましょう。
 
-### 8.1.4 Tuple2 は双関手
+### 8.1.3 Tuple2 は双関手
 
 積は、2つの型パラメータから構築されます。
 
@@ -219,7 +173,7 @@ implicit val Tuple2Bifunctor = new Bifunctor[Tuple2] {
 }
 ```
 
-### 8.1.5 Either もまた双関手
+### 8.1.4 Either もまた双関手
 
 余積も積と同様、2つの型パラメータから構築されます。
 
