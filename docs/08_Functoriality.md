@@ -27,13 +27,12 @@ Writer 関手を見たあとは、Reader 関手について説明します。Rea
   - [8.1.2 双関手の一般的な定義](#812-双関手の一般的な定義)
   - [8.1.3 Tuple2 は双関手](#813-tuple2-は双関手)
   - [8.1.4 Either もまた双関手](#814-either-もまた双関手)
-- [8.2 Writer 関手の再登場](#82-writer-関手の再登場)
-- [8.3 Reader 関手](#83-reader-関手)
-  - [8.3.1 Function1 は双関手か？](#831-function1-は双関手か)
-  - [8.3.2 Function1 に対して first メソッドを定義する](#832-function1-に対して-first-メソッドを定義する)
-  - [8.3.3 共変関手と反変関手](#833-共変関手と反変関手)
-- [8.4 Profunctor](#84-profunctor)
-- [8.5 Hom 関手](#85-hom-関手)
+- [8.2 Reader 関手](#82-reader-関手)
+  - [8.2.1 Function1 は双関手か？](#821-function1-は双関手か)
+  - [8.2.2 Function1 に対して first メソッドを定義する](#822-function1-に対して-first-メソッドを定義する)
+  - [8.2.3 共変関手と反変関手](#823-共変関手と反変関手)
+- [8.3 Profunctor](#83-profunctor)
+- [8.4 Hom 関手](#84-hom-関手)
 - [まとめ](#まとめ)
 
 ## 8.1 双関手
@@ -49,7 +48,7 @@ Writer 関手を見たあとは、Reader 関手について説明します。Rea
 ```scala mdoc
 trait Bifunctor[F[_, _]]:
 
-  def bimap[A, B, C, D](f: A => C)(g: B => D): F[A, B] => F[C, D]
+  def bimap[A, B, C, D](f: A => C, g: B => D): F[A, B] => F[C, D]
 ```
 
 `Bifunctor` 型クラスは、対象関数として型構築子 `F[_, _]` をもち、射関数として `bimap` メソッドをもちます。`bimap` メソッドがあれば、一方の関数のみを変換する `first` メソッドおよび `second` メソッドを定義できます。
@@ -57,10 +56,10 @@ trait Bifunctor[F[_, _]]:
 ```scala mdoc
 extension [F[_, _]](bifunctor: Bifunctor[F])
   def first[A, B, C](f: A => C): F[A, B] => F[C, B] =
-    bifunctor.bimap(f)(identity[B])
+    bifunctor.bimap(f, identity[B])
   
   def second[A, B, D](g: B => D): F[A, B] => F[A, D] =
-    bifunctor.bimap(identity[A])(g)
+    bifunctor.bimap(identity[A], g)
 ```
 
 ![双関手](./images/08_bifunctor.png)
@@ -133,227 +132,174 @@ identityTuple("" -> 4)
 
 Scala 圏において関手は自己関手となるので、Scala 圏における双関手 (すなわち Bifunctor) は Scala 圏と Scala 圏の直積から Scala 圏への関手になります。
 
-すなわち、`Bifunctor` は、対象関数 `F[_, _]` として Scala の直積圏の対象 `A` と `B` を `F[A, B]` に対応させ、射関数 `bimap` として Scala の直積圏の射 `A => C` と `B => D` を `F` に関する射 `F[A, B] => F[C, D]` に対応させます。
-
-なお、`bimap` の引数が `(A => C, B => D)` ではなく `A => C` と `B => D` であるのは、使いやすさの観点からです。これらは、互いに同型であるので、どちらの形でも問題はありません。
-
-```scala mdoc
-def isomorpTupleToFunc1[A, B, C, D]: ((A => C, B => D)) => (A => C) => (B => D) = {
-  case (f, g) => f => g
-}
-
-def isomorpFuncToTuple[A, B, C, D]: (A => C) => (B => D) => ((A => C, B => D)) =
-  f => g => (f, g) 
-```
+すなわち、Bifunctor `F` は、対象関数 `F[_, _]` として Scala の直積圏の対象 `A` `B` を `F[A, B]` に対応させ、射関数 `bimap` として Scala の直積圏の射 `A => C` と `B => D` を `F` に関する射 `F[A, B] => F[C, D]` に対応させます。
 
 では、双関手のいくつかの例をみていきましょう。
 
 ### 8.1.3 Tuple2 は双関手
 
-積は、2つの型パラメータから構築されます。
+双関手の重要な例として、積 (product) があります。対象の任意のペア `A` と `B` に対して積 `A x B` が存在する場合、これらの対象 `A` `B` から積 `A x B` への射は双関手の性質を満たします。Scala で最も単純な積 `Tuple2` に対して `Bifunctor` のインスタンスを与えましょう。
 
 ```scala mdoc
-val tuple: Tuple2[Int, String] = (33, "thirty three")
+given Bifunctor[Tuple2] with
+  def bimap[A, B, C, D](f: A => C, g: B => D): Tuple2[A, B] => Tuple2[C, D] = {
+    case (a, b) => f(a) -> g(b)
+  }
 ```
 
-`Tuple2` は2つの型パラメータを持つため、双関手の候補になります。
+```scala mdoc
+// 例によって、これらの関数を f, g として利用してみます
+val length: String => Int = _.length
+val isEven: Int => Boolean = _ % 2 == 0
 
-実際、積を構築する**積関手** `Tuple2` は、双関手の例です。
+summon[Bifunctor[Tuple2]].bimap[String, Int, Int, Boolean](length, isEven)(("hogehoge", 12345))
+```
 
-Scala の直積圏から型を1つずつとってきて、型構築子 `Tuple2[_, _]` によって Scala 圏の型 `Tuple2` を構成します。
+都度 summon するのは面倒なので、こちらも拡張メソッドを使って簡単に使えるようにしてみましょう。
 
-`Tuple2` の射関数 `bimap` は以下のように定義されます。すなわち、直積圏の射 `f: A => C`, `g: B => D` が与えられると、それらを `Tuple2` に関する射 `Tuple2[A, B] => Tuple2[C, D]` に引き上げます。
+```scala mdoc
+extension [F[_, _], A, B](v: F[A, B])
+  def bimap[C, D](f: A => C, g: B => D)(using bf: Bifunctor[F]): F[C, D] =
+    bf.bimap(f, g)(v)
+```
 
-```scala
-/** Product bifunctor */
-implicit val Tuple2Bifunctor = new Bifunctor[Tuple2] {
-  def bimap[A, B, C, D](f: A => C)(g: B => D): ((A, B)) => ((C, D)) = {
-    case (a, b) => (f(a), g(b))
-  }
-}
+```scala mdoc
+("hogehoge", 12345).bimap(length, isEven)
 ```
 
 ### 8.1.4 Either もまた双関手
 
-余積も積と同様、2つの型パラメータから構築されます。
+双対性によって、余積もまた、圏内の対象のすべてのペアに対して定義されているなら双関手になります。余積の一つである `Either` に対して `Bifunctor` のインスタンスを与えてみましょう。
 
 ```scala mdoc
-val right: Either[Int, String] = Right("thirty three")
-```
-
-余積を構築する**余積関手** `Either` は、双関手の例です。
-
-積と同様に、Scala の直積圏から型を1つずつとってきて、型構築子 `Either[_, _]` によって Scala 圏の対象 `Either` 型に対応させます。
-
-`Either` の射関数 `bimap` は以下のように定義されます。すなわち、直積圏の射 `f: A => C`, `g: B => D` が与えられると、それらを `Either` に関する射 `Either[A, B] => Either[C, D]` に引き上げます。
-
-```scala
-/** Coproduct bifunctor */
-implicit val EitherBifunctor = new Bifunctor[Either] {
-  def bimap[A, B, C, D](f: A => C)(g: B => D): Either[A, B] => Either[C, D] = {
+given Bifunctor[Either] with
+  def bimap[A, B, C, D](f: A => C, g: B => D): Either[A, B] => Either[C, D] = {
     case Left(a)  => Left(f(a))
     case Right(b) => Right(g(b))
   }
-}
 ```
 
-## 8.2 Writer 関手の再登場
+```scala mdoc
+val right: Either[String, Int] = Right(12345)
+val left: Either[String, Int] = Left("hogehoge")
 
-4章で、Kleisli 圏の例として Writer 圏を見ました。Writer 圏において、以下のような型 `Writer` を導入しました。
-
-```scala
-// L: Monoid
-type Writer[L, A] = (L, A)
+right.bimap(length, isEven)
+left.bimap(length, isEven)
 ```
 
-Writer 圏における対象は任意の型 `A` で、`A` から `A` への射は `A => Writer[L, A]` だと定義しました。
+## 8.2 Reader 関手
 
-実は、Writer 圏における射の合成をうまく活用することによって、`Writer` 型についての `fmap` メソッドを実装することができます。そのため、`Writer` 型は関手であって、Writer 関手と呼ばれます。
-
-```scala
-/** Writer functor */
-implicit def WriterFunctor[L](implicit mn: Monoid[L]): Functor[Writer[L, *]] = new Functor[Writer[L, *]] {
-  def fmap[A, B](f: A => B)(fa: Writer[L, A]): Writer[L, B] =
-    (identity[Writer[L, A]] >=> (a => Writer.pure[L, B](f(a))))(fa)
-}
-```
-
-`identity[Writer[L, A]] >=> ` が使えることに驚くかもしれませんが、うまくいきます。`>=>` は `A => Writer[L, B]` の形をした関数が持つメソッドです。`identity[Writer[L, A]]: Writer[L, A] => Writer[L, A]` はこの形をしているので、`>=>` を呼び出すことができます。
-
-## 8.3 Reader 関手
-
-前章では型 `A` を `R => A` に対応させ、関数 `A => B` を `R => B` に引き上げる Reader 関手を考えました。
+前章では型 `A` を `R => A` に対応させ、関数 `A => B` を `(R => A) => (R => B)` に引き上げる Reader 関手を考えました。
 
 ```scala
-/** Reader functor */
-implicit def Function1Functor[R]: Functor[Function1[R, *]] = new Functor[Function1[R, *]] {
-  def fmap[A, B](f: A => B)(fa: R => A): (R => B) =
-    f compose fa
-}
+given [R]: Functor[[X] =>> Function1[R, X]] with
+  def fmap[A, B](f: A => B): Function1[R, A] => Function1[R, B] = fa =>
+    f.compose(fa)
 ```
 
 この型構築子 `Function1[_, _]` は2つの型パラメータを持つので、双関手の候補であると考えられます。
 
 ここでは、`Function1` を双関手のインスタンスとして実装できるかどうかについて考えていきましょう。
 
-### 8.3.1 Function1 は双関手か？
+### 8.2.1 Function1 は双関手か？
 
-`Bifunctor` のインスタンスでは、`bimap` を実装する必要があります。ただ、`bimap` は `first` および `second` を実装することによって、これらを組み合わせて実装することができます。
+`Bifunctor` のインスタンスでは、`bimap` を実装する必要があります。
 
-```scala
-trait Bifunctor[F[_, _]] {
-
-  /** Morphism mappings for Bifunctor */
-  def bimap[A, B, C, D](f: A => C)(g: B => D): F[A, B] => F[C, D] =
-    second(g) compose first(f)
-
-  def first[A, B, C](f: A => C): F[A, B] => F[C, B]
-  def second[A, B, D](g: B => D): F[A, B] => F[A, D]
-}
+```scala mdoc
+given Bifunctor[Function1] with
+  def bimap[A, B, C, D](f: A => C, g: B => D): (A => B) => (C => D) = ???
 ```
 
-まず、`Bifunctor` の `second` メソッドは、前章でみた Reader 関手の射関数です。
+どのように実装しましょうか？最終的には型 `C` の値 `c` を `D` に変換すれば良いだけですが、そのような手段はないように思えます。
 
-```scala
-/** Reader bifunctor ? */
-implicit val Function1MaybeBifunctor = new Bifunctor[Function1] {
-  override def second[A, B, C, D](g: B => D): (A => B) => (A => D) =
-    fab => g compose fab
-}
+別の方法を考えてみましょう。`bimap` は `first` および `second` を実装することによって、これらを組み合わせて実装することができます。
+
+```scala mdoc
+def firstReader[A, B, C](f: A => C): (A => B) => (C => B) = ???
+def secondReader[A, B, D](g: B => D): (A => B) => (A => D) = ???
+```
+
+`second` メソッドは、Reader 関手の射関数です。
+
+```scala mdoc
+def second[A, B, D](g: B => D): (A => B) => (A => D) = fab => g.compose(fab)
 ```
 
 では、`first` メソッドはどうでしょうか？
 
-```scala
-def first[A, B, C](f: A => C)(fa: A => B) => (C => B) = ???
+```scala mdoc
+def first[A, B, C](f: A => C): (A => B) => (C => B) = ???
 ```
 
 シグネチャを見ると分かる通り、関数 `A => C` と `A => B` の組み合わせでは `C => B` を構成することができません。
 
 `first` メソッドを定義できない、すなわち射関数 `bimap` を定義できないことから、`Function1` は双関手でないと言えます。
 
-### 8.3.2 Function1 に対して first メソッドを定義する
+### 8.2.2 Function1 に対して first メソッドを定義する
 
-前項で見た通り、関数 `A => C` と `A => B` からは `C => B` を構成することはできませんでした。
-
-```scala
-override def first[A, B, C](f: A => C): (A => B) => (C => B) = ???
-```
+前項で見た通り、関数 `A => C` と `A => B` からは `C => B` を構成することはできません。
 
 しかしながら、関数 `f: A => C` の矢印を反転させて `oppF: C => A` を受け取れば、`first` メソッドを定義できます。
 
-```scala
-override def first[A, B, C](oppF: C => A): (A => B) => (C => B) = fa => fa compose oppF
+```scala mdoc
+def first2[A, B, C](oppF: C => A): (A => B) => (C => B) = _.compose(oppF)
 ```
 
 少し言い換えると、直積圏における第1要素の射の矢印を入れ替えれば、第1要素の射を `Function1` に関する射に引き上げることができました。
 
-さて、ある圏において、対象はそのままで射の矢印を入れ替えたものを、その圏の双対圏と呼ぶことができましたね。これはすなわち、**Function1 が Scala の双対圏と Scala 圏の直積圏から Scala 圏への関手となっている**と言うことができます。`first` メソッドは、Scala の双対圏からの射関手であると言えます。
+さて、ある圏において、対象はそのままで射の矢印を入れ替えたものを、その圏の双対圏と呼ぶことができましたね。これはすなわち、**Function1 が「Scala 圏の双対圏と Scala 圏の直積圏」から「Scala 圏」への関手となっている**と言うことができます。`first` メソッドは、Scala の双対圏からの射関数であると言えます。
 
-### 8.3.3 共変関手と反変関手
+### 8.2.3 共変関手と反変関手
 
 一般に、ある圏 **C** の双対圏 **oppC** からある圏 **D** への関手のことを**反変関手** (contravariant functor) と呼びます。
 
-一方で、これまで話してきた標準の関手は**共変関手** (covariant functor) と呼ばれます。
+一方で、これまで話してきた標準の関手 (`Functor` 型クラス) は**共変関手** (covariant functor) と呼ばれます。
 
-共変関手と同様に、反変関手の型クラス `Contravariant` は以下のように定義されます。対象関数 `F[_]` は反変関手と同じです。射関数 `contramap` は、射 `B => A` を `F` に関する射 `F[A] => F[B]` に引き上げます。
+共変関手と同様に、反変関手の型クラス `Contravariant` は以下のように定義されます。対象関数 `F[_]` は共変関手と同じです。射関数 `contramap` は、射 `B => A` を `F` に関する射 `F[A] => F[B]` に引き上げます。
 
-```scala
-// Contravariant functor
-trait Contravariant[F[_]] {
-  def contramap[A, B](f: B => A)(fa: F[A]): F[B]
-}
+```scala mdoc
+trait Contravariant[F[_]]:
+  def contramap[A, B](f: B => A): F[A] => F[B]
 ```
 
 `Function1` の第1引数に対して `Contravariant` のインスタンスを以下のように実装できます。型の変数は違うものの、先ほどの見た `first` メソッドと同じ実装になっているはずです。
 
-```scala
-/** Reader contravariant functor */
-implicit def Function1Contravariant[R]: Contravariant[Function1[*, R]] = new Contravariant[Function1[*, R]] {
-  def contramap[A, B](f: B => A)(fa: A => R): (B => R) =
-    fa compose f
-}
+```scala mdoc
+given [R]: Contravariant[[X] =>> Function1[X, R]] with
+  def contramap[A, B](f: B => A): (A => R) => (B => R) =
+    fa => fa.compose(f)
 ```
 
-```scala
-override def first[A, B, C](oppF: C => A): (A => B) => (C => B) = fa => fa compose oppF
-```
+## 8.3 Profunctor
 
-## 8.4 Profunctor
+共変関手と反変関手の概念を用いると、`Function1[_, _]` は、第1引数に関して反変であり、第2引数に関して共変であると言われます。
 
-共変関手と反変関手の概念を用いると、型構築子 `Function1[_, _]` は第1引数に関して反変であり、第2引数に関して共変であると言われます。
+このように、1つ目の型パラメータが反変で2つ目の型パラメータが共変であるような型構築子は、**Profunctor** と呼ばれます。Profunctor も関手であって、対象関数は `F[_, _]` です。射関数 `dimap` は、第1引数 `C => A` を反変関手のように引き上げ、第2引数 `B => D` を共変関手のように引き上げることによって `F[A, B] => F[C, D]` に引き上げます。
 
-このように、1つ目の型パラメータが反変で2つ目の型パラメータが共変であるような型構築子は、**Profunctor** と呼ばれます。Profunctor も関手であって、対象関数は `F[_, _]` です。射関数 `bimap` は、第1引数 `C => A` を反変関手のように引き上げ、第2引数 `B => D` を共変関手のように引き上げることによって `F[A, B] => F[C, D]` に引き上げます。
-
-```scala
-// Profunctor
-trait Profunctor[F[_, _]] {
-
-  def bimap[A, B, C, D](f: C => A)(g: B => D)(fab: F[A, B]): F[C, D]
-}
+```scala mdoc
+trait Profunctor[F[_, _]]:
+  def dimap[A, B, C, D](f: C => A, g: B => D): F[A, B] => F[C, D]
 ```
 
 先ほど見たように、`Function1` は `Profunctor` です。`Function1` の `Profunctor` のインスタンスは、以下のように定義されます。
 
-```scala
-/** Reader profunctor */
-implicit val Function1Profunctor = new Profunctor[Function1] {
-  def bimap[A, B, C, D](f: C => A)(g: B => D)(fab: A => B): (C => D) =
-    g compose fab compose f
-}
+```scala mdoc
+given Profunctor[Function1] with
+  def dimap[A, B, C, D](f: C => A, g: B => D): (A => B) => (C => D) =
+    fab => g.compose(fab.compose(f))
 ```
 
-なお、Profunctor の一般的な定義は双対圏を用いて与えられます：
+Profunctor の一般的な定義は、双対圏を用いて与えられます：
 
 ---
 
-圏 **C** から **D** への Profunctor とは、**D** の双対圏 **oppD** と **C** の直積圏 **oppD x C** から集合圏 **Set** への関手です。
+圏 **C** から **D** への **Profunctor** とは、**D** の双対圏 **oppD** と **C** の直積圏 **oppD x C** から集合圏 **Set** への関手です。
 
 ---
 
 Scala 圏は集合圏の拡張であるため、Scala 圏の双対圏と Scala 圏の直積から Scala 圏への関手を Profunctor と定義することができます。
 
-## 8.5 Hom 関手
+## 8.4 Hom 関手
 
 本章の最後に、圏論における重要な概念である **Hom 集合** (hom set) について紹介します。一般に、ある圏 **C** の Hom 集合は、**C** の全ての射の集まり **C**(a, b) （a と b は **C** における任意の対象）として定義されます。
 
@@ -379,10 +325,9 @@ g . h . oppF
   - 直積圏からの関手と定義される：**C x D** -> **E**
   - 積関手である Tuple2 は、双関手である。
   - 余積関手である Either は、双関手である。
-- Writer も関手である。
 - Function1 は型構築子に2つの型パラメータを持つが、双関手ではない。
-- 双対圏からの関手を反変関手という。
-- 標準の圏からの関手を共変関手という。
+- ある圏の双対圏からの関手を反変関手という。
+- ある圏からの関手を共変関手という。
 - 第1引数が反変で、第2引数が共変な関手を Profunctor という。
   - Function1 は Profunctor である。
   - Profunctor は、双対圏との直積圏から集合圏への関手として定義される: **oppC x D** -> **Set**

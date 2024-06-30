@@ -22,6 +22,7 @@ description: "圏論の勉強記録です。本章では、圏から圏への対
   - [7.2.1 Functor 型クラス](#721-functor-型クラス)
   - [7.2.2 Option 関手](#722-option-関手)
   - [7.2.3 Reader 関手](#723-reader-関手)
+  - [7.2.4 Writer 関手](#724-writer-関手)
 - [7.3 関手の合成](#73-関手の合成)
 - [まとめ](#まとめ)
 
@@ -262,6 +263,55 @@ nonEmpty.run(List.empty[Int])
 ```
 
 関数合成 (`andThen`, `compose`) が Reader 関手の射関数であるのですね。
+
+### 7.2.4 Writer 関手
+
+4章で、Kleisli 圏の例として Writer 圏を見ました。Writer 圏において、以下のような型 `Writer` を導入しました。
+
+```scala mdoc
+import hamcat.data.Semigroup
+import hamcat.data.Monoid
+import hamcat.syntax.Implicits.|+|
+
+case class Writer[L, A](run: (L, A))
+
+object Writer:
+  def pure[L, A](a: A)(using m: Monoid[L]): Writer[L, A] = Writer((m.empty, a))
+
+  def >=>[L, A, B, C](using Semigroup[L]): (A => Writer[L, B]) => (B => Writer[L, C]) => (A => Writer[L, C]) = f => g => a =>
+    val (logF, b) = f(a).run
+    val (logG, c) = g(b).run
+    Writer((logF |+| logG), c)
+
+extension [L, A, B](f: A => Writer[L, B])
+  def >=>[C](using Semigroup[L])(g: B => Writer[L, C]): A => Writer[L, C] =
+    Writer.>=>(f)(g)
+```
+
+Writer 圏における対象は任意の型 `A` で、`A` から `A` への射は `A => Writer[L, A]` だと定義しました。
+
+実は、Writer 圏における射の合成をうまく活用することによって、`Writer` についての `fmap` メソッドを実装することができます。そのため、`Writer` は関手であって、Writer 関手と呼ばれます。
+
+```scala mdoc
+given [L](using m: Monoid[L]): Functor[[X] =>> Writer[L, X]] with
+  def fmap[A, B](f: A => B): Writer[L, A] => Writer[L, B] =
+    identity[Writer[L, A]] >=> (a => Writer.pure[L, B](f(a)))
+```
+
+```scala mdoc
+given Monoid[String] with
+  def combine(a: String, b: String): String = a + b
+  def empty: String = ""
+
+val stringWriterFunctor = summon[Functor[[X] =>> Writer[String, X]]]
+val intWriter = Writer[String, Int]("hogehoge. ", 12345)
+val double: Int => Int = _ * 2
+stringWriterFunctor.fmap(double)(intWriter)
+
+val listWriter = Writer[String, List[Int]]("hogehoge. ", List(1,2,3,4,5))
+val listLength: List[Int] => Int = _.length
+stringWriterFunctor.fmap(listLength)(listWriter)
+```
 
 ## 7.3 関手の合成
 
