@@ -269,9 +269,9 @@ nonEmpty.run(List.empty[Int])
 4章で、Kleisli 圏の例として Writer 圏を見ました。Writer 圏において、以下のような型 `Writer` を導入しました。
 
 ```scala mdoc
-import hamcat.data.Semigroup
-import hamcat.data.Monoid
-import hamcat.syntax.Implicits.|+|
+import hamcat.Semigroup
+import hamcat.Monoid
+import hamcat.syntax.semigroup.*
 
 case class Writer[L, A](run: (L, A))
 

@@ -243,9 +243,9 @@ case class Writer[L, A](run: (L, A))
 
 ```scala mdoc:reset
 // Semigroup (半群) は combine だけを持った型クラス
-import hamcat.data.Semigroup
-import hamcat.data.Monoid
-import hamcat.syntax.Implicits.*
+import hamcat.Semigroup
+import hamcat.Monoid
+import hamcat.syntax.semigroup.*
 
 case class Writer[L, A](run: (L, A)):
 
