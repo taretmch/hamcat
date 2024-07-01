@@ -2,7 +2,9 @@ package hamcat.data
 
 import hamcat.syntax.SemigroupSyntax
 
-/** Writer monad */
+import hamcat.{ Semigroup, Monoid }
+
+/** Data type: Writer */
 case class Writer[L, A](run: (L, A)):
 
   def flatMap[B](m2: A => Writer[L, B])(using Semigroup[L]): Writer[L, B] =

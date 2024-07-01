@@ -1,32 +1,25 @@
 package hamcat.arrow
 
-/** FunctionK: typeclass for mapping between first-order-kinded types
- *
- * Natural transformation which is a mapping between two Functors is a subset of FunctionK.
- * Natural transformation must satisfy following naturality condition:
- *
- * {{{
- * scala> val headOption = new FunctionK[List, Option] { def apply[A](fa: List[A]): Option[A] = fa.headOption }
- * scala> val list = List(1, 2, 3, 4, 5)
- * scala> def isEven(num: Int): Boolean = num % 2 == 0
- * scala> (OptionFunctor.fmap(isEven) compose headOption[Int] _)(list) == (headOption[Boolean] _ compose ListFunctor.fmap(isEven))(list)
- * val res1: Boolean = true
- * }}}
- */
-trait FunctionK[F[_], G[_]] { self =>
+/** Natural transformation */
+trait FunctionK[F[_], G[_]]:
 
-  /** Apply method */
   def apply[A](fa: F[A]): G[A]
 
-  /** Composition of natural transformation */
-  def andThen[H[_]](v: FunctionK[G, H]): FunctionK[F, H] =
-    new FunctionK[F, H]:
-      def apply[A](fa: F[A]): H[A] = v(self(fa))
+  extension (fg: FunctionK[F, G])
 
-  /** Composition of natural transformation */
-  def compose[H[_]](v: FunctionK[H, F]): FunctionK[H, G] =
-    v.andThen(self)
-}
+    /** Composition of natural transformation */
+    def andThen[H[_]](gh: FunctionK[G, H]): FunctionK[F, H] =
+      new FunctionK[F, H]:
+        def apply[A](fa: F[A]): H[A] = gh(fg(fa))
+
+    /** Composition of natural transformation */
+    def compose[H[_]](hf: FunctionK[H, F]): FunctionK[H, G] =
+      new FunctionK[H, G]:
+        def apply[A](ha: H[A]): G[A] = fg(hf(ha))
+
+  end extension
+
+end FunctionK
 
 /** Companion object */
 object FunctionK:
