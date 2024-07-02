@@ -6,7 +6,7 @@ object BuildSettings {
   val settings = Seq(
     organization     := "com.github.taretmch",
     organizationName := "taretmch",
-    scalaVersion     := Dependencies.scalaVersion,
+    scalaVersion     := Dependencies.scala3,
     version          := "0.2.0-beta.0",
     scalacOptions ++= Seq(
       "-deprecation",
