@@ -3,8 +3,7 @@ name: Deploy GitHub Pages
 on:
   push:
     branches:
-      - master
-      - renew/v0.2.0
+      - main
 
 jobs:
   deploy:
