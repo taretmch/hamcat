@@ -1,44 +1,32 @@
-import Dependencies._
-import TaskConf._
+import Dependencies.*
 
-ThisBuild / scalaVersion := "3.2.0"
+Global / onChangedBuildSource := ReloadOnSourceChanges
 
-val commonSettings = Seq(
-  scalaVersion     := "3.2.0",
-  version          := "0.1.0",
-  organization     := "com.criceta",
-  organizationName := "taretmch",
-  scalacOptions ++= Seq(
-    "-encoding",
-    "UTF-8",
-    "-feature",
-    "-language:implicitConversions",
-    "-unchecked",
-    "-Ykind-projector"
-  )
+ThisBuild / scalaVersion := scala3
+ThisBuild / githubWorkflowJavaVersions ++= Seq(
+  JavaSpec.temurin("11"),
+  JavaSpec.temurin("17"),
+  JavaSpec.temurin("21"),
 )
+ThisBuild / githubWorkflowPublishTargetBranches := Seq()
+ThisBuild / githubWorkflowBuild := Seq(WorkflowStep.Sbt(List("test", "mdoc")))
 
 lazy val core = project
   .settings(name := "hamcat-core")
-  .settings(commonSettings: _*)
-  .settings(libraryDependencies ++= scalatest)
+  .settings(BuildSettings.settings: _*)
+  .settings(libraryDependencies += munit)
 
 lazy val docs = project
   .settings(name := "hamcat-docs")
-  .settings(commonSettings: _*)
-  .settings(mdocIn  := mdocInputDir)
-  .settings(mdocOut := mdocOutputDir)
-  .settings(libraryDependencies ++= cats)
+  .settings(BuildSettings.settings: _*)
+  .settings(mdocIn  := file("docs"))
+  .settings(mdocOut := file("mdoc-output"))
   .enablePlugins(MdocPlugin)
-  .settings(Honkit.settings)
-  .dependsOn(core)
-
-lazy val example = project
-  .settings(name := "hamcat-sample")
   .dependsOn(core)
 
 lazy val root = (project in file("."))
-  .settings(name := "hamcat")
-  .settings(commonSettings: _*)
-  .aggregate(core)
-  .dependsOn(core)
+  .settings(name := "root")
+  .settings(BuildSettings.settings: _*)
+  .settings(publish / skip := true)
+  .aggregate(core, docs)
+  .dependsOn(core, docs)

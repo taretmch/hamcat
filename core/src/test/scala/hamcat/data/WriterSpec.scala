@@ -1,34 +1,58 @@
 package hamcat.data
 
-import hamcat.util.Spec
-import hamcat.data.Writer
-import hamcat.data.Writer.>=>
-import hamcat.data.instance.Implicits.given
+import hamcat.Monoid
 
-class WriterSpec extends Spec:
+class WriterSpec extends munit.FunSuite:
 
-  // increment の Writer 関数
-  def incrementWriter(n: Int): Writer[String, Int] =
-    Writer("increment ", increment(n))
+  test("apply") {
+    val w = Writer("hello", 42)
+    assertEquals(w.run, ("hello", 42))
+    assertEquals(w.log, "hello")
+    assertEquals(w.value, 42)
 
-  // isEven の Writer 関数
-  def isEvenWriter(n: Int): Writer[String, Boolean] =
-    Writer("isEven ", isEven(n))
+    val w2 = Writer(("hello", 42))
+    assertEquals(w2.run, ("hello", 42))
+    assertEquals(w.log, "hello")
+    assertEquals(w.value, 42)
+  }
 
-  // negate の Writer 関数
-  def negateWriter(b: Boolean): Writer[String, Boolean] =
-    Writer("negate ", negate(b))
+  test("pure should need a Monoid instance") {
+    import hamcat.instance.string.given
+    import hamcat.instance.int.given
 
-  describe("Writer 圏") {
-    it("結合律を満たす") {
-      assert(
-        ((incrementWriter _ >=> isEvenWriter) >=> negateWriter)(3)
-        == (incrementWriter _ >=> (isEvenWriter _ >=> negateWriter))(3)
-      )
-    }
+    val w = Writer.pure[String, Int](42)
+    val expected = Writer(summon[Monoid[String]].empty, 42)
+    assertEquals(w, expected)
 
-    it("単位律を満たす") {
-      assert((Writer.pure[String, Int] _ >=> isEvenWriter)(3) == isEvenWriter(3))
-      assert((isEvenWriter _ >=> Writer.pure[String, Boolean])(3) == isEvenWriter(3))
-    } 
+    val w2 = Writer.pure[Int, String]("hello")
+    val expected2 = Writer(summon[Monoid[Int]].empty, "hello")
+    assertEquals(w2, expected2)
+  }
+
+  test("fmap should apply the function to the value") {
+    import hamcat.instance.string.given
+
+    val w = Writer("hello", 10)
+    val mapped = w.fmap(_ + 1)
+    val expected = Writer("hello", 11)
+    assertEquals(mapped, expected)
+  }
+
+  test("flatMap should apply the function to the value") {
+    import hamcat.instance.string.given
+
+    val w = Writer("hello", 10)
+    val mapped = w.flatMap(a => Writer(" world", a + 1))
+    val expected = Writer("hello world", 11)
+    assertEquals(mapped, expected)
+  }
+
+  test(">=> should compose two morphisms") {
+    import hamcat.instance.string.given
+
+    val m1 = (a: Int) => Writer("hello", a + 1)
+    val m2 = (b: Int) => Writer(" world", b * 2)
+    val composed = m1 >=> m2
+    val expected = (a: Int) => Writer("hello world", (a + 1) * 2)
+    assertEquals(composed(10), expected(10))
   }

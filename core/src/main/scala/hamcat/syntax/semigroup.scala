@@ -1,6 +1,6 @@
 package hamcat.syntax
 
-import hamcat.data.Semigroup
+import hamcat.Semigroup
 
 /** Syntax for semigroup */
 trait SemigroupSyntax:
@@ -21,3 +21,5 @@ trait SemigroupSyntax:
 
     def combine(rhs: A): A =
       semigroup.combine(lhs, rhs)
+
+object semigroup extends SemigroupSyntax

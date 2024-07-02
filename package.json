@@ -3,11 +3,15 @@
   "version": "1.0.0",
   "main": "index.js",
   "description": "Scalaで始める圏論入門",
-  "repository": "git@github.com:taretmch/scala-category-training.git",
-  "author": "taretmch <tomochuri25@gmail.com>",
+  "repository": "git@github.com:taretmch/hamcat.git",
+  "author": "taretmch <tomoki.mizogami@gmail.com>",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "serve": "honkit serve ./ honkit/docs",
+    "build": "honkit build ./ honkit/docs"
+  },
   "devDependencies": {
-    "honkit": "3.6.17"
-  }
+    "honkit": "5.1.4"
+  },
+  "packageManager": "pnpm@9.4.0+sha512.f549b8a52c9d2b8536762f99c0722205efc5af913e77835dbccc3b0b0b2ca9e7dc8022b78062c17291c48e88749c70ce88eb5a74f1fa8c4bf5e18bb46c8bd83a"
 }

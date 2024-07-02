@@ -1,0 +1,80 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Generate GitHub Apps token
+        uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
+          owner: "taretmch"
+          repositories: "category-theory-with-scala"
+
+      - name: Checkout repository with submodules (honkit)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ steps.app-token.outputs.token }}
+          persist-credentials: false
+
+      - name: Setup git
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "github-actions[bot]"
+
+      - name: Setup Scala
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+          cache: 'sbt'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.node-version'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm i --frozen-lockfile
+
+      - name: Build mdoc
+        run: sbt mdoc
+
+      - name: Build honkit
+        run: pnpm run build
+
+      - name: Deploy to github pages
+        run: |
+          git submodule set-url honkit https://github-actions:${GITHUB_TOKEN}@github.com/taretmch/category-theory-with-scala
+          cd honkit
+          git status
+          git add .
+          git commit -m "Update documentation"
+          git push origin HEAD:master
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+
+      - name: Update submodule
+        run: |
+          git submodule update --remote
+          git remote set-url origin https://github-actions:${GITHUB_TOKEN}@github.com/taretmch/hamcat
+          git status
+          git add honkit
+          git commit -m "Update submodule"
+          git push origin HEAD:${{ github.ref }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
