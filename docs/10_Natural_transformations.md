@@ -213,7 +213,7 @@ length(List(1, 2, 3, 4, 5))
 これは、対象 `A` を定数値 `value: C` に対応させる Const 関手への自然変換となります。
 
 ```scala mdoc
-import hamcat.data.Functor
+import hamcat.Functor
 
 case class Const[C, +A](value: C)
 

@@ -5,7 +5,7 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 lazy val core = project
   .settings(name := "hamcat-core")
   .settings(BuildSettings.settings: _*)
-  .settings(libraryDependencies ++= scalatest)
+  .settings(libraryDependencies += munit)
 
 lazy val docs = project
   .settings(name := "hamcat-docs")
