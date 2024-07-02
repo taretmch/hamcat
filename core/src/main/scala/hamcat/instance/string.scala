@@ -13,6 +13,6 @@ trait StringInstances:
   // Monoid
   given (using sg: Semigroup[String]): Monoid[String] with
     def combine(a: String, b: String): String = sg.combine(a, b)
-    def empty: String = ""
+    def empty: String                         = ""
 
 object string extends StringInstances

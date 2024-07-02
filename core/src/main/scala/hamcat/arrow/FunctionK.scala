@@ -14,7 +14,7 @@ object FunctionK:
   def identityK[F[_]]: FunctionK[F, F] = new FunctionK[F, F]:
     def apply[A](fa: F[A]): F[A] = fa
 
-  extension [F[_], G[_]](fg: FunctionK[F, G])
+  extension[F[_], G[_]](fg: FunctionK[F, G])
 
     /** Composition of natural transformation */
     def andThen[H[_]](gh: FunctionK[G, H]): FunctionK[F, H] =

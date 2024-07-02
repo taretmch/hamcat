@@ -11,8 +11,9 @@ class ListInstancesSpec extends munit.FunSuite:
   }
 
   test("Functor : fmap should apply the function to the value") {
-    val functor = summon[Functor[List]]
-    val actual = functor.fmap[String, Int](_.length)(List("hello, ", "world", "!"))
+    val functor  = summon[Functor[List]]
+    val actual   =
+      functor.fmap[String, Int](_.length)(List("hello, ", "world", "!"))
     val expected = List(7, 5, 1)
     assertEquals(actual, expected)
   }

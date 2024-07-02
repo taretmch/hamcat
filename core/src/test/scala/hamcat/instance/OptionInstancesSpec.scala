@@ -18,9 +18,9 @@ class OptionInstancesSpec extends munit.FunSuite:
     import int.given
 
     val semigroup = summon[Semigroup[Option[Int]]]
-    val v1 = Some(5)
-    val v2 = Some(10)
-    val v3 = None
+    val v1        = Some(5)
+    val v2        = Some(10)
+    val v3        = None
     val combined1 = semigroup.combine(v1, v2)
     val combined2 = semigroup.combine(v1, v3)
     val combined3 = semigroup.combine(v3, v2)
@@ -43,7 +43,7 @@ class OptionInstancesSpec extends munit.FunSuite:
     import int.given
 
     val monoid = summon[Monoid[Option[Int]]]
-    val empty = monoid.empty
+    val empty  = monoid.empty
     assertEquals(empty, None)
   }
 
@@ -53,7 +53,7 @@ class OptionInstancesSpec extends munit.FunSuite:
 
   test("Functor : fmap should apply the function to the value") {
     val functor = summon[Functor[Option]]
-    val f = (a: Int) => a + 1
-    val mapped = functor.fmap(f)(Some(10))
+    val f       = (a: Int) => a + 1
+    val mapped  = functor.fmap(f)(Some(10))
     assertEquals(mapped, Some(11))
   }

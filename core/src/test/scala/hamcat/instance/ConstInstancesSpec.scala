@@ -17,9 +17,9 @@ class ConstInstancesSpec extends munit.FunSuite:
   }
 
   test("fmap should apply the function to the value") {
-    val functor = summon[Functor[[X] =>> Const[Int, X]]]
-    val c = Const[Int, String](10)
-    val actual = functor.fmap[String, Int](_.length)(c)
+    val functor  = summon[Functor[[X] =>> Const[Int, X]]]
+    val c        = Const[Int, String](10)
+    val actual   = functor.fmap[String, Int](_.length)(c)
     val expected = c.fmap(_.length)
     assertEquals(actual, expected)
   }

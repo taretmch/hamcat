@@ -4,7 +4,7 @@ import hamcat.Profunctor
 
 /** Syntax for profunctor */
 trait ProfunctorSyntax:
-  extension [F[_, _], A, B](v: F[A, B])(using profunctor: Profunctor[F])
+  extension[F[_, _], A, B](v: F[A, B])(using profunctor: Profunctor[F])
     def dimap[C, D](f: C => A, g: B => D): F[C, D] =
       profunctor.dimap(f, g)(v)
 
