@@ -5,7 +5,16 @@ trait FunctionK[F[_], G[_]]:
 
   def apply[A](fa: F[A]): G[A]
 
-  extension (fg: FunctionK[F, G])
+end FunctionK
+
+/** Companion object */
+object FunctionK:
+
+  /** Identity */
+  def identityK[F[_]]: FunctionK[F, F] = new FunctionK[F, F]:
+    def apply[A](fa: F[A]): F[A] = fa
+
+  extension [F[_], G[_]](fg: FunctionK[F, G])
 
     /** Composition of natural transformation */
     def andThen[H[_]](gh: FunctionK[G, H]): FunctionK[F, H] =
@@ -18,12 +27,3 @@ trait FunctionK[F[_], G[_]]:
         def apply[A](ha: H[A]): G[A] = fg(hf(ha))
 
   end extension
-
-end FunctionK
-
-/** Companion object */
-object FunctionK:
-
-  /** Identity */
-  def identityK[F[_]]: FunctionK[F, F] = new FunctionK[F, F]:
-    def apply[A](fa: F[A]): F[A] = fa
