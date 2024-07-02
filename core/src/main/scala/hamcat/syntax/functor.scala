@@ -4,7 +4,7 @@ import hamcat.Functor
 
 /** Syntax for functor */
 trait FunctorSyntax:
-  extension [F[_], A](v: F[A])(using functor: Functor[F])
+  extension[F[_], A](v: F[A])(using functor: Functor[F])
     def fmap[B](f: A => B): F[B] =
       functor.fmap(f)(v)
 

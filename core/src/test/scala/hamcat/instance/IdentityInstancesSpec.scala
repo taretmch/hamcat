@@ -12,8 +12,8 @@ class IdentityInstancesSpec extends munit.FunSuite:
   }
 
   test("Functor : fmap should apply the function to the value") {
-    val functor = summon[Functor[Identity]]
-    val actual = functor.fmap[String, Int](_.length)(Identity("hello"))
+    val functor  = summon[Functor[Identity]]
+    val actual   = functor.fmap[String, Int](_.length)(Identity("hello"))
     val expected = Identity("hello").fmap(_.length)
     assertEquals(actual, expected)
   }

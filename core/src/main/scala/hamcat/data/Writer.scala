@@ -22,10 +22,12 @@ object Writer extends SemigroupSyntax:
   def apply[L, A](l: L, a: A): Writer[L, A] = Writer((l, a))
 
   /** Identity */
-  def pure[L, A](a: A)(using mn: Monoid[L]): Writer[L, A] = Writer((mn.empty, a))
+  def pure[L, A](a: A)(using mn: Monoid[L]): Writer[L, A] = Writer(
+    (mn.empty, a)
+  )
 
   /** Composition of morphism */
-  extension [L, A, B](m1: A => Writer[L, B])(using Semigroup[L])
+  extension[L, A, B](m1: A => Writer[L, B])(using Semigroup[L])
     def >=>[C](m2: B => Writer[L, C]): A => Writer[L, C] = a =>
       val (logB, b) = m1(a).run
       val (logC, c) = m2(b).run

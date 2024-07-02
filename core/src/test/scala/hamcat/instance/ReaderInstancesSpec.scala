@@ -17,8 +17,8 @@ class ReaderInstancesSpec extends munit.FunSuite:
 
   test("Functor : fmap") {
     val functor = summon[Functor[[X] =>> Reader[String, X]]]
-    val r = Reader((s: String) => s.length)
-    val mapped = functor.fmap[Int, Int](_ + 1)(r)
+    val r       = Reader((s: String) => s.length)
+    val mapped  = functor.fmap[Int, Int](_ + 1)(r)
     assertEquals(mapped.run("hello"), 6)
   }
 
@@ -32,8 +32,8 @@ class ReaderInstancesSpec extends munit.FunSuite:
 
   test("Contravariant : contramap") {
     val contravariant = summon[Contravariant[[X] =>> Reader[X, Int]]]
-    val r = Reader((s: String) => s.length)
-    val contramapped = contravariant.contramap[String, Int](_.toString)(r)
+    val r             = Reader((s: String) => s.length)
+    val contramapped  = contravariant.contramap[String, Int](_.toString)(r)
     assertEquals(contramapped.run(12345), 5)
   }
 
@@ -43,7 +43,8 @@ class ReaderInstancesSpec extends munit.FunSuite:
 
   test("Profunctor : dimap") {
     val profunctor = summon[Profunctor[Reader]]
-    val r = Reader((s: String) => s.length)
-    val dimapped = profunctor.dimap[String, Int, Int, Boolean](_.toString, _ > 0)(r)
+    val r          = Reader((s: String) => s.length)
+    val dimapped   =
+      profunctor.dimap[String, Int, Int, Boolean](_.toString, _ > 0)(r)
     assertEquals(dimapped.run(12345), true)
   }
