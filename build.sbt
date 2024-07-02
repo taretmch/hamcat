@@ -9,7 +9,9 @@ ThisBuild / githubWorkflowJavaVersions ++= Seq(
   JavaSpec.temurin("21")
 )
 ThisBuild / githubWorkflowPublishTargetBranches := Seq()
-ThisBuild / githubWorkflowBuild                 := Seq(WorkflowStep.Sbt(List("test", "mdoc")))
+ThisBuild / githubWorkflowBuild                 := Seq(
+  WorkflowStep.Sbt(List("scalafmtCheckAll", "scalafmtSbtCheck", "test", "mdoc"))
+)
 
 lazy val core = project
   .settings(name := "hamcat-core")
