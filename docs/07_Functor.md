@@ -156,7 +156,7 @@ identity[Option[Int]](Option(3))
 
 ### 7.2.1 Functor 型クラス
 
-関手は Scala において、以下のような型クラス [Functor](https://github.com/taretmch/hamcat/blob/master/src/main/scala/data/Functor.scala) として実装できます。`Functor` 型クラスは、対象関数として型構築子 `F[_]` をもち、射関数として `fmap` メソッドを持ちます。
+関手は Scala において、以下のような型クラス Functor として実装できます。`Functor` 型クラスは、対象関数として型構築子 `F[_]` をもち、射関数として `fmap` メソッドを持ちます。
 
 ```scala mdoc
 trait Functor[F[_]]:
