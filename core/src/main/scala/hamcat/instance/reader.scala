@@ -18,7 +18,7 @@ trait ReaderInstances:
 
   // Profunctor
   given Profunctor[Reader] with
-    def dimap[A, B, C, D](f: C => A)(g: B => D): Reader[A, B] => Reader[C, D] = reader =>
+    def dimap[A, B, C, D](f: C => A, g: B => D): Reader[A, B] => Reader[C, D] = reader =>
       Reader(g.compose(reader.run).compose(f))
 
 object reader extends ReaderInstances
