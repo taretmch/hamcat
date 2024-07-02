@@ -11,7 +11,7 @@ trait EitherInstances:
 
   // Bifunctor
   given Bifunctor[Either] with
-    def bimap[A, B, C, D](f: A => C)(g: B => D): Either[A, B] => Either[C, D] =
+    def bimap[A, B, C, D](f: A => C, g: B => D): Either[A, B] => Either[C, D] =
       case Left(a)  => Left(f(a))
       case Right(b) => Right(g(b))
 
