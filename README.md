@@ -1,5 +1,7 @@
 # Scala で始める圏論入門
 
+この書籍は、Scala プログラマのための圏論の入門書です。参考にした書籍は Bartosz Milewski 氏著の [Category Theory for Programmers](https://bartoszmilewski.com/2014/10/28/category-theory-for-programmers-the-preface/) の [Scala Edition](https://github.com/hmemcpy/milewski-ctfp-pdf) で、構成も原則これに則しています。
+
 - [Scala で始める圏論入門](https://criceta.com/category-theory-with-scala/)
 - [勉強用ライブラリ hamcat](https://github.com/hamcat)
 
@@ -7,7 +9,7 @@
 
 Hamcat は、圏論に関する概念を実装した勉強用ライブラリです。
 
-ライブラリの名前は、著者がハムスターが好きなのと、Homology と、Category Theory とを掛けて考えました。
+ライブラリの名前は、著者がハムスターと猫が好きであることと、Homology (ホモロジー) とCategory Theory (圏論) を掛け合わせたものです。
 
 ## ライセンス
 
@@ -28,4 +30,4 @@ hamcat は次のライセンスで配布されています。
 
 本プロジェクトは、Bartosz Milewski 氏著 [Category Theory for Programmers - Scala Edition](https://github.com/hmemcpy/milewski-ctfp-pdf) を翻訳し、読みながら作成した勉強記録です。
 
-ドキュメントの章構成は基本的に原文に則っていますが、省略している箇所もあります。非公式な翻訳であり、個人的な解釈を含む表現も含まれますので、その点に留意してお読みください。
+ドキュメントの章構成は基本的に原文に則していますが、省略している箇所もあります。非公式な翻訳であり、個人的な解釈を含む表現も含まれますので、その点に留意してお読みください。
