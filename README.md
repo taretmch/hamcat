@@ -15,8 +15,8 @@ Hamcat は、圏論に関する概念を実装した勉強用ライブラリで�
 
 hamcat は次のライセンスで配布されています。
 
-- ソースコード: [MIT ライセンス](./LICENSE-MIT)
-- ドキュメント: [CC-BY-SA 4.0](./LICENSE-CC-BY-SA)
+- ドキュメント: [Creative Commons Attribution-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-sa/4.0/)
+- ソースコード: [MIT ライセンス](./LICENSE)
 
 **ソースコード**とは、『Scala で始める圏論入門』上のサンプルコードや hamcat を構成するプログラムのソースコードを指します。主に Scala ファイルや sbt ファイルに書かれたコード、およびドキュメント上の Scala コードを含みます。
 
